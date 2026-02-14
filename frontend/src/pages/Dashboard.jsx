@@ -1,77 +1,156 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import analyticsService from '../services/analytics.service';
+import caseService from '../services/case.service';
+import clientService from '../services/client.service';
+import deadlineService from '../services/deadline.service';
+import taskService from '../services/task.service';
 
 const Dashboard = () => {
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState([
         { icon: 'cases', label: 'Active Cases', value: '...', change: '', color: 'primary', positive: true },
         { icon: 'pending_actions', label: 'Pending Tasks', value: '...', badge: '', color: 'orange' },
         { icon: 'monetization_on', label: 'Monthly Revenue', value: '...', change: '', color: 'green', positive: true },
         { icon: 'person_add', label: 'New Clients', value: '...', badge: '', color: 'blue' },
     ]);
+    const [recentCases, setRecentCases] = useState([]);
+    const [deadlines, setDeadlines] = useState([]);
 
     useEffect(() => {
-        fetchAnalytics();
+        fetchDashboardData();
     }, []);
 
-    const fetchAnalytics = async () => {
+    const fetchDashboardData = async () => {
         try {
-            const [caseAnalytics, revenueAnalytics] = await Promise.all([
+            setLoading(true);
+
+            // Fetch all data in parallel
+            const [
+                caseAnalytics,
+                revenueAnalytics,
+                taskStats,
+                clientStats,
+                casesData,
+                upcomingDeadlines
+            ] = await Promise.all([
                 analyticsService.getCaseAnalytics({ status: 'active' }),
-                analyticsService.getRevenueAnalytics({ groupBy: 'month' })
+                analyticsService.getRevenueAnalytics({ groupBy: 'month' }),
+                taskService.getTaskStats(),
+                clientService.getClientStats(),
+                caseService.getAllCases({ limit: 4, sort: '-updatedAt' }),
+                deadlineService.getUpcomingDeadlines(30)
             ]);
 
+            // Calculate new clients this month
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const newClientsThisMonth = clientStats.data?.recentClients?.filter(
+                client => new Date(client.createdAt) >= firstDayOfMonth
+            ).length || 0;
+
+            // Update stats
             const updatedStats = [
                 {
                     icon: 'cases',
                     label: 'Active Cases',
                     value: caseAnalytics.data?.totalCases?.toString() || '0',
-                    change: '+4.2%',
+                    change: caseAnalytics.data?.percentageChange ? `${caseAnalytics.data.percentageChange > 0 ? '+' : ''}${caseAnalytics.data.percentageChange.toFixed(1)}%` : '',
                     color: 'primary',
-                    positive: true
+                    positive: caseAnalytics.data?.percentageChange >= 0
                 },
                 {
                     icon: 'pending_actions',
                     label: 'Pending Tasks',
-                    value: '24',
-                    badge: 'High Priority',
+                    value: taskStats.data?.pendingCount?.toString() || '0',
+                    badge: taskStats.data?.highPriorityCount > 0 ? `${taskStats.data.highPriorityCount} High Priority` : '',
                     color: 'orange'
                 },
                 {
                     icon: 'monetization_on',
                     label: 'Monthly Revenue',
                     value: `$${(revenueAnalytics.data?.totalRevenue?.paid || 0).toLocaleString()}`,
-                    change: '+12.5%',
+                    change: revenueAnalytics.data?.percentageChange ? `${revenueAnalytics.data.percentageChange > 0 ? '+' : ''}${revenueAnalytics.data.percentageChange.toFixed(1)}%` : '',
                     color: 'green',
-                    positive: true
+                    positive: revenueAnalytics.data?.percentageChange >= 0
                 },
                 {
                     icon: 'person_add',
                     label: 'New Clients',
-                    value: '8',
-                    badge: 'New This Month',
+                    value: newClientsThisMonth.toString(),
+                    badge: 'This Month',
                     color: 'blue'
                 },
             ];
 
             setStats(updatedStats);
+
+            // Format recent cases
+            const formattedCases = casesData.data?.cases?.map(caseItem => ({
+                id: caseItem._id,
+                name: caseItem.title || caseItem.caseName,
+                caseId: caseItem.caseNumber || `#${caseItem._id.slice(-8)}`,
+                attorney: caseItem.assignedAttorney?.name || caseItem.lawFirm?.name || 'Unassigned',
+                activity: formatTimeAgo(caseItem.updatedAt),
+                status: caseItem.status?.toUpperCase() || 'PENDING',
+                statusColor: getStatusColor(caseItem.status)
+            })) || [];
+
+            setRecentCases(formattedCases);
+
+            // Format deadlines
+            const formattedDeadlines = upcomingDeadlines.data?.deadlines?.slice(0, 4).map(deadline => {
+                const deadlineDate = new Date(deadline.dueDate);
+                const daysUntil = Math.ceil((deadlineDate - now) / (1000 * 60 * 60 * 24));
+
+                return {
+                    id: deadline._id,
+                    date: {
+                        month: deadlineDate.toLocaleDateString('en-US', { month: 'short' }),
+                        day: deadlineDate.getDate().toString()
+                    },
+                    title: deadline.title,
+                    subtitle: deadline.case?.title || deadline.description || 'Case Task',
+                    urgent: daysUntil <= 1
+                };
+            }) || [];
+
+            setDeadlines(formattedDeadlines);
         } catch (error) {
-            console.error('Error fetching analytics:', error);
+            console.error('Error fetching dashboard data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const recentCases = [
-        { name: 'Miller vs. City Hospital', id: '#2023-MED-042', attorney: 'James P. Sterling', activity: '2h ago', status: 'IN REVIEW', statusColor: 'blue' },
-        { name: 'Ramirez Malpractice', id: '#2023-MED-039', attorney: 'Elena Garcia', activity: 'Oct 21, 2023', status: 'DRAFTING', statusColor: 'yellow' },
-        { name: 'Thompson - Ortho Review', id: '#2023-MED-015', attorney: 'Robert Vance', activity: 'Oct 20, 2023', status: 'COMPLETED', statusColor: 'green' },
-        { name: 'Estate of G. Henderson', id: '#2023-MED-051', attorney: 'Sarah Jenkins', activity: 'Oct 19, 2023', status: 'ON HOLD', statusColor: 'slate' },
-    ];
+    const formatTimeAgo = (date) => {
+        const now = new Date();
+        const past = new Date(date);
+        const diffMs = now - past;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
 
-    const deadlines = [
-        { date: { month: 'Oct', day: '24' }, title: 'Miller Case Medical Summary', subtitle: 'Urgent: Due in 24h', urgent: true },
-        { date: { month: 'Oct', day: '26' }, title: 'Expert Testimony Brief', subtitle: 'Ramirez Malpractice Case' },
-        { date: { month: 'Oct', day: '31' }, title: 'Monthly Billing Cycle', subtitle: 'Admin Task' },
-        { date: { month: 'Nov', day: '02' }, title: 'Preliminary Case Screening', subtitle: 'For Smith & Partners' },
-    ];
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return past.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
+    const getStatusColor = (status) => {
+        const statusMap = {
+            'active': 'blue',
+            'in-progress': 'blue',
+            'pending': 'yellow',
+            'review': 'yellow',
+            'completed': 'green',
+            'closed': 'green',
+            'on-hold': 'slate',
+            'cancelled': 'slate'
+        };
+        return statusMap[status?.toLowerCase()] || 'slate';
+    };
 
     const getStatColorClasses = (color) => {
         const colors = {
@@ -99,9 +178,12 @@ const Dashboard = () => {
             <div className="flex justify-between items-end mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good morning, Sarah</h1>
-                    <p className="text-slate-500 mt-1">Today is Monday, October 23, 2023. You have 4 high-priority tasks.</p>
+                    <p className="text-slate-500 mt-1">Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.</p>
                 </div>
-                <button className="bg-[#0891b2] hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm transition-all transform active:scale-95">
+                <button
+                    onClick={() => navigate('/cases/create')}
+                    className="bg-[#0891b2] hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm transition-all transform active:scale-95"
+                >
                     <span className="material-icons text-sm">add</span>
                     Create New Case
                 </button>
@@ -138,40 +220,59 @@ const Dashboard = () => {
                 <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                     <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
                         <h2 className="font-bold text-lg text-slate-800 dark:text-white">Recent Cases</h2>
-                        <button className="text-[#1f3b61] text-xs font-bold hover:underline">View All</button>
+                        <button
+                            onClick={() => navigate('/cases')}
+                            className="text-[#1f3b61] text-xs font-bold hover:underline"
+                        >
+                            View All
+                        </button>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-slate-50 dark:bg-slate-800/50 text-[10px] font-bold uppercase text-slate-400">
-                                <tr>
-                                    <th className="px-6 py-3 tracking-wider">Case Name / ID</th>
-                                    <th className="px-6 py-3 tracking-wider">Attorney</th>
-                                    <th className="px-6 py-3 tracking-wider">Last Activity</th>
-                                    <th className="px-6 py-3 tracking-wider">Status</th>
-                                    <th className="px-6 py-3 tracking-wider"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {recentCases.map((caseItem, index) => (
-                                    <tr key={index} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm font-semibold text-slate-900 dark:text-white">{caseItem.name}</p>
-                                            <p className="text-xs text-slate-400">{caseItem.id}</p>
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{caseItem.attorney}</td>
-                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{caseItem.activity}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusClasses(caseItem.statusColor)}`}>
-                                                {caseItem.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <button className="material-icons text-slate-300 hover:text-slate-600 text-lg">more_vert</button>
-                                        </td>
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0891b2]"></div>
+                            </div>
+                        ) : recentCases.length === 0 ? (
+                            <div className="text-center py-12 text-slate-500">
+                                No cases found. Create your first case to get started.
+                            </div>
+                        ) : (
+                            <table className="w-full text-left">
+                                <thead className="bg-slate-50 dark:bg-slate-800/50 text-[10px] font-bold uppercase text-slate-400">
+                                    <tr>
+                                        <th className="px-6 py-3 tracking-wider">Case Name / ID</th>
+                                        <th className="px-6 py-3 tracking-wider">Attorney</th>
+                                        <th className="px-6 py-3 tracking-wider">Last Activity</th>
+                                        <th className="px-6 py-3 tracking-wider">Status</th>
+                                        <th className="px-6 py-3 tracking-wider"></th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                    {recentCases.map((caseItem, index) => (
+                                        <tr
+                                            key={index}
+                                            className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors cursor-pointer"
+                                            onClick={() => navigate(`/cases/${caseItem.id}`)}
+                                        >
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{caseItem.name}</p>
+                                                <p className="text-xs text-slate-400">{caseItem.caseId}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{caseItem.attorney}</td>
+                                            <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{caseItem.activity}</td>
+                                            <td className="px-6 py-4">
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${getStatusClasses(caseItem.statusColor)}`}>
+                                                    {caseItem.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <button className="material-icons text-slate-300 hover:text-slate-600 text-lg">more_vert</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
                     </div>
                 </div>
 
@@ -181,23 +282,36 @@ const Dashboard = () => {
                         <h2 className="font-bold text-lg text-slate-800 dark:text-white">Upcoming Deadlines</h2>
                     </div>
                     <div className="flex-1 p-6 space-y-5">
-                        {deadlines.map((deadline, index) => (
-                            <div key={index} className={`flex gap-4 items-start border-l-2 ${deadline.urgent ? 'border-red-500' : 'border-[#1f3b61]'} pl-4 py-1`}>
-                                <div className={`${deadline.urgent ? 'bg-red-50 dark:bg-red-900/20 text-red-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} p-2 rounded text-center min-w-[50px]`}>
-                                    <p className="text-[10px] font-bold uppercase">{deadline.date.month}</p>
-                                    <p className="text-lg font-bold leading-none">{deadline.date.day}</p>
-                                </div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-bold">{deadline.title}</p>
-                                    <p className={`text-xs mt-0.5 ${deadline.urgent ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
-                                        {deadline.subtitle}
-                                    </p>
-                                </div>
+                        {loading ? (
+                            <div className="flex justify-center items-center py-12">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0891b2]"></div>
                             </div>
-                        ))}
+                        ) : deadlines.length === 0 ? (
+                            <div className="text-center py-12 text-slate-500 text-sm">
+                                No upcoming deadlines
+                            </div>
+                        ) : (
+                            deadlines.map((deadline, index) => (
+                                <div key={index} className={`flex gap-4 items-start border-l-2 ${deadline.urgent ? 'border-red-500' : 'border-[#1f3b61]'} pl-4 py-1`}>
+                                    <div className={`${deadline.urgent ? 'bg-red-50 dark:bg-red-900/20 text-red-600' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300'} p-2 rounded text-center min-w-[50px]`}>
+                                        <p className="text-[10px] font-bold uppercase">{deadline.date.month}</p>
+                                        <p className="text-lg font-bold leading-none">{deadline.date.day}</p>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-bold">{deadline.title}</p>
+                                        <p className={`text-xs mt-0.5 ${deadline.urgent ? 'text-red-600 font-medium' : 'text-slate-500'}`}>
+                                            {deadline.subtitle}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                     <div className="p-4 border-t border-slate-100 dark:border-slate-800">
-                        <button className="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-100 transition-colors">
+                        <button
+                            onClick={() => navigate('/tasks')}
+                            className="w-full py-2 bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-100 transition-colors"
+                        >
                             View Full Calendar
                         </button>
                     </div>

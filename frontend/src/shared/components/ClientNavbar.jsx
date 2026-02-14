@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../../services/auth.service';
 import notificationService from '../../services/notification.service';
 
-const Navbar = () => {
+const ClientNavbar = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
     const [notifications, setNotifications] = useState([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
     const notificationRef = useRef(null);
     const profileRef = useRef(null);
 
@@ -109,28 +108,9 @@ const Navbar = () => {
         }
     };
 
-    const handleSearch = (e) => {
-        e.preventDefault();
-        if (searchQuery.trim()) {
-            navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-        }
-    };
-
     const getUserDisplayName = () => {
-        if (!user) return 'User';
+        if (!user) return 'Client';
         return user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email;
-    };
-
-    const getUserRole = () => {
-        if (!user) return '';
-        const roleMap = {
-            'admin': 'Admin',
-            'attorney': 'Attorney',
-            'legal-nurse': 'Legal Nurse Consultant',
-            'staff': 'Staff',
-            'client': 'Client'
-        };
-        return roleMap[user.role] || user.role;
     };
 
     const getProfileImage = () => {
@@ -138,30 +118,18 @@ const Navbar = () => {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 bg-[#1f3b61] text-white flex items-center justify-between px-6 z-50">
+        <header className="fixed top-0 left-64 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-40">
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
-                    <span className="material-icons text-[#0891b2]">gavel</span>
-                    <span className="font-bold text-xl tracking-tight uppercase">
-                        LegalNurse<span className="text-[#0891b2]">Portal</span>
-                    </span>
-                </div>
-                <form onSubmit={handleSearch} className="ml-8 hidden md:flex items-center bg-white/10 rounded-lg px-3 py-1.5 w-80">
-                    <span className="material-icons text-white/60 text-sm">search</span>
-                    <input
-                        className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder-white/60 text-white outline-none"
-                        placeholder="Search cases, medical records..."
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                </form>
+                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                    Client Portal
+                </h1>
             </div>
+
             <div className="flex items-center gap-6">
-                <div className="flex items-center gap-1.5 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
-                    <span className="material-icons text-green-400 text-xs">shield</span>
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400">
-                        HIPAA Compliant Session
+                <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/20 px-3 py-1 rounded-full">
+                    <span className="material-icons text-green-600 dark:text-green-400 text-xs">shield</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">
+                        Secure Connection
                     </span>
                 </div>
 
@@ -171,9 +139,9 @@ const Navbar = () => {
                         className="relative cursor-pointer"
                         onClick={() => setShowNotifications(!showNotifications)}
                     >
-                        <span className="material-icons text-white/80 hover:text-white">notifications</span>
+                        <span className="material-icons text-slate-600 dark:text-slate-400 hover:text-[#0891b2]">notifications</span>
                         {notificationCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
                                 {notificationCount > 9 ? '9+' : notificationCount}
                             </span>
                         )}
@@ -221,11 +189,11 @@ const Navbar = () => {
                                 <button
                                     onClick={() => {
                                         setShowNotifications(false);
-                                        navigate('/notifications');
+                                        navigate('/client/updates');
                                     }}
                                     className="text-xs text-[#0891b2] hover:underline w-full text-center"
                                 >
-                                    View all notifications
+                                    View all updates
                                 </button>
                             </div>
                         </div>
@@ -233,10 +201,10 @@ const Navbar = () => {
                 </div>
 
                 {/* Profile Dropdown */}
-                <div className="flex items-center gap-3 pl-4 border-l border-white/20 relative" ref={profileRef}>
+                <div className="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-700 relative" ref={profileRef}>
                     <div className="text-right hidden sm:block">
-                        <p className="text-xs font-medium">{getUserDisplayName()}</p>
-                        <p className="text-[10px] text-white/60">{getUserRole()}</p>
+                        <p className="text-sm font-medium text-slate-900 dark:text-white">{getUserDisplayName()}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Client</p>
                     </div>
                     <img
                         alt="Profile"
@@ -250,7 +218,7 @@ const Navbar = () => {
                             <button
                                 onClick={() => {
                                     setShowProfileMenu(false);
-                                    navigate('/profile');
+                                    navigate('/client/profile');
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2"
                             >
@@ -260,7 +228,7 @@ const Navbar = () => {
                             <button
                                 onClick={() => {
                                     setShowProfileMenu(false);
-                                    navigate('/settings');
+                                    navigate('/client/settings');
                                 }}
                                 className="w-full px-4 py-2 text-left text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-2"
                             >
@@ -283,4 +251,4 @@ const Navbar = () => {
     );
 };
 
-export default Navbar;
+export default ClientNavbar;

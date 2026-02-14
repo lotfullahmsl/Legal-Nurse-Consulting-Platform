@@ -9,7 +9,16 @@ const auditLogSchema = new mongoose.Schema({
     action: {
         type: String,
         required: true,
-        enum: ['CREATE', 'READ', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOUT', 'DATA_ACCESS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE']
+        enum: [
+            'CREATE', 'READ', 'UPDATE', 'DELETE',
+            'LOGIN', 'LOGOUT', 'DATA_ACCESS',
+            'GET', 'POST', 'PUT', 'PATCH',
+            'view_case_analytics', 'view_revenue_analytics', 'view_workload_analytics',
+            'view_referral_analytics', 'view_performance_metrics', 'export_analytics',
+            'view_task_stats', 'view_client_stats', 'view_case_stats',
+            'view_deadline_stats', 'view_audit_logs', 'export_audit_logs',
+            'generate_compliance_report', 'view_audit_statistics'
+        ]
     },
     resource: {
         type: String,
