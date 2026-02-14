@@ -1,12 +1,57 @@
+import { useEffect, useState } from 'react';
+import deadlineService from '../services/deadline.service';
+import taskService from '../services/task.service';
 
 const StaffDashboard = () => {
+    const [tasks, setTasks] = useState([]);
+    const [deadlines, setDeadlines] = useState([]);
+    const [stats, setStats] = useState({
+        totalTasks: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        inProgressTasks: 0,
+        overdueTasks: 0
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, []);
+
+    const fetchDashboardData = async () => {
+        try {
+            setLoading(true);
+            const [tasksData, statsData, deadlinesData] = await Promise.all([
+                taskService.getMyTasks({ limit: 5 }),
+                taskService.getTaskStats(),
+                deadlineService.getUpcomingDeadlines(7)
+            ]);
+            setTasks(tasksData || []);
+            setStats(statsData || {});
+            setDeadlines(deadlinesData || []);
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleTaskStatusChange = async (taskId, newStatus) => {
+        try {
+            await taskService.updateTaskStatus(taskId, newStatus);
+            fetchDashboardData();
+        } catch (error) {
+            console.error('Failed to update task:', error);
+        }
+    };
+
     return (
         <div className="max-w-[1600px] mx-auto">
             {/* Welcome Header & Stats */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good Morning, Sarah</h1>
-                    <p className="text-slate-500 mt-1">You have 4 medical reviews pending for this week.</p>
+                    <p className="text-slate-500 mt-1">You have {stats.pendingTasks || 0} tasks pending for this week.</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-6 shadow-sm">
                     <div className="flex items-center gap-3">
@@ -153,40 +198,80 @@ const StaffDashboard = () => {
                                 <span className="material-icons text-[#1152d4]">task_alt</span>
                                 Task List
                             </h2>
-                            <span className="bg-[#1152d4]/10 text-[#1152d4] text-[10px] font-bold px-2 py-1 rounded">5 Remaining</span>
+                            <span className="bg-[#1152d4]/10 text-[#1152d4] text-[10px] font-bold px-2 py-1 rounded">
+                                {(stats.pendingTasks || 0) + (stats.inProgressTasks || 0)} Remaining
+                            </span>
                         </div>
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-3 group">
-                                <input className="mt-1 rounded border-slate-300 text-[#1152d4] focus:ring-[#1152d4]" type="checkbox" />
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium text-slate-900 dark:text-white">Review Radiology Report</p>
-                                        <span className="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded">High</span>
+                        <div className="space-y-3">
+                            {loading ? (
+                                <div className="text-center py-4 text-slate-500">Loading tasks...</div>
+                            ) : tasks.length > 0 ? (
+                                tasks.slice(0, 5).map((task) => (
+                                    <div key={task._id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <input
+                                            type="checkbox"
+                                            checked={task.status === 'completed'}
+                                            onChange={() => handleTaskStatusChange(task._id, task.status === 'completed' ? 'pending' : 'completed')}
+                                            className="mt-1 rounded border-slate-300 text-[#1152d4] focus:ring-[#1152d4]"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className={`text-sm font-medium ${task.status === 'completed' ? 'line-through text-slate-400' : ''}`}>
+                                                {task.title}
+                                            </p>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                {task.case?.caseNumber || 'No case'} • {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : 'No due date'}
+                                            </p>
+                                        </div>
+                                        <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase ${task.priority === 'high' || task.priority === 'critical' ? 'bg-red-100 text-red-600' :
+                                            task.priority === 'medium' ? 'bg-blue-100 text-blue-600' :
+                                                'bg-slate-100 text-slate-600'
+                                            }`}>
+                                            {task.priority}
+                                        </span>
                                     </div>
-                                    <p className="text-xs text-slate-500 mt-1">Due today at 5:00 PM</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3 group">
-                                <input className="mt-1 rounded border-slate-300 text-[#1152d4] focus:ring-[#1152d4]" type="checkbox" />
-                                <div className="flex-1">
-                                    <div className="flex items-center justify-between">
-                                        <p className="text-sm font-medium text-slate-900 dark:text-white">Finalize Chronology: Case #2024</p>
-                                        <span className="bg-amber-100 text-amber-600 text-[10px] font-bold px-1.5 py-0.5 rounded">Medium</span>
-                                    </div>
-                                    <p className="text-xs text-slate-500 mt-1">Tomorrow</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start gap-3 group">
-                                <input checked className="mt-1 rounded border-slate-300 text-[#1152d4] focus:ring-[#1152d4]" type="checkbox" />
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium text-slate-400 line-through">Call Lead Attorney Re: Billing</p>
-                                    <p className="text-xs text-slate-400 mt-1">Completed 2h ago</p>
-                                </div>
-                            </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-slate-500">No tasks assigned</div>
+                            )}
                         </div>
                         <button className="w-full mt-6 py-2 border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 text-xs font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                             + Add New Task
                         </button>
+                    </section>
+
+                    {/* Upcoming Deadlines Widget */}
+                    <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-6">
+                            <h2 className="font-bold flex items-center gap-2">
+                                <span className="material-icons text-red-500">event_busy</span>
+                                Upcoming Deadlines
+                            </h2>
+                        </div>
+                        <div className="space-y-3">
+                            {loading ? (
+                                <div className="text-center py-4 text-slate-500">Loading deadlines...</div>
+                            ) : deadlines.length > 0 ? (
+                                deadlines.slice(0, 5).map((deadline) => (
+                                    <div key={deadline._id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors border-l-2 border-red-500">
+                                        <span className="material-icons text-red-500 text-sm mt-0.5">event</span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-medium">{deadline.title}</p>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                {deadline.case?.caseNumber || 'No case'} • {new Date(deadline.deadlineDate).toLocaleDateString()}
+                                            </p>
+                                        </div>
+                                        <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase ${deadline.priority === 'critical' ? 'bg-red-100 text-red-600' :
+                                            deadline.priority === 'high' ? 'bg-orange-100 text-orange-600' :
+                                                'bg-slate-100 text-slate-600'
+                                            }`}>
+                                            {deadline.type}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="text-center py-4 text-slate-500">No upcoming deadlines</div>
+                            )}
+                        </div>
                     </section>
 
                     {/* HIPAA Notice */}

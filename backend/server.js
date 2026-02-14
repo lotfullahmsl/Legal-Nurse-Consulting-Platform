@@ -27,6 +27,9 @@ const taskRoutes = require('./modules/task-workflow/routes/task.routes');
 const workflowRoutes = require('./modules/task-workflow/routes/workflow.routes');
 const deadlineRoutes = require('./modules/task-workflow/routes/deadline.routes');
 
+// Import services
+const { schedulerService } = require('./modules/task-workflow');
+
 // Initialize app
 const app = express();
 
@@ -38,6 +41,14 @@ mongoose.connect(process.env.MONGODB_URI, {
     .then(() => {
         logger.info('✅ MongoDB Connected Successfully');
         logger.info(`📊 Database: ${mongoose.connection.name}`);
+
+        // Initialize scheduler after DB connection
+        try {
+            schedulerService.initializeScheduler();
+            logger.info('✅ Task scheduler initialized');
+        } catch (error) {
+            logger.error('❌ Failed to initialize scheduler:', error);
+        }
     })
     .catch((err) => {
         logger.error('❌ MongoDB Connection Error:', err);
@@ -129,6 +140,16 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
     logger.error('❌ Uncaught Exception:', err);
     process.exit(1);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+    logger.info('SIGTERM received, shutting down gracefully...');
+    schedulerService.stopScheduler();
+    server.close(() => {
+        logger.info('Process terminated');
+        process.exit(0);
+    });
 });
 
 module.exports = app;

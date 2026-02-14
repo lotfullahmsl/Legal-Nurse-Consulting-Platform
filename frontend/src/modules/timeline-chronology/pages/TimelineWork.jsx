@@ -30,7 +30,7 @@ const TimelineWork = () => {
     };
 
     const stats = [
-        { label: 'Active Chronologies', value: workItems.length.toString(), badge: '+2 this week', badgeColor: 'emerald' },
+        { label: 'Active Chronologies', value: (workItems?.length || 0).toString(), badge: '+2 this week', badgeColor: 'emerald' },
         { label: 'Average Progress', value: '64%', progress: 64 },
         { label: 'Next Deadline', value: '2 Days', valueColor: 'amber', badge: 'Case #8921' },
         { label: 'Pending Review', value: '4', icon: 'rate_review' }
