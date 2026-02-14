@@ -1,408 +1,248 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import timelineService from '../../../services/timeline.service';
 
 const TimelineBuilder = () => {
-    const [viewMode, setViewMode] = useState('timeline');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedEvent, setSelectedEvent] = useState(1);
+    const { caseId } = useParams();
+    const [timeline, setTimeline] = useState(null);
+    const [events, setEvents] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [showAddEvent, setShowAddEvent] = useState(false);
 
-    const categories = [
-        { id: 1, name: 'Surgery & Procedures', checked: true },
-        { id: 2, name: 'ER & Admissions', checked: true },
-        { id: 3, name: 'Medications', checked: true },
-        { id: 4, name: 'Imaging / Labs', checked: true },
-        { id: 5, name: 'Notes & Narrative', checked: true }
-    ];
-
-    const events = [
-        {
-            id: 1,
-            date: 'Oct 14, 2023 @ 08:30 AM',
-            title: 'Initial ER Admission',
-            description: 'Patient arrived via EMS with severe abdominal pain, localized to lower right quadrant.',
-            category: 'EMERGENCY',
-            categoryColor: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
-            side: 'left'
-        },
-        {
-            id: 2,
-            date: 'Oct 14, 2023 @ 11:15 AM',
-            title: 'Diagnostic CT Scan',
-            description: 'CT Imaging confirmed appendicitis with possible perforation. Prep for surgical intervention started.',
-            category: 'IMAGING',
-            categoryColor: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
-            page: 'PAGE 42',
-            side: 'right',
-            active: true
-        },
-        {
-            id: 3,
-            date: 'Nov 02, 2023 @ 10:00 AM',
-            title: 'Post-Op Follow-up',
-            description: 'Incision site healing normally. Patient reports mild discomfort. Sutures removed.',
-            category: 'OUTPATIENT',
-            categoryColor: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
-            side: 'left'
+    useEffect(() => {
+        if (caseId) {
+            fetchTimeline();
         }
-    ];
+    }, [caseId]);
+
+    const fetchTimeline = async () => {
+        try {
+            setLoading(true);
+            const response = await timelineService.getTimelinesByCase(caseId);
+            if (response.data.timelines.length > 0) {
+                const tl = response.data.timelines[0];
+                setTimeline(tl);
+                setEvents(tl.events || []);
+            }
+        } catch (error) {
+            console.error('Error fetching timeline:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleAddEvent = async (eventData) => {
+        try {
+            if (!timeline) {
+                // Create timeline first
+                const tlResponse = await timelineService.createTimeline({
+                    case: caseId,
+                    title: 'Medical Timeline',
+                    status: 'in-progress'
+                });
+                setTimeline(tlResponse.data.timeline);
+
+                // Then add event
+                await timelineService.addEvent(tlResponse.data.timeline._id, eventData);
+            } else {
+                await timelineService.addEvent(timeline._id, eventData);
+            }
+
+            fetchTimeline();
+            setShowAddEvent(false);
+            alert('Event added successfully');
+        } catch (error) {
+            alert('Failed to add event');
+        }
+    };
+
+    const getCategoryColor = (category) => {
+        const colors = {
+            treatment: 'bg-blue-100 text-blue-800',
+            medication: 'bg-purple-100 text-purple-800',
+            lab: 'bg-green-100 text-green-800',
+            imaging: 'bg-yellow-100 text-yellow-800',
+            consultation: 'bg-pink-100 text-pink-800',
+            procedure: 'bg-red-100 text-red-800',
+            symptom: 'bg-orange-100 text-orange-800',
+            other: 'bg-gray-100 text-gray-800'
+        };
+        return colors[category] || colors.other;
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <span className="material-icons animate-spin text-4xl">refresh</span>
+            </div>
+        );
+    }
 
     return (
-        <div className="flex flex-col h-screen -m-8">
-            {/* Top Utility Bar */}
-            <header className="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-[#14181e]/50 px-6 flex items-center justify-between sticky top-0 z-50">
-                <div className="flex items-center gap-4">
-                    <div className="bg-[#1f3b61] text-white p-2 rounded-lg">
-                        <span className="material-icons text-xl">timeline</span>
-                    </div>
+        <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <header className="mb-8">
+                <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="font-bold text-lg leading-tight">Case: Johnson vs. General Hospital</h1>
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-                            <span className="text-xs text-slate-500 uppercase tracking-wider font-semibold">
-                                HIPAA Secured • Autosaved 2m ago
-                            </span>
-                        </div>
+                        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Medical Timeline Builder</h1>
+                        <p className="text-sm text-slate-500 mt-1">
+                            Create chronological medical events with citations
+                        </p>
                     </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
-                        <button
-                            onClick={() => setViewMode('timeline')}
-                            className={`px-3 py-1 text-xs font-medium rounded ${viewMode === 'timeline' ? 'bg-white dark:bg-slate-700 shadow-sm' : ''
-                                }`}
-                        >
-                            Timeline View
-                        </button>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`px-3 py-1 text-xs font-medium ${viewMode === 'grid' ? 'bg-white dark:bg-slate-700 shadow-sm' : 'text-slate-500'
-                                }`}
-                        >
-                            Grid View
-                        </button>
-                    </div>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
-                        <span className="material-icons text-sm">share</span>
-                        Share
+                    <button
+                        onClick={() => setShowAddEvent(true)}
+                        className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg transition-all text-sm font-semibold"
+                    >
+                        <span className="material-icons text-sm mr-2">add</span>
+                        Add Event
                     </button>
-                    <div className="relative group">
-                        <button className="flex items-center gap-2 px-4 py-2 bg-[#1f3b61] text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
-                            <span className="material-icons text-sm">download</span>
-                            Export Report
-                            <span className="material-icons text-sm">expand_more</span>
-                        </button>
-                        <div className="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-2 z-50">
-                            <button className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-2">
-                                <span className="material-icons text-sm text-red-500">picture_as_pdf</span> PDF Document (.pdf)
-                            </button>
-                            <button className="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-2">
-                                <span className="material-icons text-sm text-blue-500">description</span> MS Word (.docx)
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </header>
 
-            {/* Main Workspace */}
-            <main className="flex flex-1 overflow-hidden">
-                {/* Left Filter & Navigation Panel */}
-                <aside className="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#14181e]/30 p-4 flex flex-col gap-6 overflow-y-auto">
-                    <div>
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">
-                            Search Events
-                        </label>
-                        <div className="relative">
-                            <span className="material-icons absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
-                            <input
-                                type="text"
-                                className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-1 focus:ring-[#1f3b61]/50"
-                                placeholder="Filter by keyword..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">
-                            Event Categories
-                        </label>
-                        <div className="space-y-1">
-                            {categories.map((category) => (
-                                <label
-                                    key={category.id}
-                                    className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group"
-                                >
-                                    <input
-                                        type="checkbox"
-                                        defaultChecked={category.checked}
-                                        className="rounded border-slate-300 text-[#1f3b61] focus:ring-[#1f3b61]"
-                                    />
-                                    <span className="text-sm text-slate-600 dark:text-slate-400 group-hover:text-[#1f3b61] transition-colors">
-                                        {category.name}
-                                    </span>
-                                </label>
-                            ))}
-                        </div>
-                    </div>
-                    <div>
-                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">
-                            Summary Statistics
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="text-xs text-slate-500">Events</div>
-                                <div className="text-xl font-bold">142</div>
-                            </div>
-                            <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div className="text-xs text-slate-500">Years</div>
-                                <div className="text-xl font-bold">4.2</div>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
+            {/* Timeline Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border">
+                    <p className="text-xs uppercase font-bold text-slate-500">Total Events</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">{events.length}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border">
+                    <p className="text-xs uppercase font-bold text-slate-500">Date Range</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white">
+                        {events.length > 0 ? `${new Date(events[0].date).toLocaleDateString()} - ${new Date(events[events.length - 1].date).toLocaleDateString()}` : 'N/A'}
+                    </p>
+                </div>
+                <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border">
+                    <p className="text-xs uppercase font-bold text-slate-500">Status</p>
+                    <p className="text-sm font-bold text-slate-900 dark:text-white capitalize">{timeline?.status || 'Draft'}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-800/40 p-4 rounded-xl border">
+                    <p className="text-xs uppercase font-bold text-slate-500">Citations</p>
+                    <p className="text-2xl font-bold text-slate-900 dark:text-white">
+                        {events.reduce((sum, e) => sum + (e.citations?.length || 0), 0)}
+                    </p>
+                </div>
+            </div>
 
-                {/* Timeline Canvas */}
-                <section className="flex-1 overflow-y-auto relative bg-slate-50 dark:bg-[#14181e] p-8">
-                    <div className="max-w-3xl mx-auto relative">
-                        {/* Vertical Line */}
-                        <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700 transform -translate-x-1/2 z-0"></div>
+            {/* Timeline Events */}
+            <div className="bg-white dark:bg-slate-800/40 rounded-xl border p-6">
+                {events.length === 0 ? (
+                    <div className="text-center py-12 text-slate-500">
+                        <span className="material-icons text-6xl text-slate-300 mb-4">timeline</span>
+                        <p>No events yet. Click "Add Event" to start building the timeline.</p>
+                    </div>
+                ) : (
+                    <div className="relative">
+                        {/* Timeline Line */}
+                        <div className="absolute left-8 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700"></div>
 
-                        {/* Timeline Nodes */}
-                        <div className="space-y-12 relative z-10">
-                            {/* Date Header */}
-                            <div className="flex justify-center">
-                                <span className="px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-500 shadow-sm">
-                                    OCTOBER 2023
-                                </span>
-                            </div>
+                        {/* Events */}
+                        <div className="space-y-6">
+                            {events.map((event, index) => (
+                                <div key={event._id || index} className="relative pl-16">
+                                    {/* Timeline Dot */}
+                                    <div className="absolute left-6 top-2 w-4 h-4 rounded-full bg-[#0891b2] border-4 border-white dark:border-slate-800"></div>
 
-                            {/* Event Cards */}
-                            {events.slice(0, 2).map((event) => (
-                                <div key={event.id} className="flex items-center w-full">
-                                    {event.side === 'left' ? (
-                                        <>
-                                            <div className="w-1/2 pr-10 text-right">
-                                                <div
-                                                    className={`inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border ${event.active
-                                                            ? 'border-2 border-[#1f3b61] ring-4 ring-[#1f3b61]/5'
-                                                            : 'border-slate-200 dark:border-slate-700 hover:border-[#1f3b61]'
-                                                        } transition-colors cursor-pointer group`}
-                                                    onClick={() => setSelectedEvent(event.id)}
-                                                >
-                                                    <div className="text-[10px] font-bold text-[#1f3b61] dark:text-blue-400 uppercase mb-1">
-                                                        {event.date}
-                                                    </div>
-                                                    <h3 className="font-bold text-sm mb-1 group-hover:text-[#1f3b61] transition-colors">
-                                                        {event.title}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">
-                                                        {event.description}
+                                    {/* Event Card */}
+                                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                        <div className="flex items-start justify-between mb-2">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className={`px-2 py-0.5 text-xs font-medium rounded ${getCategoryColor(event.category)}`}>
+                                                        {event.category}
+                                                    </span>
+                                                    <span className="text-xs text-slate-500">
+                                                        {new Date(event.date).toLocaleDateString()}
+                                                        {event.time && ` at ${event.time}`}
+                                                    </span>
+                                                </div>
+                                                <h3 className="font-semibold text-slate-900 dark:text-white">{event.title}</h3>
+                                                {event.description && (
+                                                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{event.description}</p>
+                                                )}
+                                                {event.provider && (
+                                                    <p className="text-xs text-slate-500 mt-2">
+                                                        Provider: {event.provider.name} {event.provider.facility && `- ${event.provider.facility}`}
                                                     </p>
-                                                    <div className="mt-2 flex justify-end gap-2">
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${event.categoryColor}`}>
-                                                            {event.category}
-                                                        </span>
-                                                    </div>
-                                                </div>
+                                                )}
                                             </div>
-                                            <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#1f3b61] rounded-full border-4 border-white dark:border-[#14181e] ring-4 ring-[#1f3b61]/10"></div>
-                                            <div className="w-1/2 pl-10"></div>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <div className="w-1/2 pr-10"></div>
-                                            <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#1f3b61] rounded-full border-4 border-white dark:border-[#14181e] ring-4 ring-[#1f3b61]/10"></div>
-                                            <div className="w-1/2 pl-10">
-                                                <div
-                                                    className={`inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border ${event.active
-                                                            ? 'border-2 border-[#1f3b61] ring-4 ring-[#1f3b61]/5'
-                                                            : 'border-slate-200 dark:border-slate-700 hover:border-[#1f3b61]'
-                                                        } transition-colors cursor-pointer group`}
-                                                    onClick={() => setSelectedEvent(event.id)}
-                                                >
-                                                    <div className="text-[10px] font-bold text-[#1f3b61] dark:text-blue-400 uppercase mb-1">
-                                                        {event.date}
-                                                    </div>
-                                                    <h3 className="font-bold text-sm mb-1">{event.title}</h3>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-400">{event.description}</p>
-                                                    <div className="mt-2 flex gap-2">
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${event.categoryColor}`}>
-                                                            {event.category}
-                                                        </span>
-                                                        {event.page && (
-                                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 rounded text-[10px] font-bold">
-                                                                {event.page}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            ))}
-
-                            {/* Date Header */}
-                            <div className="flex justify-center">
-                                <span className="px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-500 shadow-sm uppercase">
-                                    November 2023
-                                </span>
-                            </div>
-
-                            {/* More Events */}
-                            {events.slice(2).map((event) => (
-                                <div key={event.id} className="flex items-center w-full">
-                                    <div className="w-1/2 pr-10 text-right">
-                                        <div className="inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-[#1f3b61] transition-colors cursor-pointer group">
-                                            <div className="text-[10px] font-bold text-[#1f3b61] dark:text-blue-400 uppercase mb-1">
-                                                {event.date}
-                                            </div>
-                                            <h3 className="font-bold text-sm mb-1 group-hover:text-[#1f3b61] transition-colors">
-                                                {event.title}
-                                            </h3>
-                                            <p className="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">{event.description}</p>
-                                            <div className="mt-2 flex justify-end gap-2">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${event.categoryColor}`}>
-                                                    {event.category}
-                                                </span>
+                                            <div className="flex items-center gap-2">
+                                                <button className="p-1 text-slate-400 hover:text-[#0891b2]">
+                                                    <span className="material-icons text-sm">edit</span>
+                                                </button>
+                                                <button className="p-1 text-slate-400 hover:text-rose-500">
+                                                    <span className="material-icons text-sm">delete</span>
+                                                </button>
                                             </div>
                                         </div>
+
+                                        {/* Citations */}
+                                        {event.citations && event.citations.length > 0 && (
+                                            <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-700">
+                                                <p className="text-xs font-semibold text-slate-500 mb-2">Citations:</p>
+                                                <div className="space-y-1">
+                                                    {event.citations.map((citation, idx) => (
+                                                        <div key={idx} className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-2">
+                                                            <span className="material-icons text-xs">description</span>
+                                                            <span>{citation.document?.fileName || 'Document'} - Page {citation.pageNumber}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
-                                    <div className="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-[#1f3b61] rounded-full border-4 border-white dark:border-[#14181e] ring-4 ring-[#1f3b61]/10"></div>
-                                    <div className="w-1/2 pl-10"></div>
                                 </div>
                             ))}
-
-                            {/* Add New Event */}
-                            <div className="flex justify-center pt-8">
-                                <button className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:border-[#1f3b61] hover:text-[#1f3b61] transition-all">
-                                    <span className="material-icons">add_circle_outline</span>
-                                    <span className="font-semibold text-sm">Add New Event to Timeline</span>
-                                </button>
-                            </div>
                         </div>
                     </div>
-                </section>
-
-                {/* Right Edit Panel */}
-                <aside className="w-96 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-[#14181e]/30 p-6 overflow-y-auto">
-                    <div className="flex items-center justify-between mb-6">
-                        <h2 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span className="material-icons text-[#1f3b61]">edit_note</span>
-                            Edit Event Details
-                        </h2>
-                        <button className="text-slate-400 hover:text-red-500">
-                            <span className="material-icons">delete_outline</span>
-                        </button>
-                    </div>
-                    <div className="space-y-5">
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                                Event Title
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                defaultValue="Diagnostic CT Scan"
-                            />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Date</label>
-                                <div className="relative">
-                                    <span className="material-icons absolute left-3 top-2.5 text-xs text-slate-400">calendar_today</span>
-                                    <input
-                                        type="text"
-                                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-[#1f3b61]/20"
-                                        defaultValue="10/14/2023"
-                                    />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Time</label>
-                                <div className="relative">
-                                    <span className="material-icons absolute left-3 top-2.5 text-xs text-slate-400">schedule</span>
-                                    <input
-                                        type="text"
-                                        className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-[#1f3b61]/20"
-                                        defaultValue="11:15 AM"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                                Narrative Description
-                            </label>
-                            <textarea
-                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm leading-relaxed focus:ring-2 focus:ring-[#1f3b61]/20"
-                                rows="5"
-                                defaultValue="CT Imaging confirmed appendicitis with possible perforation. Appendicolith noted in the base of the appendix. No free air detected. Prep for surgical intervention started immediately per protocol."
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">
-                                Facility / Provider
-                            </label>
-                            <div className="relative">
-                                <span className="material-icons absolute left-3 top-2.5 text-xs text-slate-400">location_on</span>
-                                <input
-                                    type="text"
-                                    className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-[#1f3b61]/20"
-                                    defaultValue="St. Jude Memorial Hospital - Radiology Dept"
-                                />
-                            </div>
-                        </div>
-                        <div className="bg-[#1f3b61]/5 dark:bg-[#1f3b61]/20 border border-[#1f3b61]/20 rounded-xl p-4">
-                            <label className="block text-xs font-bold text-[#1f3b61] dark:text-blue-400 uppercase tracking-widest mb-3">
-                                Source Citation
-                            </label>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex-1">
-                                        <label className="text-[10px] text-slate-500 mb-1 block">Document ID</label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-xs"
-                                            defaultValue="BATES_00452"
-                                        />
-                                    </div>
-                                    <div className="w-20">
-                                        <label className="text-[10px] text-slate-500 mb-1 block">Page</label>
-                                        <input
-                                            type="text"
-                                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-xs"
-                                            defaultValue="42"
-                                        />
-                                    </div>
-                                </div>
-                                <button className="w-full py-2 bg-white dark:bg-slate-800 border border-[#1f3b61]/30 text-[#1f3b61] dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-[#1f3b61] hover:text-white transition-colors">
-                                    View Source Image
-                                </button>
-                            </div>
-                        </div>
-                        <div className="pt-6 flex gap-3">
-                            <button className="flex-1 py-2.5 bg-[#1f3b61] text-white rounded-lg font-semibold text-sm shadow-lg shadow-[#1f3b61]/20">
-                                Save Changes
-                            </button>
-                            <button className="px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-                </aside>
-            </main>
-
-            {/* Overlay Hint */}
-            <div className="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-slate-900 text-white rounded-full shadow-2xl z-50">
-                <span className="text-xs font-medium opacity-80">
-                    Shortcut: Press <kbd className="px-1.5 py-0.5 bg-slate-700 rounded text-[10px]">N</kbd> for New Event
-                </span>
-                <div className="w-px h-4 bg-slate-700 mx-2"></div>
-                <button className="flex items-center gap-2 hover:text-blue-400 transition-colors">
-                    <span className="material-icons text-sm">help_outline</span>
-                    <span className="text-xs font-medium">Quick Guide</span>
-                </button>
+                )}
             </div>
+
+            {/* Add Event Modal (Simple) */}
+            {showAddEvent && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-2xl w-full mx-4">
+                        <h2 className="text-xl font-bold mb-4">Add Timeline Event</h2>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.target);
+                            handleAddEvent({
+                                date: formData.get('date'),
+                                time: formData.get('time'),
+                                category: formData.get('category'),
+                                title: formData.get('title'),
+                                description: formData.get('description'),
+                                provider: {
+                                    name: formData.get('providerName'),
+                                    facility: formData.get('facility')
+                                }
+                            });
+                        }}>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <input type="date" name="date" required className="px-3 py-2 border rounded-lg" />
+                                <input type="time" name="time" className="px-3 py-2 border rounded-lg" />
+                            </div>
+                            <select name="category" required className="w-full px-3 py-2 border rounded-lg mb-4">
+                                <option value="">Select Category</option>
+                                <option value="treatment">Treatment</option>
+                                <option value="medication">Medication</option>
+                                <option value="lab">Lab</option>
+                                <option value="imaging">Imaging</option>
+                                <option value="consultation">Consultation</option>
+                                <option value="procedure">Procedure</option>
+                                <option value="symptom">Symptom</option>
+                            </select>
+                            <input type="text" name="title" required placeholder="Event Title" className="w-full px-3 py-2 border rounded-lg mb-4" />
+                            <textarea name="description" placeholder="Description" className="w-full px-3 py-2 border rounded-lg mb-4" rows="3"></textarea>
+                            <input type="text" name="providerName" placeholder="Provider Name" className="w-full px-3 py-2 border rounded-lg mb-4" />
+                            <input type="text" name="facility" placeholder="Facility" className="w-full px-3 py-2 border rounded-lg mb-4" />
+                            <div className="flex gap-3">
+                                <button type="submit" className="flex-1 bg-[#0891b2] text-white py-2 rounded-lg font-semibold">Add Event</button>
+                                <button type="button" onClick={() => setShowAddEvent(false)} className="px-6 py-2 border rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

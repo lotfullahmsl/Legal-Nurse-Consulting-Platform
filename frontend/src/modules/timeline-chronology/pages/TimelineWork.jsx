@@ -1,77 +1,39 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import timelineService from '../../../services/timeline.service';
 
 const TimelineWork = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState('Days Remaining');
+    const [workItems, setWorkItems] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        fetchWorkQueue();
+    }, []);
+
+    const fetchWorkQueue = async () => {
+        try {
+            setLoading(true);
+            const data = await timelineService.getWorkQueue();
+            setWorkItems(data || []);
+        } catch (error) {
+            console.error('Failed to load work queue:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleOpenTimeline = (caseId) => {
+        navigate(`/timeline-builder/${caseId}`);
+    };
 
     const stats = [
-        { label: 'Active Chronologies', value: '12', badge: '+2 this week', badgeColor: 'emerald' },
+        { label: 'Active Chronologies', value: workItems.length.toString(), badge: '+2 this week', badgeColor: 'emerald' },
         { label: 'Average Progress', value: '64%', progress: 64 },
         { label: 'Next Deadline', value: '2 Days', valueColor: 'amber', badge: 'Case #8921' },
         { label: 'Pending Review', value: '4', icon: 'rate_review' }
-    ];
-
-    const workItems = [
-        {
-            id: '2024-MR-8921',
-            patient: 'J.D.',
-            type: 'Medical Malpractice',
-            firm: 'Hastings & Partners',
-            progress: 82,
-            dueIn: '2 Days',
-            dueColor: 'amber',
-            status: 'In Review',
-            statusColor: 'blue',
-            icon: 'medical_information'
-        },
-        {
-            id: '2024-MR-9043',
-            patient: 'S.R.',
-            type: 'Personal Injury',
-            firm: 'Liberty Law Group',
-            progress: 45,
-            dueIn: '5 Days',
-            dueColor: 'slate',
-            status: 'Processing',
-            statusColor: 'slate',
-            icon: 'folder'
-        },
-        {
-            id: '2024-MR-7721',
-            patient: 'L.K.',
-            type: 'Nursing Home Neglect',
-            firm: 'Miller & Sons',
-            progress: 12,
-            dueIn: 'Tomorrow',
-            dueColor: 'rose',
-            status: 'Missing Records',
-            statusColor: 'rose',
-            icon: 'warning'
-        },
-        {
-            id: '2024-MR-9112',
-            patient: 'M.A.',
-            type: 'Surgical Complications',
-            firm: 'The Davis Group',
-            progress: 95,
-            dueIn: '8 Days',
-            dueColor: 'slate',
-            status: 'Finalizing',
-            statusColor: 'emerald',
-            icon: 'verified'
-        },
-        {
-            id: '2024-MR-8500',
-            patient: 'K.W.',
-            type: 'Product Liability',
-            firm: 'Hastings & Partners',
-            progress: 30,
-            dueIn: '12 Days',
-            dueColor: 'slate',
-            status: 'On Hold',
-            statusColor: 'amber',
-            icon: 'pause_circle'
-        }
     ];
 
     const getStatusColor = (color) => {
@@ -217,59 +179,72 @@ const TimelineWork = () => {
 
                 {/* Work List */}
                 <section className="flex-1 overflow-y-auto px-8 pb-8">
-                    <div className="flex flex-col gap-3">
-                        {workItems.map((item, idx) => (
-                            <div
-                                key={idx}
-                                className={`group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200 ${item.status === 'On Hold' ? 'opacity-80' : ''}`}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-6 flex-1">
-                                        <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
-                                            <span className="material-icons">{item.icon}</span>
-                                        </div>
-                                        <div className="min-w-[200px]">
-                                            <h3 className="font-bold text-slate-900 dark:text-white">Case ID: {item.id}</h3>
-                                            <p className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                                                <span className="font-semibold text-slate-500">Patient: {item.patient}</span>
-                                                <span>•</span>
-                                                <span>{item.type}</span>
-                                            </p>
-                                        </div>
-                                        <div className="hidden xl:block min-w-[150px]">
-                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
-                                            <p className="text-sm font-medium">{item.firm}</p>
-                                        </div>
-                                        <div className="flex-1 max-w-xs mx-4">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
-                                                <span className="text-xs font-bold text-primary">{item.progress}%</span>
+                    {loading ? (
+                        <div className="flex items-center justify-center h-64">
+                            <div className="text-center">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                                <p className="mt-4 text-slate-500">Loading work queue...</p>
+                            </div>
+                        </div>
+                    ) : workItems.length > 0 ? (
+                        <div className="flex-1 gap-3">
+                            {workItems.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    className={`group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200 ${item.status === 'On Hold' ? 'opacity-80' : ''}`}
+                                >
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-6 flex-1">
+                                            <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+                                                <span className="material-icons">{item.icon}</span>
                                             </div>
-                                            <div className="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
-                                                <div
-                                                    className={`bg-primary h-full rounded-full ${item.status === 'On Hold' ? 'opacity-50' : ''}`}
-                                                    style={{ width: `${item.progress}%` }}
-                                                ></div>
+                                            <div className="min-w-[200px]">
+                                                <h3 className="font-bold text-slate-900 dark:text-white">Case ID: {item.id}</h3>
+                                                <p className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                                                    <span className="font-semibold text-slate-500">Patient: {item.patient}</span>
+                                                    <span>•</span>
+                                                    <span>{item.type}</span>
+                                                </p>
+                                            </div>
+                                            <div className="hidden xl:block min-w-[150px]">
+                                                <p className="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+                                                <p className="text-sm font-medium">{item.firm}</p>
+                                            </div>
+                                            <div className="flex-1 max-w-xs mx-4">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <span className="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+                                                    <span className="text-xs font-bold text-primary">{item.progress}%</span>
+                                                </div>
+                                                <div className="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+                                                    <div
+                                                        className={`bg-primary h-full rounded-full ${item.status === 'On Hold' ? 'opacity-50' : ''}`}
+                                                        style={{ width: `${item.progress}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="px-6 text-center">
+                                                <p className="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+                                                <p className={`text-sm font-bold ${getDueColor(item.dueColor)}`}>{item.dueIn}</p>
                                             </div>
                                         </div>
-                                        <div className="px-6 text-center">
-                                            <p className="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
-                                            <p className={`text-sm font-bold ${getDueColor(item.dueColor)}`}>{item.dueIn}</p>
+                                        <div className="flex items-center gap-4">
+                                            <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.statusColor)}`}>
+                                                {item.status}
+                                            </span>
+                                            <button onClick={() => handleOpenTimeline(item.case)} className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+                                                <span className="material-icons text-sm">construction</span>
+                                                Open Timeline Builder
+                                            </button>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-4">
-                                        <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusColor(item.statusColor)}`}>
-                                            {item.status}
-                                        </span>
-                                        <button className="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
-                                            <span className="material-icons text-sm">construction</span>
-                                            Open Timeline Builder
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-12 text-slate-500">
+                            No timeline work items in queue
+                        </div>
+                    )}
                 </section>
 
                 {/* Footer / Workspace Info */}

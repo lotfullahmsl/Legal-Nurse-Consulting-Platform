@@ -1,16 +1,55 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import caseService from '../../../services/case.service';
+import fileShareService from '../../../services/fileShare.service';
+
 const ClientCaseView = () => {
+    const { id } = useParams();
+    const [caseData, setCaseData] = useState(null);
+    const [documents, setDocuments] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (id) {
+            fetchCaseData();
+            fetchDocuments();
+        }
+    }, [id]);
+
+    const fetchCaseData = async () => {
+        try {
+            const data = await caseService.getCaseById(id);
+            setCaseData(data);
+        } catch (error) {
+            console.error('Failed to load case:', error);
+        }
+    };
+
+    const fetchDocuments = async () => {
+        try {
+            setLoading(true);
+            const data = await fileShareService.getSharedFiles(id);
+            setDocuments(data || []);
+        } catch (error) {
+            console.error('Failed to load documents:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDownload = async (fileId) => {
+        try {
+            await fileShareService.downloadFile(fileId);
+        } catch (error) {
+            alert('Failed to download file: ' + error.message);
+        }
+    };
     const progressSteps = [
         { label: 'Intake', date: 'Aug 12', completed: true, icon: 'check' },
         { label: 'Record Retrieval', date: 'Aug 28', completed: true, icon: 'check' },
         { label: 'Medical Review', date: 'In Progress', completed: false, active: true, icon: 'pulse' },
         { label: 'Drafting Report', date: 'Pending', completed: false, icon: '4' },
         { label: 'Finalized', date: 'Pending', completed: false, icon: 'flag' }
-    ];
-
-    const documents = [
-        { name: 'Medical_Summary_Initial_v2.pdf', uploader: 'Dr. Rodriguez', size: '4.2 MB', date: 'Oct 12, 2023', icon: 'picture_as_pdf', color: 'red' },
-        { name: 'Surgery_Timeline_Draft.docx', uploader: 'System', size: '1.1 MB', date: 'Oct 10, 2023', icon: 'description', color: 'blue' },
-        { name: 'Billing_Records_Audit.xlsx', uploader: 'Intake Team', size: '850 KB', date: 'Oct 08, 2023', icon: 'table_view', color: 'emerald' }
     ];
 
     const messages = [
@@ -85,8 +124,8 @@ const ClientCaseView = () => {
                                 <li className="text-slate-500">Case #ML-88291</li>
                             </ol>
                         </nav>
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Sarah Jenkins v. Regional Hospital</h1>
-                        <p className="text-slate-500 mt-1">Lead Medical Consultant: <span className="text-slate-900 dark:text-slate-300 font-medium">Dr. Elena Rodriguez, RN</span></p>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">{caseData?.title || 'Loading...'}</h1>
+                        <p className="text-slate-500 mt-1">Case Number: <span className="text-slate-900 dark:text-slate-300 font-medium">{caseData?.caseNumber || 'N/A'}</span></p>
                     </div>
                     <div className="flex gap-3">
                         <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-slate-50 transition-colors">
@@ -150,23 +189,32 @@ const ClientCaseView = () => {
                                 <button className="text-primary text-sm font-semibold hover:underline">Upload New</button>
                             </div>
                             <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                                {documents.map((doc, idx) => (
-                                    <div key={idx} className="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 bg-${doc.color}-50 dark:bg-${doc.color}-900/20 text-${doc.color}-500 rounded flex items-center justify-center`}>
-                                                <span className="material-icons">{doc.icon}</span>
-                                            </div>
-                                            <div>
-                                                <p className="font-medium text-sm">{doc.name}</p>
-                                                <p className="text-xs text-slate-400">Uploaded by {doc.uploader} • {doc.size} • {doc.date}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button className="p-2 text-slate-400 hover:text-primary"><span className="material-icons">download</span></button>
-                                            <button className="p-2 text-slate-400 hover:text-primary"><span className="material-icons">more_vert</span></button>
-                                        </div>
+                                {loading ? (
+                                    <div className="px-6 py-12 text-center text-slate-500">
+                                        Loading documents...
                                     </div>
-                                ))}
+                                ) : documents.length > 0 ? (
+                                    documents.map((doc, idx) => (
+                                        <div key={idx} className="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center justify-center">
+                                                    <span className="material-icons">description</span>
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium text-sm">{doc.fileName}</p>
+                                                    <p className="text-xs text-slate-400">Shared on {new Date(doc.createdAt).toLocaleDateString()}</p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <button onClick={() => handleDownload(doc._id)} className="p-2 text-slate-400 hover:text-primary"><span className="material-icons">download</span></button>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-6 py-12 text-center text-slate-500">
+                                        No documents shared yet
+                                    </div>
+                                )}
                             </div>
                             <div className="p-4 bg-slate-50 dark:bg-slate-800/30 text-center">
                                 <button className="text-sm font-medium text-slate-500 hover:text-primary">View All 12 Documents</button>

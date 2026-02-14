@@ -22,6 +22,7 @@ const medicalRecordRoutes = require('./modules/medical-records/routes/medicalRec
 const caseAnalysisRoutes = require('./modules/case-analysis/routes/caseAnalysis.routes');
 const searchRoutes = require('./modules/ocr-search/routes/search.routes');
 const fileShareRoutes = require('./modules/file-sharing-portal/routes/fileShare.routes');
+const timelineRoutes = require('./modules/timeline-chronology/routes/timeline.routes');
 
 // Initialize app
 const app = express();
@@ -92,6 +93,7 @@ app.use('/api/medical-records', medicalRecordRoutes);
 app.use('/api/case-analysis', caseAnalysisRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/files', fileShareRoutes);
+app.use('/api/timelines', timelineRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,15 +1,27 @@
 import api from './api.service';
 
 const caseAnalysisService = {
-    // Get case analysis
-    getAnalysis: async (caseId) => {
-        const response = await api.get(`/case-analysis/${caseId}`);
+    // Get case analysis by case ID
+    getAnalysisByCase: async (caseId) => {
+        const response = await api.get(`/case-analysis/case/${caseId}`);
+        return response.data;
+    },
+
+    // Get case analysis by ID
+    getAnalysis: async (analysisId) => {
+        const response = await api.get(`/case-analysis/${analysisId}`);
         return response.data;
     },
 
     // Create or update analysis
     upsertAnalysis: async (analysisData) => {
         const response = await api.post('/case-analysis', analysisData);
+        return response.data;
+    },
+
+    // Get damages by case ID
+    getDamagesByCase: async (caseId) => {
+        const response = await api.get(`/case-analysis/case/${caseId}/damages`);
         return response.data;
     },
 

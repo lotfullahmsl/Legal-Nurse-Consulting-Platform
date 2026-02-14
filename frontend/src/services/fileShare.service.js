@@ -1,9 +1,9 @@
 import api from './api.service';
 
 const fileShareService = {
-    // Get shared files
-    getSharedFiles: async () => {
-        const response = await api.get('/files/shared');
+    // Get shared files by case
+    getSharedFiles: async (caseId) => {
+        const response = await api.get(`/files/shared${caseId ? `?case=${caseId}` : ''}`);
         return response.data;
     },
 
@@ -20,9 +20,22 @@ const fileShareService = {
     },
 
     // Download shared file
-    downloadSharedFile: async (id) => {
-        const response = await api.post(`/files/${id}/download`);
+    downloadFile: async (id) => {
+        const response = await api.post(`/files/${id}/download`, {}, { responseType: 'blob' });
+        // Create download link
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', 'file');
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
         return response.data;
+    },
+
+    // Download shared file (alias)
+    downloadSharedFile: async (id) => {
+        return fileShareService.downloadFile(id);
     },
 
     // Revoke access

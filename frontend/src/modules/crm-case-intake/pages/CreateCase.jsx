@@ -1,260 +1,179 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import caseService from '../../../services/case.service';
+import clientService from '../../../services/client.service';
+import lawFirmService from '../../../services/lawFirm.service';
 
 const CreateCase = () => {
     const navigate = useNavigate();
-    const [step, setStep] = useState(1);
+    const [loading, setLoading] = useState(false);
+    const [clients, setClients] = useState([]);
+    const [lawFirms, setLawFirms] = useState([]);
     const [formData, setFormData] = useState({
-        caseTitle: '',
-        caseType: '',
-        clientName: '',
+        caseName: '',
+        caseType: 'medical-malpractice',
+        client: '',
         lawFirm: '',
-        attorney: '',
         description: '',
+        incidentDate: '',
+        priority: 'medium'
     });
 
-    const steps = [
-        { number: 1, title: 'Basic Info', icon: 'info' },
-        { number: 2, title: 'Client Details', icon: 'person' },
-        { number: 3, title: 'Assignment', icon: 'assignment_ind' },
-        { number: 4, title: 'Review', icon: 'check_circle' },
-    ];
+    useEffect(() => {
+        fetchClients();
+        fetchLawFirms();
+    }, []);
 
-    const handleNext = () => {
-        if (step < 4) setStep(step + 1);
+    const fetchClients = async () => {
+        try {
+            const response = await clientService.getAllClients({ limit: 100 });
+            setClients(response.data.clients || []);
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+        }
     };
 
-    const handleBack = () => {
-        if (step > 1) setStep(step - 1);
+    const fetchLawFirms = async () => {
+        try {
+            const response = await lawFirmService.getAllLawFirms({ limit: 100 });
+            setLawFirms(response.data.lawFirms || []);
+        } catch (error) {
+            console.error('Error fetching law firms:', error);
+        }
     };
 
-    const handleSubmit = () => {
-        console.log('Creating case:', formData);
-        navigate('/cases');
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            await caseService.createCase(formData);
+            alert('Case created successfully!');
+            navigate('/cases');
+        } catch (error) {
+            alert('Failed to create case');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="max-w-4xl mx-auto">
             <header className="mb-8">
-                <h1 className="text-2xl font-bold text-[#1f3b61] dark:text-white mb-2">Create New Case</h1>
-                <p className="text-slate-500">Follow the steps below to create a new legal case</p>
+                <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Create New Case</h1>
+                <p className="text-sm text-slate-500 mt-1">Enter case details to begin intake process</p>
             </header>
 
-            {/* Stepper */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between">
-                    {steps.map((s, index) => (
-                        <div key={s.number} className="flex items-center flex-1">
-                            <div className="flex flex-col items-center">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${step >= s.number ? 'bg-[#1f3b61] text-white' : 'bg-slate-200 text-slate-400'
-                                    }`}>
-                                    <span className="material-icons">{s.icon}</span>
-                                </div>
-                                <p className={`text-xs mt-2 font-medium ${step >= s.number ? 'text-[#1f3b61]' : 'text-slate-400'}`}>
-                                    {s.title}
-                                </p>
-                            </div>
-                            {index < steps.length - 1 && (
-                                <div className={`flex-1 h-1 mx-4 ${step > s.number ? 'bg-[#1f3b61]' : 'bg-slate-200'}`}></div>
-                            )}
-                        </div>
-                    ))}
+            <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-800 rounded-xl border p-6 space-y-6">
+                <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Case Name *</label>
+                    <input
+                        type="text"
+                        required
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                        value={formData.caseName}
+                        onChange={(e) => setFormData({ ...formData, caseName: e.target.value })}
+                    />
                 </div>
-            </div>
 
-            {/* Form Content */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-8">
-                {step === 1 && (
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold mb-6">Basic Information</h2>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Case Title *
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                placeholder="Enter case title"
-                                value={formData.caseTitle}
-                                onChange={(e) => setFormData({ ...formData, caseTitle: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Case Type *
-                            </label>
-                            <select
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                value={formData.caseType}
-                                onChange={(e) => setFormData({ ...formData, caseType: e.target.value })}
-                            >
-                                <option value="">Select case type</option>
-                                <option value="malpractice">Medical Malpractice</option>
-                                <option value="injury">Personal Injury</option>
-                                <option value="tort">Mass Tort</option>
-                                <option value="liability">Product Liability</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Description
-                            </label>
-                            <textarea
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                rows="4"
-                                placeholder="Enter case description"
-                                value={formData.description}
-                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            ></textarea>
-                        </div>
-                    </div>
-                )}
-
-                {step === 2 && (
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold mb-6">Client Details</h2>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Client Name *
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                placeholder="Enter client name"
-                                value={formData.clientName}
-                                onChange={(e) => setFormData({ ...formData, clientName: e.target.value })}
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Law Firm *
-                            </label>
-                            <input
-                                type="text"
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                placeholder="Enter law firm name"
-                                value={formData.lawFirm}
-                                onChange={(e) => setFormData({ ...formData, lawFirm: e.target.value })}
-                            />
-                        </div>
-                        <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                            <div className="flex items-start gap-3">
-                                <span className="material-icons text-blue-600">info</span>
-                                <div>
-                                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-300">Conflict Check</p>
-                                    <p className="text-xs text-blue-700 dark:text-blue-400 mt-1">
-                                        No conflicts found for this client and law firm combination.
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold mb-6">Assignment & Engagement</h2>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Assigned Attorney *
-                            </label>
-                            <select
-                                className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1f3b61]/20 focus:border-[#1f3b61]"
-                                value={formData.attorney}
-                                onChange={(e) => setFormData({ ...formData, attorney: e.target.value })}
-                            >
-                                <option value="">Select attorney</option>
-                                <option value="david">David Richardson</option>
-                                <option value="elena">Elena Rodriguez</option>
-                                <option value="michael">Michael Chen</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
-                                Billing Type
-                            </label>
-                            <div className="space-y-2">
-                                <label className="flex items-center">
-                                    <input type="radio" name="billing" className="mr-2" defaultChecked />
-                                    <span className="text-sm">Hourly Rate</span>
-                                </label>
-                                <label className="flex items-center">
-                                    <input type="radio" name="billing" className="mr-2" />
-                                    <span className="text-sm">Flat Fee</span>
-                                </label>
-                                <label className="flex items-center">
-                                    <input type="radio" name="billing" className="mr-2" />
-                                    <span className="text-sm">Contingency</span>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {step === 4 && (
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold mb-6">Review & Confirm</h2>
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Case Title</p>
-                                    <p className="text-sm font-semibold mt-1">{formData.caseTitle || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Case Type</p>
-                                    <p className="text-sm font-semibold mt-1">{formData.caseType || 'Not selected'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Client Name</p>
-                                    <p className="text-sm font-semibold mt-1">{formData.clientName || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Law Firm</p>
-                                    <p className="text-sm font-semibold mt-1">{formData.lawFirm || 'Not provided'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-slate-500 uppercase font-bold">Attorney</p>
-                                    <p className="text-sm font-semibold mt-1">{formData.attorney || 'Not assigned'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {/* Navigation Buttons */}
-                <div className="flex justify-between mt-8 pt-6 border-t border-slate-200 dark:border-slate-800">
-                    <button
-                        onClick={handleBack}
-                        disabled={step === 1}
-                        className="px-6 py-2 border-2 border-slate-300 text-slate-700 rounded-lg font-medium hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Back
-                    </button>
-                    <div className="flex gap-3">
-                        <button
-                            onClick={() => navigate('/cases')}
-                            className="px-6 py-2 text-slate-600 hover:text-slate-800"
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Case Type *</label>
+                        <select
+                            required
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                            value={formData.caseType}
+                            onChange={(e) => setFormData({ ...formData, caseType: e.target.value })}
                         >
-                            Cancel
-                        </button>
-                        {step < 4 ? (
-                            <button
-                                onClick={handleNext}
-                                className="px-6 py-2 bg-[#1f3b61] text-white rounded-lg font-medium hover:bg-[#1f3b61]/90"
-                            >
-                                Next Step
-                            </button>
-                        ) : (
-                            <button
-                                onClick={handleSubmit}
-                                className="px-6 py-2 bg-[#0891b2] text-white rounded-lg font-medium hover:bg-teal-700"
-                            >
-                                Create Case
-                            </button>
-                        )}
+                            <option value="medical-malpractice">Medical Malpractice</option>
+                            <option value="personal-injury">Personal Injury</option>
+                            <option value="workers-compensation">Workers Compensation</option>
+                            <option value="product-liability">Product Liability</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Priority</label>
+                        <select
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                            value={formData.priority}
+                            onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                        >
+                            <option value="low">Low</option>
+                            <option value="medium">Medium</option>
+                            <option value="high">High</option>
+                            <option value="urgent">Urgent</option>
+                        </select>
                     </div>
                 </div>
-            </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Client *</label>
+                        <select
+                            required
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                            value={formData.client}
+                            onChange={(e) => setFormData({ ...formData, client: e.target.value })}
+                        >
+                            <option value="">Select Client</option>
+                            {clients.map(client => (
+                                <option key={client._id} value={client._id}>{client.fullName}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Law Firm *</label>
+                        <select
+                            required
+                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                            value={formData.lawFirm}
+                            onChange={(e) => setFormData({ ...formData, lawFirm: e.target.value })}
+                        >
+                            <option value="">Select Law Firm</option>
+                            {lawFirms.map(firm => (
+                                <option key={firm._id} value={firm._id}>{firm.firmName}</option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Incident Date</label>
+                    <input
+                        type="date"
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                        value={formData.incidentDate}
+                        onChange={(e) => setFormData({ ...formData, incidentDate: e.target.value })}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Description</label>
+                    <textarea
+                        rows="4"
+                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    ></textarea>
+                </div>
+
+                <div className="flex gap-3">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="flex-1 bg-[#0891b2] hover:bg-teal-700 text-white font-semibold py-3 rounded-lg disabled:opacity-50"
+                    >
+                        {loading ? 'Creating...' : 'Create Case'}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => navigate('/cases')}
+                        className="px-6 py-3 border rounded-lg font-semibold"
+                    >
+                        Cancel
+                    </button>
+                </div>
+            </form>
         </div>
     );
 };
