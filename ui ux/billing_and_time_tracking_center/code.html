@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Billing and Time Tracking Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f3b61",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14181e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-800 dark:text-slate-200 min-h-screen font-display">
+<!-- Sidebar Navigation -->
+<aside class="fixed inset-y-0 left-0 w-64 bg-primary text-white hidden lg:flex flex-col z-50">
+<div class="p-6 flex items-center gap-3">
+<div class="w-8 h-8 bg-white/20 rounded flex items-center justify-center">
+<span class="material-icons text-white">balance</span>
+</div>
+<span class="font-bold text-xl tracking-tight">LNC Direct</span>
+</div>
+<nav class="flex-1 px-4 space-y-1 mt-4">
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded transition" href="#">
+<span class="material-icons text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded transition" href="#">
+<span class="material-icons text-[20px]">folder</span>
+<span>Cases</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-white/10 text-white rounded transition" href="#">
+<span class="material-icons text-[20px]">payments</span>
+<span>Billing &amp; Time</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded transition" href="#">
+<span class="material-icons text-[20px]">description</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 hover:text-white rounded transition" href="#">
+<span class="material-icons text-[20px]">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="p-4 bg-white/5 border-t border-white/10">
+<div class="flex items-center gap-3 px-2">
+<div class="w-10 h-10 rounded-full bg-primary-light overflow-hidden border border-white/20">
+<img class="w-full h-full object-cover" data-alt="Professional profile headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDczbFaMl828U_RdQEo69xGM8jE8w6u-5nqQtFHzI8Li9YDvvWQVXWapv5CtedUmWFlnFbcvXcb6WMQ3SIJ7Gm-e2WEN20e8aYxTETIbipALcJMRX3i0iU2bMlOXmZX69Fnb4pz9H9qGv-Ee3FlL_VjK2sLQ58YXmD5Q1Omy7XjmPyOgiybvAGqMdBwPl0uEOSzXiGLboO3r9w8R-AFbtk8YsLGWEmIS1yv7mpPFif3G7v1XxxQ5Zf2zuxP5IlTUV3vllOu4GaEWk0"/>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-semibold truncate">Sarah Johnson, RN</p>
+<p class="text-xs text-white/50 truncate">Senior Consultant</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="lg:ml-64 p-6 lg:p-10">
+<!-- Header & Start Timer Widget -->
+<header class="mb-8">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+<div>
+<h1 class="text-2xl font-bold text-primary dark:text-white">Billing &amp; Time Tracking</h1>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Track billable hours and manage client invoices securely.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-50 transition">
+<span class="material-icons text-sm">download</span> Export CSV
+                    </button>
+<button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition">
+<span class="material-icons text-sm">add</span> Manual Entry
+                    </button>
+</div>
+</div>
+<!-- Active Timer Widget -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+<div class="md:col-span-4">
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Active Project / Case</label>
+<div class="relative">
+<select class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary">
+<option>Case #2023-884 - Miller vs. General Hospital</option>
+<option>Case #2024-112 - Estate of Thompson</option>
+<option>Case #2024-045 - Rivera Workers Comp</option>
+</select>
+</div>
+</div>
+<div class="md:col-span-3">
+<label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Task Category</label>
+<select class="w-full bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-primary focus:border-primary">
+<option>Medical Record Review</option>
+<option>Deposition Preparation</option>
+<option>Expert Testimony</option>
+<option>Correspondence</option>
+</select>
+</div>
+<div class="md:col-span-2 flex flex-col items-center justify-center">
+<span class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">Running Time</span>
+<div class="text-3xl font-mono font-bold text-primary dark:text-white tabular-nums">
+                            01:42:15
+                        </div>
+</div>
+<div class="md:col-span-3 flex items-center gap-3">
+<button class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+<span class="material-icons">stop</span> Stop Timer
+                        </button>
+<button class="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
+<span class="material-icons">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<!-- Recent Entries Table -->
+<div class="xl:col-span-2 space-y-6">
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<div class="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+<h3 class="font-bold text-slate-800 dark:text-white">Recent Time Entries</h3>
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-9 pr-4 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-primary focus:border-primary" placeholder="Search entries..." type="text"/>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-slate-900/50 text-slate-500 dark:text-slate-400 text-xs font-semibold uppercase">
+<th class="px-6 py-4">Date &amp; Consultant</th>
+<th class="px-6 py-4">Matter / Description</th>
+<th class="px-6 py-4 text-center">Duration</th>
+<th class="px-6 py-4 text-center">Billable</th>
+<th class="px-6 py-4 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<td class="px-6 py-4">
+<div class="text-sm font-medium">May 24, 2024</div>
+<div class="text-xs text-slate-400">Sarah Johnson</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold truncate max-w-[200px]">Miller vs. General Hospital</div>
+<div class="text-xs text-slate-500">Initial review of orthopedic surgery logs</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="text-sm font-mono font-medium">04.5h</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition"><span class="material-icons text-xl">edit</span></button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<td class="px-6 py-4">
+<div class="text-sm font-medium">May 23, 2024</div>
+<div class="text-xs text-slate-400">Robert Chen</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold truncate max-w-[200px]">Estate of Thompson</div>
+<div class="text-xs text-slate-500">Toxicology report analysis and summary</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="text-sm font-mono font-medium">02.2h</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition"><span class="material-icons text-xl">edit</span></button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<td class="px-6 py-4">
+<div class="text-sm font-medium">May 23, 2024</div>
+<div class="text-xs text-slate-400">Sarah Johnson</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold truncate max-w-[200px]">General Admin</div>
+<div class="text-xs text-slate-500">Internal consultant meeting</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="text-sm font-mono font-medium">01.0h</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<div class="w-10 h-5 bg-slate-200 dark:bg-slate-600 rounded-full relative cursor-pointer">
+<div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition"><span class="material-icons text-xl">edit</span></button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<td class="px-6 py-4">
+<div class="text-sm font-medium">May 22, 2024</div>
+<div class="text-xs text-slate-400">Sarah Johnson</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm font-semibold truncate max-w-[200px]">Miller vs. General Hospital</div>
+<div class="text-xs text-slate-500">Chronological timeline compilation</div>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="text-sm font-mono font-medium">05.8h</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<div class="w-10 h-5 bg-primary/20 rounded-full relative cursor-pointer">
+<div class="absolute right-0.5 top-0.5 w-4 h-4 bg-primary rounded-full shadow-sm"></div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="text-slate-400 hover:text-primary transition"><span class="material-icons text-xl">edit</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-slate-100 dark:border-slate-700 flex justify-center">
+<button class="text-sm font-semibold text-primary dark:text-slate-300 hover:underline">Load More Entries</button>
+</div>
+</div>
+</div>
+<!-- Financial Summary & Invoices -->
+<div class="space-y-6">
+<!-- Summary Card -->
+<div class="bg-primary rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
+<div class="relative z-10">
+<h4 class="text-white/70 text-sm font-medium mb-1 uppercase tracking-wider">Unbilled Amount</h4>
+<div class="text-3xl font-bold mb-4">$14,240.50</div>
+<div class="flex items-center gap-4">
+<div>
+<div class="text-xs text-white/60 mb-1">Billable Hours</div>
+<div class="text-lg font-semibold">48.2h</div>
+</div>
+<div class="w-px h-8 bg-white/20"></div>
+<div>
+<div class="text-xs text-white/60 mb-1">Current Rate (Avg)</div>
+<div class="text-lg font-semibold">$295/hr</div>
+</div>
+</div>
+</div>
+<div class="absolute -right-4 -bottom-4 opacity-10">
+<span class="material-icons text-8xl">account_balance_wallet</span>
+</div>
+</div>
+<!-- Invoice Management -->
+<div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+<div class="p-5 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+<h3 class="font-bold text-slate-800 dark:text-white">Recent Invoices</h3>
+<button class="text-primary dark:text-slate-300">
+<span class="material-icons">add_circle_outline</span>
+</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-700">
+<!-- Invoice 1 -->
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<div class="flex justify-between items-start mb-2">
+<div>
+<div class="text-sm font-bold">INV-2024-0012</div>
+<div class="text-xs text-slate-500">Sterling &amp; Assoc. Law</div>
+</div>
+<div class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] font-bold rounded uppercase">Paid</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-xs text-slate-400 italic">Paid on May 15</div>
+<div class="text-sm font-bold text-slate-800 dark:text-white">$3,420.00</div>
+</div>
+</div>
+<!-- Invoice 2 -->
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<div class="flex justify-between items-start mb-2">
+<div>
+<div class="text-sm font-bold">INV-2024-0015</div>
+<div class="text-xs text-slate-500">Rivera Legal Group</div>
+</div>
+<div class="px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-[10px] font-bold rounded uppercase">Overdue</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-xs text-red-500 font-medium italic">Due: May 01</div>
+<div class="text-sm font-bold text-slate-800 dark:text-white">$8,115.00</div>
+</div>
+</div>
+<!-- Invoice 3 -->
+<div class="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+<div class="flex justify-between items-start mb-2">
+<div>
+<div class="text-sm font-bold">INV-2024-0018</div>
+<div class="text-xs text-slate-500">Johnson &amp; Miller LLP</div>
+</div>
+<div class="px-2 py-1 bg-slate-100 dark:bg-slate-600/50 text-slate-600 dark:text-slate-300 text-[10px] font-bold rounded uppercase">Draft</div>
+</div>
+<div class="flex justify-between items-end">
+<div class="text-xs text-slate-400 italic">Last updated 2h ago</div>
+<div class="text-sm font-bold text-slate-800 dark:text-white">$1,250.00</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-900/50 text-center">
+<a class="text-xs font-bold text-primary dark:text-slate-400 uppercase tracking-wide hover:underline" href="#">View All Invoices</a>
+</div>
+</div>
+<!-- HIPAA Notice -->
+<div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/50 rounded-xl p-4 flex gap-3">
+<span class="material-icons text-amber-600 dark:text-amber-400">gpp_good</span>
+<div>
+<h5 class="text-sm font-bold text-amber-800 dark:text-amber-200">HIPAA Protected Environment</h5>
+<p class="text-xs text-amber-700 dark:text-amber-300 mt-1 leading-relaxed">Ensure all PHI is entered only in designated secure fields. Activity descriptions are encrypted at rest.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action for Mobile (Hidden on Desktop) -->
+<div class="lg:hidden fixed bottom-6 right-6">
+<button class="w-14 h-14 bg-primary text-white rounded-full shadow-xl flex items-center justify-center">
+<span class="material-icons">timer</span>
+</button>
+</div>
+</body></html>

@@ -1,0 +1,1 @@
+// Medical record card component

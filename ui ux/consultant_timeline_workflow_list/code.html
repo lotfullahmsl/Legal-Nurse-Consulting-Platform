@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Consultant Timeline Workflow List</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0891af",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101f22",
+                        "neutral-dark": "#1a2e32",
+                        "border-dark": "#2a3f43",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2a3f43;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex">
+<!-- Sidebar -->
+<aside class="w-20 bg-background-light dark:bg-neutral-dark border-r border-slate-200 dark:border-border-dark flex flex-col items-center py-6 gap-8">
+<div class="p-2 bg-primary rounded-lg shadow-lg shadow-primary/20">
+<span class="material-icons text-white text-3xl">history_edu</span>
+</div>
+<nav class="flex flex-col gap-6">
+<a class="group relative flex items-center justify-center p-3 bg-primary/10 text-primary rounded-xl transition-all duration-200" href="#">
+<span class="material-icons">view_list</span>
+<span class="absolute left-16 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">My Queue</span>
+</a>
+<a class="group relative flex items-center justify-center p-3 text-slate-400 hover:bg-slate-100 dark:hover:bg-border-dark rounded-xl transition-all duration-200" href="#">
+<span class="material-icons">task_alt</span>
+<span class="absolute left-16 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Completed</span>
+</a>
+<a class="group relative flex items-center justify-center p-3 text-slate-400 hover:bg-slate-100 dark:hover:bg-border-dark rounded-xl transition-all duration-200" href="#">
+<span class="material-icons">analytics</span>
+<span class="absolute left-16 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Analytics</span>
+</a>
+<div class="h-px w-8 bg-slate-200 dark:bg-border-dark"></div>
+<a class="group relative flex items-center justify-center p-3 text-slate-400 hover:bg-slate-100 dark:hover:bg-border-dark rounded-xl transition-all duration-200" href="#">
+<span class="material-icons">contact_support</span>
+<span class="absolute left-16 bg-primary text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Support</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-4">
+<div class="w-10 h-10 rounded-full border-2 border-primary/30 p-0.5">
+<img alt="Consultant Portrait" class="w-full h-full object-cover rounded-full" data-alt="Portrait of a professional female nurse consultant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0bsvi9-l194f4wdu7KOSGpuvM3U_U8dunkSL3EXXRF5giLPDOWr8CntDLq1S9MIQ8ZIU_ZX8VF0PtR3xms4G6gjSFRJ6-GM9V1zn1jsl6Aa6pBtsHb-1sOpba8hNWssIkFxnJUTC4tlp6HD6oM4D9FesvfOFToNS95xgVcGMRFWRrGrnrWP3X6puA3Z0aabvkk0JpfToI_SEpHHJw9NsvK3ZQBgfEQUu9r4y6Cq-xPuyB-IDkX4NTX4j5Le0l59f1KSrfuCrC-Js"/>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- Top Navigation / Security Header -->
+<header class="h-16 flex items-center justify-between px-8 bg-white/5 dark:bg-background-dark/50 border-b border-slate-200 dark:border-border-dark backdrop-blur-sm">
+<div class="flex items-center gap-4">
+<h1 class="text-xl font-bold tracking-tight">Timeline Work Queue</h1>
+<span class="text-xs bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-1 rounded flex items-center gap-1">
+<span class="material-icons text-[14px]">lock</span>
+                    HIPAA Compliant Session
+                </span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="pl-10 pr-4 py-2 bg-slate-100 dark:bg-neutral-dark border-none rounded-lg text-sm focus:ring-2 focus:ring-primary w-64 transition-all" placeholder="Search Case ID or Initials..." type="text"/>
+</div>
+<div class="flex items-center gap-2 text-slate-400">
+<span class="material-icons text-lg">notifications</span>
+<div class="w-2 h-2 bg-primary rounded-full -ml-3 -mt-2"></div>
+</div>
+</div>
+</header>
+<!-- Stats & Controls -->
+<section class="p-8 pb-4">
+<div class="grid grid-cols-4 gap-4 mb-8">
+<div class="bg-white dark:bg-neutral-dark p-4 rounded-xl border border-slate-200 dark:border-border-dark">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Active Chronologies</p>
+<div class="flex items-end justify-between mt-1">
+<span class="text-2xl font-bold">12</span>
+<span class="text-emerald-500 text-xs font-medium">+2 this week</span>
+</div>
+</div>
+<div class="bg-white dark:bg-neutral-dark p-4 rounded-xl border border-slate-200 dark:border-border-dark">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Average Progress</p>
+<div class="flex items-end justify-between mt-1">
+<span class="text-2xl font-bold">64%</span>
+<div class="w-16 bg-slate-200 dark:bg-border-dark h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[64%]"></div>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-neutral-dark p-4 rounded-xl border border-slate-200 dark:border-border-dark">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Next Deadline</p>
+<div class="flex items-end justify-between mt-1">
+<span class="text-2xl font-bold text-amber-500">2 Days</span>
+<span class="text-slate-400 text-xs">Case #8921</span>
+</div>
+</div>
+<div class="bg-white dark:bg-neutral-dark p-4 rounded-xl border border-slate-200 dark:border-border-dark">
+<p class="text-slate-400 text-xs font-medium uppercase tracking-wider">Pending Review</p>
+<div class="flex items-end justify-between mt-1">
+<span class="text-2xl font-bold">4</span>
+<span class="material-icons text-slate-500">rate_review</span>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">add</span>
+                        New Chronology
+                    </button>
+<button class="px-4 py-2 bg-slate-100 dark:bg-neutral-dark border border-slate-200 dark:border-border-dark rounded-lg text-sm font-medium hover:bg-slate-200 dark:hover:bg-border-dark transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">filter_list</span>
+                        Filters
+                    </button>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-xs text-slate-400 uppercase font-medium">Sort by:</span>
+<select class="bg-transparent border-none text-sm font-medium focus:ring-0 p-0 pr-6 text-primary cursor-pointer">
+<option>Days Remaining</option>
+<option>Completion %</option>
+<option>Date Assigned</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Work List -->
+<section class="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
+<div class="flex flex-col gap-3">
+<!-- List Item 1 -->
+<div class="group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">medical_information</span>
+</div>
+<div class="min-w-[200px]">
+<h3 class="font-bold text-slate-900 dark:text-white">Case ID: 2024-MR-8921</h3>
+<p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+<span class="font-semibold text-slate-500">Patient: J.D.</span>
+<span>•</span>
+<span>Medical Malpractice</span>
+</p>
+</div>
+<div class="hidden xl:block min-w-[150px]">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+<p class="text-sm font-medium">Hastings &amp; Partners</p>
+</div>
+<div class="flex-1 max-w-xs mx-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+<span class="text-xs font-bold text-primary">82%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[82%] rounded-full"></div>
+</div>
+</div>
+<div class="px-6 text-center">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+<p class="text-sm font-bold text-amber-500">2 Days</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-1 rounded bg-blue-500/10 text-blue-500 text-[10px] font-bold uppercase tracking-wider border border-blue-500/20">In Review</span>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-icons text-sm">construction</span>
+                                Open Timeline Builder
+                            </button>
+</div>
+</div>
+</div>
+<!-- List Item 2 -->
+<div class="group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">folder</span>
+</div>
+<div class="min-w-[200px]">
+<h3 class="font-bold text-slate-900 dark:text-white">Case ID: 2024-MR-9043</h3>
+<p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+<span class="font-semibold text-slate-500">Patient: S.R.</span>
+<span>•</span>
+<span>Personal Injury</span>
+</p>
+</div>
+<div class="hidden xl:block min-w-[150px]">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+<p class="text-sm font-medium">Liberty Law Group</p>
+</div>
+<div class="flex-1 max-w-xs mx-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+<span class="text-xs font-bold text-primary">45%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[45%] rounded-full"></div>
+</div>
+</div>
+<div class="px-6 text-center">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+<p class="text-sm font-bold">5 Days</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-1 rounded bg-slate-500/10 text-slate-400 text-[10px] font-bold uppercase tracking-wider border border-slate-500/20">Processing</span>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-icons text-sm">construction</span>
+                                Open Timeline Builder
+                            </button>
+</div>
+</div>
+</div>
+<!-- List Item 3 -->
+<div class="group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">warning</span>
+</div>
+<div class="min-w-[200px]">
+<h3 class="font-bold text-slate-900 dark:text-white">Case ID: 2024-MR-7721</h3>
+<p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+<span class="font-semibold text-slate-500">Patient: L.K.</span>
+<span>•</span>
+<span>Nursing Home Neglect</span>
+</p>
+</div>
+<div class="hidden xl:block min-w-[150px]">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+<p class="text-sm font-medium">Miller &amp; Sons</p>
+</div>
+<div class="flex-1 max-w-xs mx-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+<span class="text-xs font-bold text-primary">12%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[12%] rounded-full"></div>
+</div>
+</div>
+<div class="px-6 text-center">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+<p class="text-sm font-bold text-rose-500">Tomorrow</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-1 rounded bg-rose-500/10 text-rose-500 text-[10px] font-bold uppercase tracking-wider border border-rose-500/20">Missing Records</span>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-icons text-sm">construction</span>
+                                Open Timeline Builder
+                            </button>
+</div>
+</div>
+</div>
+<!-- List Item 4 -->
+<div class="group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">verified</span>
+</div>
+<div class="min-w-[200px]">
+<h3 class="font-bold text-slate-900 dark:text-white">Case ID: 2024-MR-9112</h3>
+<p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+<span class="font-semibold text-slate-500">Patient: M.A.</span>
+<span>•</span>
+<span>Surgical Complications</span>
+</p>
+</div>
+<div class="hidden xl:block min-w-[150px]">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+<p class="text-sm font-medium">The Davis Group</p>
+</div>
+<div class="flex-1 max-w-xs mx-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+<span class="text-xs font-bold text-primary">95%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[95%] rounded-full"></div>
+</div>
+</div>
+<div class="px-6 text-center">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+<p class="text-sm font-bold">8 Days</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-1 rounded bg-emerald-500/10 text-emerald-500 text-[10px] font-bold uppercase tracking-wider border border-emerald-500/20">Finalizing</span>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-icons text-sm">construction</span>
+                                Open Timeline Builder
+                            </button>
+</div>
+</div>
+</div>
+<!-- List Item 5 -->
+<div class="group bg-white dark:bg-neutral-dark border border-slate-200 dark:border-border-dark p-4 rounded-xl hover:border-primary/50 transition-all duration-200 opacity-80">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-6 flex-1">
+<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center text-primary">
+<span class="material-icons">pause_circle</span>
+</div>
+<div class="min-w-[200px]">
+<h3 class="font-bold text-slate-900 dark:text-white">Case ID: 2024-MR-8500</h3>
+<p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+<span class="font-semibold text-slate-500">Patient: K.W.</span>
+<span>•</span>
+<span>Product Liability</span>
+</p>
+</div>
+<div class="hidden xl:block min-w-[150px]">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Attorney Firm</p>
+<p class="text-sm font-medium">Hastings &amp; Partners</p>
+</div>
+<div class="flex-1 max-w-xs mx-4">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold text-slate-400 uppercase">Chronology Progress</span>
+<span class="text-xs font-bold text-primary">30%</span>
+</div>
+<div class="h-2 w-full bg-slate-100 dark:bg-border-dark rounded-full overflow-hidden">
+<div class="bg-primary h-full w-[30%] rounded-full opacity-50"></div>
+</div>
+</div>
+<div class="px-6 text-center">
+<p class="text-[10px] text-slate-400 uppercase font-bold">Due In</p>
+<p class="text-sm font-bold">12 Days</p>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<span class="px-2 py-1 rounded bg-amber-500/10 text-amber-500 text-[10px] font-bold uppercase tracking-wider border border-amber-500/20">On Hold</span>
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold flex items-center gap-2 transition-transform active:scale-95">
+<span class="material-icons text-sm">construction</span>
+                                Open Timeline Builder
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer / Workspace Info -->
+<footer class="h-10 bg-white/5 border-t border-slate-200 dark:border-border-dark flex items-center justify-between px-8">
+<div class="flex items-center gap-4 text-[10px] font-medium text-slate-500 uppercase tracking-widest">
+<span>© 2024 LegalNurse OS</span>
+<span class="w-1 h-1 bg-slate-700 rounded-full"></span>
+<span>Active Workspace: General Medical Queue</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+<span class="text-[10px] text-slate-400 font-medium">Secure Server Connection: Active</span>
+</div>
+</footer>
+</main>
+</body></html>

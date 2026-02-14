@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Staff Consultant Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1152d4",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200">
+<!-- Top Navigation Bar -->
+<nav class="sticky top-0 z-50 bg-white dark:bg-background-dark/80 backdrop-blur-md border-b border-primary/10 px-6 py-3 flex items-center justify-between">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="bg-primary p-1.5 rounded-lg">
+<span class="material-icons text-white">medical_services</span>
+</div>
+<span class="font-bold text-xl tracking-tight text-primary">LNC<span class="text-slate-500 font-medium">Connect</span></span>
+</div>
+<!-- Global Search -->
+<div class="relative w-96 hidden md:block">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-xl focus:ring-2 focus:ring-primary/50 text-sm transition-all" placeholder="Search cases, documents, or medical records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-xl transition-all shadow-lg shadow-primary/20">
+<span class="material-icons text-sm">cloud_upload</span>
+<span class="text-sm font-semibold">Quick Upload</span>
+</button>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<button class="relative p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+<span class="material-icons">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<div class="flex items-center gap-3 ml-2 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-semibold">Sarah Jenkins, RN</p>
+<p class="text-[10px] text-slate-500 uppercase tracking-wider">Senior Consultant</p>
+</div>
+<img class="w-9 h-9 rounded-full border-2 border-primary/20 group-hover:border-primary transition-all object-cover" data-alt="Professional profile portrait of a nurse" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsUrnjhx828PlDCtKLO6Upeq6HyUwQljQ55MqDGT3kq3_ZU1zfIuJm7-XdRcEikUFrdzTBRGlk2jZdKxxgRxOc7KGEdvBvhYUqwHnu9bKxolu3PfH0JE24Gh7pShR-eGBIz_luErYpklUEY3JQWM05QAeQzaqWlgwS413etTir2eo1_8b4BumC8mamDkfPgN7vzPQNkgjPgfU6ZdTSKDwr7zyH60kgR_eqTBCDShD7d1kQ52Vcp4GeC8H7WskND2AKikjzkam888I"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Grid -->
+<main class="max-w-[1600px] mx-auto p-6 grid grid-cols-12 gap-6">
+<!-- Welcome Header & Stats -->
+<header class="col-span-12 flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white">Good Morning, Sarah</h1>
+<p class="text-slate-500 mt-1">You have 4 medical reviews pending for this week.</p>
+</div>
+<!-- Time Tracked Mini-Stat -->
+<div class="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-6 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+<span class="material-icons text-emerald-600">timer</span>
+</div>
+<div>
+<p class="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Time Tracked Today</p>
+<p class="text-xl font-mono font-bold text-slate-900 dark:text-white">05:42:15</p>
+</div>
+</div>
+<button class="bg-primary/10 hover:bg-primary/20 text-primary p-2 rounded-lg transition-colors">
+<span class="material-icons">pause_circle</span>
+</button>
+</div>
+</header>
+<!-- Left Column: Assigned Cases -->
+<section class="col-span-12 lg:col-span-8 space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-icons text-primary">assignment</span>
+                    My Assigned Cases
+                </h2>
+<button class="text-primary text-sm font-semibold hover:underline">View All Cases</button>
+</div>
+<!-- Case Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Case Card 1 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase mb-2">Case #2024-8812</span>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Harrison vs. City Hospital</h3>
+</div>
+<span class="material-icons text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_horiz</span>
+</div>
+<div class="space-y-3 mb-4">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">gavel</span>
+<span>Lead: Miller &amp; Associates</span>
+</div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">event</span>
+<span>Hearing: Oct 15, 2024</span>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span>
+<span class="text-xs font-medium text-slate-500">Medical Review In-Progress</span>
+</div>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="Clinical staff thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1QHWLfkcfY4032Ye014KhiF2dHQQfmqzklPqSuhxs3rC7Bctrn3dtrT3sto3k0_Kr8SAt5CM571ocoyE38NtHTJ144z98O256tApeNXuxBfqG6uabmmjzXWA1BpjU7XQ-R6xNmEA9BcrsyRV1NJz5-p-Q6edr9c25KLabbTsWNVTNUoMYnpg4Lxv2cImP3DNYfGHn8_r3eGdO_YjGWfT0g1JlU54LwnuuxD_ka9D3LzUEtW5aqeiGI0xU9x2AZdzlEreciZpRfRs"/>
+<img class="w-6 h-6 rounded-full border border-white" data-alt="Attorney lead thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU-cVPMnutrYKHg1s5tjwa_bvG7ZYn_iXUSOk0gMO7yZMXSJO8rAN2LAYGDQBCAo2rBoIyIYOH6iNyA_HYTwUTfdTLLJVOJUolNaR89p_dwtjkCFJDPJf_vM4XT2RH9g3C_O70u3qCwrIyuz9rTYqy-4T1_BNqTcI1SoP_WUuWC9J8F63o2EVKXbNpcYD1z7qrZYQsSIpFW1Kt7Rk-i5IDgf2IrkAh0wZ5Q9CueDSV1PUSP1hBCC5T_rWcnbDZs4Euo1q_pB-1F1w"/>
+</div>
+</div>
+</div>
+<!-- Case Card 2 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="inline-block px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase mb-2">Case #2024-7431</span>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Martinez Post-Op Review</h3>
+</div>
+<span class="material-icons text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_horiz</span>
+</div>
+<div class="space-y-3 mb-4">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">gavel</span>
+<span>Lead: Smith Legal Group</span>
+</div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">event</span>
+<span>Deadline: Sept 30, 2024</span>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-500"></span>
+<span class="text-xs font-medium text-slate-500">Chronology Building</span>
+</div>
+<div class="flex -space-x-2">
+<img class="w-6 h-6 rounded-full border border-white" data-alt="Team member thumbnail" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZaeELFdYZgUdlLdLKnAb4YlJOwifb5Kgc_LSpBHluvb72iRmM75dj813oxKJkEM4qlcQ9kVA_a0zNvOZkRa9SHYHPLdFIymCoyDdQcSrV99BXH3BNc66Hw7tr_9lBlEnnzxiuTel136aBoo9-PsBxgMuKwS6Hyunuz4xUejPig3Kdmoe177ImRYkd8qCrbP_4QufC845lKhd4klQ08MXskaG3HgFHbf9zBxX2r38ptTDncf8FV8qF_F8xSg64lgUd5Y1pB-QWPuw"/>
+</div>
+</div>
+</div>
+<!-- Case Card 3 -->
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
+<div class="flex justify-between items-start mb-4">
+<div>
+<span class="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 text-[10px] font-bold uppercase mb-2">Case #2024-9002</span>
+<h3 class="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Davis Dialysis Center Inc.</h3>
+</div>
+<span class="material-icons text-slate-300 group-hover:text-primary transition-colors cursor-pointer">more_horiz</span>
+</div>
+<div class="space-y-3 mb-4">
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">gavel</span>
+<span>Lead: Roberts &amp; Co.</span>
+</div>
+<div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+<span class="material-icons text-xs">event</span>
+<span>Trial: Jan 12, 2025</span>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-slate-300"></span>
+<span class="text-xs font-medium text-slate-500">Awaiting Records</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="text-[10px] font-bold text-slate-400">0%</span>
+<div class="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="bg-slate-300 h-full w-0"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Add New Case Placeholder -->
+<div class="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-slate-400 hover:border-primary hover:text-primary transition-all cursor-pointer">
+<span class="material-icons text-3xl mb-2">add_circle_outline</span>
+<span class="text-sm font-semibold">New Assignment Request</span>
+</div>
+</div>
+</section>
+<!-- Right Column: Task List & Activity -->
+<aside class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Personal Task List Widget -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-bold flex items-center gap-2">
+<span class="material-icons text-primary">task_alt</span>
+                        Task List
+                    </h2>
+<span class="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded">5 Remaining</span>
+</div>
+<div class="space-y-4">
+<!-- Task Item -->
+<div class="flex items-start gap-3 group">
+<input class="mt-1 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-900 dark:text-white">Review Radiology Report</p>
+<span class="bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded">High</span>
+</div>
+<p class="text-xs text-slate-500 mt-1">Due today at 5:00 PM</p>
+</div>
+</div>
+<div class="flex items-start gap-3 group">
+<input class="mt-1 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-900 dark:text-white">Finalize Chronology: Case #2024</p>
+<span class="bg-amber-100 text-amber-600 text-[10px] font-bold px-1.5 py-0.5 rounded">Medium</span>
+</div>
+<p class="text-xs text-slate-500 mt-1">Tomorrow</p>
+</div>
+</div>
+<div class="flex items-start gap-3 group">
+<input checked="" class="mt-1 rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<div class="flex-1">
+<div class="flex items-center justify-between">
+<p class="text-sm font-medium text-slate-400 line-through">Call Lead Attorney Re: Billing</p>
+</div>
+<p class="text-xs text-slate-400 mt-1">Completed 2h ago</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-dashed border-slate-200 dark:border-slate-800 text-slate-500 text-xs font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    + Add New Task
+                </button>
+</section>
+<!-- Recent Uploads / Activity Feed -->
+<section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+<h2 class="font-bold flex items-center gap-2 mb-6">
+<span class="material-icons text-primary">analytics</span>
+                    Processing Feed
+                </h2>
+<div class="space-y-6">
+<!-- Feed Item 1 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+<span class="material-icons text-blue-600 text-sm">description</span>
+</div>
+<div class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white dark:bg-slate-900 flex items-center justify-center">
+<span class="material-icons text-[10px] text-emerald-500">check_circle</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-slate-900 dark:text-white truncate">MED_RECORDS_PHASE_1.pdf</p>
+<p class="text-[10px] text-slate-500 mt-0.5">OCR Complete • 1,240 pages</p>
+<div class="mt-2 w-full bg-emerald-100 dark:bg-emerald-900/30 rounded-full h-1.5">
+<div class="bg-emerald-500 h-full w-full rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Feed Item 2 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+<span class="material-icons text-primary text-sm">auto_fix_high</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex justify-between items-start">
+<p class="text-xs font-bold text-slate-900 dark:text-white truncate">SMITH_VITALS_XRAY.zip</p>
+<span class="text-[10px] font-bold text-primary animate-pulse">Scanning...</span>
+</div>
+<p class="text-[10px] text-slate-500 mt-0.5">Indexing medical metadata</p>
+<div class="mt-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
+<div class="bg-primary h-full w-2/3 rounded-full"></div>
+</div>
+</div>
+</div>
+<!-- Feed Item 3 -->
+<div class="flex gap-4">
+<div class="relative">
+<div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+<span class="material-icons text-slate-400 text-sm">folder_zip</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<p class="text-xs font-bold text-slate-900 dark:text-white truncate">DEPOSITION_VIDEO_01.mp4</p>
+<p class="text-[10px] text-slate-500 mt-0.5">Queued for transcription</p>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center gap-3 p-3 bg-primary/5 rounded-lg border border-primary/10">
+<span class="material-icons text-primary">security</span>
+<div class="text-[10px]">
+<p class="font-bold text-slate-800 dark:text-slate-200">HIPAA Protected Environment</p>
+<p class="text-slate-500">All data is encrypted at rest and in transit.</p>
+</div>
+</div>
+</div>
+</section>
+</aside>
+</main>
+<!-- Footer for quick access -->
+<footer class="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 py-3 px-6 lg:hidden">
+<div class="flex justify-around items-center">
+<button class="flex flex-col items-center gap-1 text-primary">
+<span class="material-icons">dashboard</span>
+<span class="text-[10px] font-bold">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">folder</span>
+<span class="text-[10px] font-bold">Cases</span>
+</button>
+<button class="bg-primary text-white p-3 rounded-full -mt-10 shadow-xl shadow-primary/30 border-4 border-background-light">
+<span class="material-icons">add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">check_circle</span>
+<span class="text-[10px] font-bold">Tasks</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-slate-400">
+<span class="material-icons">settings</span>
+<span class="text-[10px] font-bold">Menu</span>
+</button>
+</div>
+</footer>
+</body></html>

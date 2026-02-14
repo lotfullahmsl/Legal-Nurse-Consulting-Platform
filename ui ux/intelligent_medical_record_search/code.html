@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Intelligent Medical Record Search | Legal Nurse Consulting</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f3b61",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14181e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .highlight-match { background-color: #fef08a; padding: 0 2px; border-radius: 2px; font-weight: 600; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Header / Navigation -->
+<header class="bg-primary text-white px-6 py-3 flex items-center justify-between shadow-md z-30">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-white">shield</span>
+<span class="font-bold text-lg tracking-tight">MED-SEARCH PRO</span>
+</div>
+<div class="h-6 w-px bg-white/20 mx-2"></div>
+<div class="text-sm font-medium text-white/80">
+                Case: <span class="text-white">Doe v. General Hospital (2024-8842)</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-2 text-xs bg-white/10 px-3 py-1.5 rounded-full border border-white/20">
+<span class="material-icons text-[14px] text-green-400">lock</span>
+<span>HIPAA COMPLIANT SESSION</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-xs font-semibold">Sarah Jenkins, RN</p>
+<p class="text-[10px] text-white/70">Legal Nurse Consultant</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center border border-white/40">
+<span class="material-icons text-sm">person</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Top Search Bar Section -->
+<div class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 shadow-sm z-20">
+<div class="max-w-7xl mx-auto flex flex-col lg:flex-row gap-4 items-center">
+<div class="relative flex-1 w-full">
+<span class="material-icons absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">search</span>
+<input class="w-full pl-12 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-all text-sm" placeholder="Search medical records (e.g., 'atrial fibrillation', 'warfarin dosage')..." type="text" value="atrial fibrillation"/>
+<div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-2">
+<button class="px-2 py-1 text-[10px] font-bold bg-slate-200 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">FUZZY</button>
+<button class="px-2 py-1 text-[10px] font-bold bg-primary text-white rounded">EXACT</button>
+</div>
+</div>
+<div class="flex items-center gap-3 w-full lg:w-auto">
+<button class="flex items-center gap-2 px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-icons text-sm">filter_list</span>
+                    Filters
+                </button>
+<button class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2 shadow-lg shadow-primary/20">
+                    Run Intelligent Search
+                </button>
+</div>
+</div>
+</div>
+<!-- Main Content Area -->
+<main class="flex-1 flex overflow-hidden">
+<!-- Results Sidebar -->
+<aside class="w-1/3 min-w-[400px] max-w-[500px] border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col">
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-900/50">
+<h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">24 Matches Found</h2>
+<div class="flex gap-2">
+<select class="text-xs bg-transparent border-none focus:ring-0 cursor-pointer font-medium text-primary">
+<option>Sort by Relevance</option>
+<option>Sort by Date</option>
+<option>Sort by Page</option>
+</select>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar">
+<!-- Result Card Active -->
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[10px] font-bold text-primary px-1.5 py-0.5 bg-primary/10 rounded">EMR_DISCHARGE_SUMMARY_V2.pdf</span>
+<h3 class="font-semibold text-sm mt-1">Discharge Summary - Page 14</h3>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-green-600 dark:text-green-400">98% Match</span>
+<p class="text-[10px] text-slate-400">Oct 12, 2023</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                        "...patient presented with acute onset of <span class="highlight-match">atrial fibrillation</span> with rapid ventricular response. History of hypertension and chronic renal insufficiency..."
+                    </p>
+</div>
+<!-- Result Card -->
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[10px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">CARDIOLOGY_CONSULT.pdf</span>
+<h3 class="font-semibold text-sm mt-1">Cardiology Notes - Page 3</h3>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-600 dark:text-slate-400">82% Match</span>
+<p class="text-[10px] text-slate-400">Oct 14, 2023</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        "...recommend rate control for paroxysmal <span class="highlight-match">atrial fibrillation</span> via Metoprolol. Monitoring required for subsequent stroke risk assessment..."
+                    </p>
+</div>
+<!-- Result Card -->
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[10px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">LAB_RESULTS_QUARTERLY.pdf</span>
+<h3 class="font-semibold text-sm mt-1">Lab Results - Page 42</h3>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-600 dark:text-slate-400">75% Match</span>
+<p class="text-[10px] text-slate-400">Sep 30, 2023</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        "...INR levels monitored weekly due to anticoagulation therapy for <span class="highlight-match">atrial fibrillation</span>. Recent labs show therapeutic range of 2.4..."
+                    </p>
+</div>
+<!-- Result Card -->
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[10px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">HOSPITAL_ADMISSION_001.pdf</span>
+<h3 class="font-semibold text-sm mt-1">Admission Record - Page 1</h3>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-600 dark:text-slate-400">64% Match</span>
+<p class="text-[10px] text-slate-400">Oct 12, 2023</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                        "...Prior medical history includes permanent <span class="highlight-match">atrial fibrillation</span>, pacemaker insertion (2019), and GERD..."
+                    </p>
+</div>
+<!-- Result Card -->
+<div class="p-4 border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors opacity-60">
+<div class="flex justify-between items-start mb-2">
+<div>
+<span class="text-[10px] font-bold text-slate-500 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded">MISC_NURSING_NOTES.pdf</span>
+<h3 class="font-semibold text-sm mt-1">Nursing Notes - Page 8</h3>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold text-slate-600 dark:text-slate-400">42% Match</span>
+<p class="text-[10px] text-slate-400">Oct 13, 2023</p>
+</div>
+</div>
+<p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">
+                        "...complaining of heart racing, potential episode of <span class="highlight-match">atrial fib</span>. Physician notified..."
+                    </p>
+</div>
+</div>
+</aside>
+<!-- Document Preview Pane -->
+<section class="flex-1 bg-slate-200 dark:bg-slate-950 flex flex-col relative overflow-hidden">
+<!-- Document Toolbar -->
+<div class="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 z-10">
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">zoom_out</span></button>
+<span class="text-xs font-bold px-2">100%</span>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">zoom_in</span></button>
+<div class="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-2"></div>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">chevron_left</span></button>
+<span class="text-xs font-bold px-1 whitespace-nowrap">Page 14 / 82</span>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">chevron_right</span></button>
+<div class="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-2"></div>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">print</span></button>
+<button class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"><span class="material-icons text-lg">download</span></button>
+<div class="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-2"></div>
+<button class="bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-lg flex items-center gap-1">
+<span class="material-icons text-xs">add_comment</span>
+                    ANNOTATE
+                </button>
+</div>
+<!-- PDF Simulator Container -->
+<div class="flex-1 overflow-auto flex justify-center p-8 pt-20">
+<div class="bg-white dark:bg-slate-100 w-full max-w-[850px] shadow-2xl min-h-[1100px] p-12 relative text-slate-800">
+<!-- Page Header Decoration -->
+<div class="flex justify-between items-start mb-12 border-b-2 border-slate-900 pb-4">
+<div>
+<h1 class="text-2xl font-bold uppercase tracking-tighter">Memorial Health System</h1>
+<p class="text-xs font-medium uppercase">1200 Medical Center Drive, Metropolis, ST 12345</p>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold">RECORD #662-901</p>
+<p class="text-xs">DOE, JOHN (MRN: 1120448)</p>
+</div>
+</div>
+<!-- Medical Content Simulation -->
+<div class="space-y-6">
+<div class="flex border-b border-slate-200 pb-2">
+<div class="w-40 text-[10px] font-bold uppercase text-slate-500">Service Date</div>
+<div class="text-sm font-medium">October 12, 2023 - 14:32 EST</div>
+</div>
+<div class="flex border-b border-slate-200 pb-2">
+<div class="w-40 text-[10px] font-bold uppercase text-slate-500">Provider</div>
+<div class="text-sm font-medium">Elena Rodriguez, MD (Cardiology)</div>
+</div>
+<div class="pt-4">
+<h2 class="text-sm font-bold uppercase mb-3 bg-slate-100 px-2 py-1 inline-block">Chief Complaint</h2>
+<p class="text-sm leading-relaxed mb-6">Patient is a 68-year-old male who presented to the Emergency Department via EMS after experiencing sudden onset palpations and dizziness while at rest. Patient describes feeling "a thumping in my chest" accompanied by mild shortness of breath.</p>
+<h2 class="text-sm font-bold uppercase mb-3 bg-slate-100 px-2 py-1 inline-block">Assessment &amp; Plan</h2>
+<p class="text-sm leading-relaxed mb-4">
+                                1. <span class="bg-yellow-200 ring-2 ring-yellow-400 font-bold px-1 rounded">Atrial Fibrillation</span> with Rapid Ventricular Response (RVR). Initial EKG confirms rhythm with heart rate fluctuating between 145-160 bpm.
+                            </p>
+<p class="text-sm leading-relaxed mb-4">
+                                2. Hemodynamic Stability: Patient is currently normotensive. Will proceed with pharmacological rate control rather than immediate cardioversion at this stage.
+                            </p>
+<p class="text-sm leading-relaxed mb-4">
+                                3. Anticoagulation: Given CHADS2VASC score of 4, initiate Heparin drip per hospital protocol pending transition to oral anticoagulants.
+                            </p>
+<div class="mt-8 border-2 border-slate-900 p-4 relative overflow-hidden">
+<span class="absolute top-0 right-0 bg-slate-900 text-white text-[10px] font-bold px-2 py-0.5">DOC_INTELLIGENCE_LAYER</span>
+<h3 class="text-xs font-bold mb-2 text-slate-500">OCR DATA OVERLAY:</h3>
+<p class="text-xs text-slate-400 font-mono italic">
+                                    [OCR_SCAN_CONFIDENCE: 99.8%] [ENTITY_EXTRACTED: CONDITION_AFIB] [MAPPED_ICD10: I48.0]
+                                </p>
+</div>
+<div class="mt-12 h-20 w-48 border-b-2 border-slate-300 relative">
+<p class="absolute bottom-1 left-0 text-[10px] font-bold text-slate-400 italic">E-Signed by Elena Rodriguez, MD</p>
+<img alt="Scanned medical professional signature" class="h-16 opacity-40 mix-blend-multiply grayscale" data-alt="A scanned handwritten signature of a doctor on a document" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRv-AjEcbnC3NPWLibn4f8Hv1pzqjbmZspbFcqJ0QSn3CmiycUyfFG8kG7-DeTMg_eWguSolHObM0iyDlIGvLMhWFu1Ox7RTJ-_E1MGS29WX0BuS1Ev76tpxNqgD24w3Pd_7U6a41nSpQFttq8pXYWFjOVsW4LfYW7puqsSsLkwDQTUR536z6e4e0jYM0F2qj2gAX7I3s9W7Fw2NHQd0HxEvMUbr6j__dBRmsC-_1jnn5sUxR8C4F56uX4ghUy-TCBYqf06RyROh4"/>
+</div>
+</div>
+</div>
+<!-- Page Footer Decoration -->
+<div class="mt-20 flex justify-between items-center text-[10px] text-slate-400 border-t border-slate-100 pt-4">
+<span>CONFIDENTIAL - FOR LEGAL REVIEW ONLY</span>
+<span>DOE_DISCHARGE_023.PDF - Page 14 of 82</span>
+</div>
+</div>
+</div>
+<!-- Floating Jump Controls -->
+<div class="absolute bottom-6 right-6 flex flex-col gap-2">
+<button class="w-12 h-12 bg-white dark:bg-slate-800 rounded-full shadow-xl flex items-center justify-center text-primary border border-slate-200 dark:border-slate-700 hover:scale-105 transition-transform">
+<span class="material-icons">arrow_upward</span>
+</button>
+<div class="bg-primary text-white text-[10px] font-bold px-2 py-1 rounded-md text-center">4 / 24</div>
+<button class="w-12 h-12 bg-primary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-105 transition-transform">
+<span class="material-icons">arrow_downward</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Footer Status -->
+<footer class="bg-slate-100 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-6 py-2 flex justify-between items-center text-[11px] font-medium text-slate-500">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> OCR Engine: Online</span>
+<span class="flex items-center gap-1"><span class="w-2 h-2 bg-green-500 rounded-full"></span> Database: Encrypted</span>
+</div>
+<div class="flex items-center gap-4">
+<span>Server Latency: 12ms</span>
+<span>Document ID: 002-XC-9921</span>
+<span class="text-primary font-bold">HELP CENTER</span>
+</div>
+</footer>
+</body></html>

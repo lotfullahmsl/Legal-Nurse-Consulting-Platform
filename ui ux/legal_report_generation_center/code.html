@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Legal Report Generation Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0891af",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101f22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<!-- Top Navigation Bar -->
+<nav class="border-b border-primary/10 bg-white dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between h-16 items-center">
+<div class="flex items-center gap-2">
+<div class="bg-primary p-1.5 rounded-lg">
+<span class="material-icons-round text-white text-2xl">gavel</span>
+</div>
+<div>
+<span class="text-xl font-bold tracking-tight text-primary">MedLegal</span>
+<span class="text-xs block leading-none opacity-60 uppercase tracking-widest font-semibold">Report Center</span>
+</div>
+</div>
+<div class="flex-1 max-w-md mx-8 hidden md:block">
+<div class="relative group">
+<span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
+<input class="w-full bg-slate-100 dark:bg-primary/5 border-transparent focus:border-primary focus:ring-0 rounded-lg pl-10 text-sm py-2 transition-all" placeholder="Search cases or reports..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full">
+<span class="material-icons-round text-primary text-sm">verified_user</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary">HIPAA COMPLIANT</span>
+</div>
+<button class="relative p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons-round">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-background-dark"></span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-primary/30">
+<img class="w-full h-full object-cover" data-alt="Professional profile headshot of a legal consultant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCk2gHxU35M7_r6rFcTPwssjGXPqefC2DwQ2YDCWXOgrfJtJv3-b_6cJO_n948JK5BjSK90IGU3YLLgzJ5snSqejEnBezH9fjHctEusGPFvPoUZieg1Omrc0rh3gn90cSCFg8b1UHrIoSpO2pVYPmmy9K5Z-ez8RPSLNvf2aTO5FK6G2rY2UJYzxzNqOZck-8D4M9c6trD2OwGPJmTe2O-riD4WsTfGM4Uw4_VStGr74yK5sFiNH0arniJsHMtdD4wNj-k805jDHt8"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Header & Main CTA -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+<div>
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2">Report Generation Center</h1>
+<p class="text-slate-500 dark:text-slate-400 max-w-2xl">Select a standardized template to begin your medical-legal analysis or create a custom structured report.</p>
+</div>
+<button class="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 group">
+<span class="material-icons-round transition-transform group-hover:rotate-12">dashboard_customize</span>
+                Custom Report Builder
+            </button>
+</div>
+<!-- Report Templates Grid -->
+<section class="mb-12">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-semibold flex items-center gap-2">
+<span class="material-icons-round text-primary">description</span>
+                    Standard Report Templates
+                </h2>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Template Card 1 -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl p-5 hover:border-primary/50 transition-all cursor-pointer shadow-sm hover:shadow-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons-round">summarize</span>
+</div>
+<h3 class="font-bold mb-2 group-hover:text-primary transition-colors">Attorney-Ready Summary</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">High-level medical expert opinions and case merits formatted for legal review.</p>
+<button class="w-full py-2 text-sm font-medium border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-1">
+                        Start New <span class="material-icons-round text-sm">chevron_right</span>
+</button>
+</div>
+<!-- Template Card 2 -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl p-5 hover:border-primary/50 transition-all cursor-pointer shadow-sm hover:shadow-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons-round">history</span>
+</div>
+<h3 class="font-bold mb-2 group-hover:text-primary transition-colors">Medical Chronology</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">Detailed chronological timeline of medical events and provider interventions.</p>
+<button class="w-full py-2 text-sm font-medium border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-1">
+                        Start New <span class="material-icons-round text-sm">chevron_right</span>
+</button>
+</div>
+<!-- Template Card 3 -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl p-5 hover:border-primary/50 transition-all cursor-pointer shadow-sm hover:shadow-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons-round">error_outline</span>
+</div>
+<h3 class="font-bold mb-2 group-hover:text-primary transition-colors">Missing Records Audit</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">Systematic identification of gaps in the medical record production.</p>
+<button class="w-full py-2 text-sm font-medium border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-1">
+                        Start New <span class="material-icons-round text-sm">chevron_right</span>
+</button>
+</div>
+<!-- Template Card 4 -->
+<div class="group bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl p-5 hover:border-primary/50 transition-all cursor-pointer shadow-sm hover:shadow-md">
+<div class="w-12 h-12 rounded-lg bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-icons-round">medical_services</span>
+</div>
+<h3 class="font-bold mb-2 group-hover:text-primary transition-colors">Life Care Plan</h3>
+<p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">Comprehensive projection of future medical needs and associated costs.</p>
+<button class="w-full py-2 text-sm font-medium border border-primary/20 rounded-lg hover:bg-primary/10 transition-colors flex items-center justify-center gap-1">
+                        Start New <span class="material-icons-round text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Recently Generated Reports -->
+<section>
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-semibold flex items-center gap-2">
+<span class="material-icons-round text-primary">history</span>
+                    Recently Generated Reports
+                </h2>
+<button class="text-primary text-sm font-semibold hover:underline">View All Archive</button>
+</div>
+<div class="bg-white dark:bg-primary/5 border border-slate-200 dark:border-primary/10 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-primary/10 border-b border-slate-200 dark:border-primary/10">
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Report Details</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Case ID</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Generated Date</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-center">Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-200 dark:divide-primary/10">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-primary">picture_as_pdf</span>
+<div>
+<div class="font-semibold text-sm">Medical Chronology - Johnson, Robert</div>
+<div class="text-[10px] text-slate-500 uppercase font-medium">Standard Template</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">#4492-SMITH-HOSP</td>
+<td class="px-6 py-4 text-sm">Oct 24, 2023, 11:20 AM</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span> Ready
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors" title="Download PDF">
+<span class="material-icons-round">download</span>
+</button>
+<button class="p-2 hover:bg-primary/10 rounded-lg text-slate-400 transition-colors" title="Share Report">
+<span class="material-icons-round">share</span>
+</button>
+<button class="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors" title="Archive">
+<span class="material-icons-round">archive</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-primary">article</span>
+<div>
+<div class="font-semibold text-sm">Attorney-Ready Merit Review</div>
+<div class="text-[10px] text-slate-500 uppercase font-medium">Custom Builder</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">#8812-DAVIS-PI</td>
+<td class="px-6 py-4 text-sm">Oct 23, 2023, 04:45 PM</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span> Processing
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right opacity-50 pointer-events-none">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 rounded-lg text-slate-400">
+<span class="material-icons-round">download</span>
+</button>
+<button class="p-2 rounded-lg text-slate-400">
+<span class="material-icons-round">share</span>
+</button>
+<button class="p-2 rounded-lg text-slate-400">
+<span class="material-icons-round">archive</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50/50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="material-icons-round text-primary">description</span>
+<div>
+<div class="font-semibold text-sm">Missing Records Affidavit - Est. 2023</div>
+<div class="text-[10px] text-slate-500 uppercase font-medium">Standard Template</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">#5521-GARCIA-MED</td>
+<td class="px-6 py-4 text-sm">Oct 22, 2023, 09:12 AM</td>
+<td class="px-6 py-4">
+<div class="flex justify-center">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+<span class="w-1.5 h-1.5 rounded-full bg-green-500 mr-1.5"></span> Ready
+                                    </span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end gap-2">
+<button class="p-2 hover:bg-primary/10 rounded-lg text-primary transition-colors">
+<span class="material-icons-round">download</span>
+</button>
+<button class="p-2 hover:bg-primary/10 rounded-lg text-slate-400 transition-colors">
+<span class="material-icons-round">share</span>
+</button>
+<button class="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors">
+<span class="material-icons-round">archive</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="bg-slate-50 dark:bg-primary/10 px-6 py-3 border-t border-slate-200 dark:border-primary/10 flex items-center justify-between">
+<span class="text-xs text-slate-500 font-medium">Showing 3 of 124 reports</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 text-xs border border-primary/20 rounded hover:bg-primary/10 transition-colors">Previous</button>
+<button class="px-3 py-1 text-xs border border-primary/20 rounded hover:bg-primary/10 transition-colors">Next</button>
+</div>
+</div>
+</div>
+</section>
+<!-- HIPAA Compliance Footer -->
+<footer class="mt-16 pt-8 border-t border-slate-200 dark:border-primary/10 text-center">
+<div class="inline-flex flex-col items-center gap-2 mb-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
+<div class="flex items-center gap-4">
+<span class="material-icons-round text-3xl">verified</span>
+<span class="material-icons-round text-3xl">security</span>
+<span class="material-icons-round text-3xl">lock</span>
+</div>
+<p class="text-[10px] uppercase font-bold tracking-widest">End-to-end Encrypted • AES-256 Bit Encryption • SOC 2 Type II Certified</p>
+</div>
+<p class="text-xs text-slate-500">© 2023 MedLegal Solutions. All medical records processed are handled in accordance with HIPAA data protection standards.</p>
+</footer>
+</main>
+<!-- Floating Help Button -->
+<button class="fixed bottom-6 right-6 w-12 h-12 bg-white dark:bg-primary text-primary dark:text-white rounded-full shadow-xl border border-primary/20 flex items-center justify-center hover:scale-110 transition-transform z-40">
+<span class="material-icons-round">help_outline</span>
+</button>
+</body></html>

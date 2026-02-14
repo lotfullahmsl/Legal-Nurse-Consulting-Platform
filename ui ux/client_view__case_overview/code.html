@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Client View: Case Overview | Legal Nurse Consulting</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              colors: {
+                "primary": "#24cef5",
+                "background-light": "#f5f8f8",
+                "background-dark": "#101f22",
+              },
+              fontFamily: {
+                "display": ["Inter"]
+              },
+              borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            },
+          },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200 min-h-screen">
+<!-- Top Navigation -->
+<nav class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex justify-between h-16">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white text-xl">balance</span>
+</div>
+<span class="text-xl font-bold tracking-tight">MedLegal<span class="text-primary">Consult</span></span>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="text-primary font-medium border-b-2 border-primary h-16 flex items-center" href="#">Cases</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors h-16 flex items-center" href="#">Documents</a>
+<a class="text-slate-500 dark:text-slate-400 hover:text-primary transition-colors h-16 flex items-center" href="#">Billing</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-800">
+<span class="material-icons text-emerald-500 text-xs">verified_user</span>
+<span class="text-xs font-medium text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">HIPAA Secure</span>
+</div>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors relative">
+<span class="material-icons">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900"></span>
+</button>
+<div class="flex items-center gap-3 pl-4 border-l border-slate-200 dark:border-slate-800">
+<div class="text-right hidden sm:block">
+<p class="text-sm font-semibold">Jonathan Harker, Esq.</p>
+<p class="text-xs text-slate-500">Law Firm Admin</p>
+</div>
+<img alt="User Profile" class="w-10 h-10 rounded-full bg-slate-200" data-alt="Professional headshot of a lawyer in a suit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUKCHDAo_V-DHMqCeYYWbxoxptgcK2xwygiImgOvR0-Ere4nJkz4udcNTeLjZ2aYiSaPEYZrtRgEKYoys1UqiJjjJqBZ8XUoYAsAKNiEwKzc0l-qxKwOELKfTcf67oznK3gluuKyRFSNDJj-QNqoz4y4ygtoU9x7imp-ND5fXlQCzwgnZELooPxdMbTN9deuBjey3SHZ_D06GxuR1YPszxuphrORNUnH2NuA7NOGp5rHSxhwD0wBmNleINejvsIa-8rbDmV9mv0zA"/>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Case Header -->
+<div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<nav aria-label="Breadcrumb" class="flex mb-2">
+<ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs font-medium text-slate-400">
+<li class="inline-flex items-center"><a class="hover:text-primary" href="#">Dashboard</a></li>
+<li><span class="material-icons text-xs mx-1">chevron_right</span></li>
+<li class="text-slate-500">Case #ML-88291</li>
+</ol>
+</nav>
+<h1 class="text-3xl font-bold text-slate-900 dark:text-white">Sarah Jenkins v. Regional Hospital</h1>
+<p class="text-slate-500 mt-1">Lead Medical Consultant: <span class="text-slate-900 dark:text-slate-300 font-medium">Dr. Elena Rodriguez, RN</span></p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg font-medium text-sm flex items-center gap-2 hover:bg-slate-50 transition-colors">
+<span class="material-icons text-lg">print</span> Print Report
+                </button>
+<button class="px-4 py-2 bg-primary text-white rounded-lg font-medium text-sm flex items-center gap-2 hover:opacity-90 shadow-sm transition-all">
+<span class="material-icons text-lg">chat</span> Message Team
+                </button>
+</div>
+</div>
+<!-- Case Progress Timeline -->
+<div class="bg-white dark:bg-slate-900 rounded-xl p-8 mb-8 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-bold text-lg flex items-center gap-2">
+<span class="material-icons text-primary">analytics</span>
+                    Case Progress
+                </h3>
+<span class="text-sm font-medium px-3 py-1 bg-primary/10 text-primary rounded-full">Phase 3: Medical Review</span>
+</div>
+<div class="relative">
+<div class="absolute top-5 left-0 w-full h-1 bg-slate-100 dark:bg-slate-800 rounded-full"></div>
+<div class="absolute top-5 left-0 w-[66%] h-1 bg-primary rounded-full"></div>
+<div class="relative flex justify-between">
+<!-- Step 1 -->
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center z-10 shadow-lg mb-3">
+<span class="material-icons text-xl">check</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-primary">Intake</span>
+<span class="text-[10px] text-slate-400 mt-1">Aug 12</span>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center z-10 shadow-lg mb-3">
+<span class="material-icons text-xl">check</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-primary">Record Retrieval</span>
+<span class="text-[10px] text-slate-400 mt-1">Aug 28</span>
+</div>
+<!-- Step 3 (Active) -->
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 bg-white dark:bg-slate-900 border-4 border-primary rounded-full flex items-center justify-center z-10 shadow-md mb-3">
+<div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-white">Medical Review</span>
+<span class="text-[10px] text-primary font-medium mt-1">In Progress</span>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 border-4 border-white dark:border-slate-900 rounded-full flex items-center justify-center z-10 mb-3">
+<span class="text-sm font-bold">4</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Drafting Report</span>
+<span class="text-[10px] text-slate-400 mt-1">Pending</span>
+</div>
+<!-- Step 5 -->
+<div class="flex flex-col items-center group">
+<div class="w-10 h-10 bg-slate-100 dark:bg-slate-800 text-slate-400 border-4 border-white dark:border-slate-900 rounded-full flex items-center justify-center z-10 mb-3">
+<span class="material-icons text-lg">flag</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-slate-400">Finalized</span>
+<span class="text-[10px] text-slate-400 mt-1">Pending</span>
+</div>
+</div>
+</div>
+<div class="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10 flex gap-4">
+<span class="material-icons text-primary">info</span>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">Current Activity</p>
+<p class="text-sm text-slate-600 dark:text-slate-400">Dr. Rodriguez is currently cross-referencing the anesthesia logs with the operative report from the June 14th surgery. Expected completion by Friday.</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Shared Documents -->
+<div class="lg:col-span-2 space-y-8">
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-icons text-primary">folder_shared</span>
+                            Shared Documents
+                        </h3>
+<button class="text-primary text-sm font-semibold hover:underline">Upload New</button>
+</div>
+<div class="divide-y divide-slate-100 dark:divide-slate-800">
+<!-- Doc 1 -->
+<div class="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 rounded flex items-center justify-center">
+<span class="material-icons">picture_as_pdf</span>
+</div>
+<div>
+<p class="font-medium text-sm">Medical_Summary_Initial_v2.pdf</p>
+<p class="text-xs text-slate-400">Uploaded by Dr. Rodriguez • 4.2 MB • Oct 12, 2023</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">download</span></button>
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">more_vert</span></button>
+</div>
+</div>
+<!-- Doc 2 -->
+<div class="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 text-blue-500 rounded flex items-center justify-center">
+<span class="material-icons">description</span>
+</div>
+<div>
+<p class="font-medium text-sm">Surgery_Timeline_Draft.docx</p>
+<p class="text-xs text-slate-400">Uploaded by System • 1.1 MB • Oct 10, 2023</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">download</span></button>
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">more_vert</span></button>
+</div>
+</div>
+<!-- Doc 3 -->
+<div class="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-500 rounded flex items-center justify-center">
+<span class="material-icons">table_view</span>
+</div>
+<div>
+<p class="font-medium text-sm">Billing_Records_Audit.xlsx</p>
+<p class="text-xs text-slate-400">Uploaded by Intake Team • 850 KB • Oct 08, 2023</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">download</span></button>
+<button class="p-2 text-slate-400 hover:text-primary"><span class="material-icons">more_vert</span></button>
+</div>
+</div>
+</div>
+<div class="p-4 bg-slate-50 dark:bg-slate-800/30 text-center">
+<button class="text-sm font-medium text-slate-500 hover:text-primary">View All 12 Documents</button>
+</div>
+</div>
+<!-- Recent Messages -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+<h3 class="font-bold flex items-center gap-2">
+<span class="material-icons text-primary">chat_bubble_outline</span>
+                            Recent Communication
+                        </h3>
+<button class="text-primary text-sm font-semibold hover:underline">New Message</button>
+</div>
+<div class="p-6 space-y-6">
+<!-- Message 1 -->
+<div class="flex gap-4">
+<img alt="Dr. Rodriguez" class="w-10 h-10 rounded-full flex-shrink-0" data-alt="Portrait of a female nurse consultant in a white lab coat" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBMtygu8ajddGtybUiHOKjeAzggLbxd1dszPU3MzGd7KlR6KdWNq-xRPlJAc2pUYBTWPObo5SbLnledoBbfhZZ5DZTu5HACF7sQSWK3vOdtcUv8r32qIWeRhvTPfIB18G7TEBWtwd963sye8KWImvtzuYStgkWf5ZJ8zhQSvIvwsXUVUp3MAIzxZd_R1FKR24JvTyERQ1R_UbWjjLohyLn4-tSpk-QlOu-K_0zgZrCkLPFNrymQQKYDhbH2MaAywHWpFwd8ybie6bk"/>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-sm">Dr. Elena Rodriguez</span>
+<span class="text-[10px] text-slate-400 uppercase tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Consultant</span>
+<span class="text-[10px] text-slate-400 ml-auto">2 hours ago</span>
+</div>
+<div class="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg rounded-tl-none">
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">I've reviewed the second set of radiology reports. There is a discrepancy in the imaging dates we should discuss during our call on Thursday.</p>
+</div>
+</div>
+</div>
+<!-- Message 2 -->
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">JH</div>
+<div>
+<div class="flex items-center gap-2 mb-1">
+<span class="font-bold text-sm">Jonathan Harker</span>
+<span class="text-[10px] text-slate-400 uppercase tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Client (You)</span>
+<span class="text-[10px] text-slate-400 ml-auto">Yesterday</span>
+</div>
+<div class="bg-primary/5 border border-primary/10 p-3 rounded-lg rounded-tl-none">
+<p class="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">Thank you, Elena. I'll make sure the junior associate is also on that call.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Info -->
+<div class="space-y-8">
+<!-- Upcoming Appointment -->
+<div class="bg-primary text-white rounded-xl p-6 shadow-md shadow-primary/20">
+<h3 class="font-bold text-lg mb-4 flex items-center gap-2">
+<span class="material-icons">event</span>
+                        Upcoming Call
+                    </h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 bg-white/20 rounded-lg flex flex-col items-center justify-center">
+<span class="text-xs font-bold leading-none uppercase">Oct</span>
+<span class="text-xl font-black leading-none">19</span>
+</div>
+<div>
+<p class="font-bold">Medical Review Strategy</p>
+<p class="text-xs text-white/80">Thursday • 2:00 PM EST</p>
+</div>
+</div>
+<div class="flex items-center gap-2 text-sm text-white/90 bg-white/10 p-2 rounded border border-white/10">
+<span class="material-icons text-sm">link</span>
+<span class="truncate">https://medlegal.zoom.us/j/882...</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2">
+<button class="bg-white text-primary font-bold py-2 rounded-lg text-sm hover:bg-slate-50 transition-colors">Join Call</button>
+<button class="bg-white/10 text-white border border-white/20 font-bold py-2 rounded-lg text-sm hover:bg-white/20 transition-colors">Reschedule</button>
+</div>
+</div>
+</div>
+<!-- Consultant Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6 text-center">
+<div class="relative inline-block mb-4">
+<img alt="Consultant" class="w-20 h-20 rounded-full mx-auto border-4 border-primary/10" data-alt="Female medical professional in a lab coat with a stethoscope" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9KpltUk1rZj3xE7QEDfDgtyqct5XTW0areRMjF4uvQRABxyHbRZJZzXj6uU83jt52rK1R3GHzfp-YOjkcYWR8skVnLBq1juG1PSinNflTOYwNWttICzBxu0XA7OaKs6CqDEZtbfPdo4vLZ7XB_MkzQ-PMd6hJ05kEh1Cs2vxckvpMJMFpS8ZdyAIsgybNUL4nJExGFC2wZR28WWO0XvXgUPBWgNNeGo47vEKbARh4QJmRH9O-E_O8SZDs6uhF_8ak0-Z3T1nP8TM"/>
+<span class="absolute bottom-1 right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full"></span>
+</div>
+<h4 class="font-bold text-lg">Dr. Elena Rodriguez, RN</h4>
+<p class="text-sm text-slate-500 mb-4">Board Certified Legal Nurse Consultant</p>
+<div class="flex items-center justify-center gap-4 text-slate-400 mb-6">
+<div class="flex flex-col items-center">
+<span class="text-slate-900 dark:text-white font-bold">142</span>
+<span class="text-[10px] uppercase font-medium">Cases</span>
+</div>
+<div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
+<div class="flex flex-col items-center">
+<span class="text-slate-900 dark:text-white font-bold">12yr</span>
+<span class="text-[10px] uppercase font-medium">Exp.</span>
+</div>
+<div class="w-px h-6 bg-slate-200 dark:bg-slate-800"></div>
+<div class="flex flex-col items-center">
+<span class="text-slate-900 dark:text-white font-bold">4.9/5</span>
+<span class="text-[10px] uppercase font-medium">Rating</span>
+</div>
+</div>
+<button class="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-bold text-sm hover:bg-primary hover:text-white transition-all">View Consultant Profile</button>
+</div>
+<!-- Helpful Resources -->
+<div class="bg-slate-50 dark:bg-slate-800/30 rounded-xl p-6 border border-slate-200 dark:border-slate-800">
+<h3 class="font-bold text-sm mb-4 text-slate-500 uppercase tracking-widest">Case Resources</h3>
+<ul class="space-y-4">
+<li class="flex items-start gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:text-primary">
+<span class="material-icons text-lg">help_outline</span>
+</div>
+<div>
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Understanding Medical Reports</p>
+<p class="text-xs text-slate-400">Guide for non-experts</p>
+</div>
+</li>
+<li class="flex items-start gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:text-primary">
+<span class="material-icons text-lg">schedule</span>
+</div>
+<div>
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Case Timeline FAQs</p>
+<p class="text-xs text-slate-400">Typical duration of phases</p>
+</div>
+</li>
+<li class="flex items-start gap-3 group cursor-pointer">
+<div class="w-8 h-8 rounded bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center group-hover:text-primary">
+<span class="material-icons text-lg">security</span>
+</div>
+<div>
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Our Security Standards</p>
+<p class="text-xs text-slate-400">How your data is protected</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer Disclaimer -->
+<footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-200 dark:border-slate-800 mt-12">
+<div class="flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2 opacity-50">
+<div class="w-6 h-6 bg-slate-400 rounded flex items-center justify-center">
+<span class="material-icons text-white text-xs">balance</span>
+</div>
+<span class="text-sm font-bold tracking-tight">MedLegalConsult</span>
+</div>
+<div class="flex gap-8 text-xs font-medium text-slate-400">
+<a class="hover:text-primary" href="#">Terms of Service</a>
+<a class="hover:text-primary" href="#">Privacy Policy</a>
+<a class="hover:text-primary" href="#">HIPAA Compliance Statement</a>
+<a class="hover:text-primary" href="#">Support</a>
+</div>
+<p class="text-xs text-slate-400">© 2023 MedLegal Platform Inc. All rights reserved.</p>
+</div>
+</footer>
+</body></html>

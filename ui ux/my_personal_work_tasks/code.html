@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Tasks | Legal Nurse Consulting Platform</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0891af",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101f22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col">
+<!-- Global Header -->
+<header class="border-b border-slate-200 dark:border-primary/20 bg-white dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-30">
+<div class="max-w-[1600px] mx-auto px-6 h-16 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="bg-primary p-1.5 rounded-lg">
+<span class="material-icons text-white text-xl">gavel</span>
+</div>
+<h1 class="text-lg font-bold tracking-tight">Workstream <span class="text-primary">Pro</span></h1>
+</div>
+<nav class="hidden md:flex items-center gap-8 ml-12">
+<a class="text-primary font-semibold border-b-2 border-primary h-16 flex items-center" href="#">My Tasks</a>
+<a class="text-slate-500 hover:text-primary transition-colors h-16 flex items-center" href="#">Cases</a>
+<a class="text-slate-500 hover:text-primary transition-colors h-16 flex items-center" href="#">Reports</a>
+<a class="text-slate-500 hover:text-primary transition-colors h-16 flex items-center" href="#">Vault</a>
+</nav>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-primary/10 rounded-full transition-colors relative">
+<span class="material-icons text-xl">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-background-dark"></span>
+</button>
+<div class="h-8 w-[1px] bg-slate-200 dark:bg-slate-700 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden sm:block">
+<p class="text-xs font-medium">S. Henderson, RN</p>
+<p class="text-[10px] text-slate-500">Legal Consultant</p>
+</div>
+<img alt="User Profile" class="w-9 h-9 rounded-full object-cover border border-slate-200 dark:border-slate-700" data-alt="Professional portrait of a female nurse consultant" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxIa6Gg5XaRu-zIZ86hHZ_81Vqbe2EGSJZz0n4m9qYcZCDMrHC_GmHruqdgX6LMwLJGn2gj01YxHdS1Y1bZ3kxHgyUbzpngG7hd35Ot2jiNT7vCMPf4pQW7DxvME2czicF0opuzznmWc07NJL3wNhsfhdMquw8CkTujzpuXGHK0ASKqg72mBWNr5TSxzRwWDQ4zephPRx-uXAHY29mfooJTZ-IXVQ1GXrRBtXpuaWBk35dC0I_SpXkW8g3dA5hju4Y2EYEE9kBSVY"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex-grow max-w-[1600px] w-full mx-auto px-6 py-8">
+<!-- Dashboard Summary -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+<div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
+<p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Active Tasks</p>
+<p class="text-2xl font-bold">14</p>
+</div>
+<div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl border-l-4 border-l-red-500">
+<p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1 text-red-500">Overdue</p>
+<p class="text-2xl font-bold">03</p>
+</div>
+<div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
+<p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Billable Hours (Week)</p>
+<p class="text-2xl font-bold text-primary">32.4</p>
+</div>
+<div class="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
+<p class="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Pending Review</p>
+<p class="text-2xl font-bold">05</p>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
+<div class="flex flex-wrap items-center gap-2">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all">
+<span class="material-icons text-sm">add</span> New Task
+                </button>
+<div class="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+<button class="px-4 py-1.5 rounded-md text-sm font-medium bg-white dark:bg-slate-700 shadow-sm">All</button>
+<button class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Today</button>
+<button class="px-4 py-1.5 rounded-md text-sm font-medium text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">Overdue</button>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative flex-grow lg:w-72">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all" placeholder="Search tasks or case IDs..." type="text"/>
+</div>
+<button class="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-icons">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Task Table -->
+<div class="bg-white dark:bg-slate-900/30 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-800">
+<th class="py-4 px-6 w-12">
+<input class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary bg-transparent" type="checkbox"/>
+</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Task Details</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Case Reference</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Due Date</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Time Tracked</th>
+<th class="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800/50">
+<!-- Task Row 1 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="py-5 px-6">
+<input class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary bg-transparent" type="checkbox"/>
+</td>
+<td class="py-5 px-4">
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Medical Chronology Review</p>
+<p class="text-xs text-slate-500 mt-1 line-clamp-1 italic">Reviewing 400pg records from Mercy Hospital.</p>
+</td>
+<td class="py-5 px-4">
+<a class="inline-flex items-center gap-1.5 text-primary text-xs font-medium hover:underline" href="#">
+<span class="material-icons text-xs">folder_open</span>
+                                    Doe vs. Central Medical
+                                </a>
+</td>
+<td class="py-5 px-4">
+<span class="px-2 py-1 text-[10px] font-bold rounded bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 uppercase tracking-tight">High Priority</span>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-sm text-red-500">event_busy</span>
+<span class="text-xs text-red-500 font-medium">Overdue (2d)</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<span class="text-sm font-mono text-slate-600 dark:text-slate-400">04:22:15</span>
+<button class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20">
+<span class="material-icons text-sm">play_arrow</span>
+</button>
+</div>
+</td>
+<td class="py-5 px-4 text-right">
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-icons text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Task Row 2 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="py-5 px-6">
+<input class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary bg-transparent" type="checkbox"/>
+</td>
+<td class="py-5 px-4">
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Expert Witness Screening</p>
+<p class="text-xs text-slate-500 mt-1 line-clamp-1">Interviewing Dr. Smith regarding neurological trauma.</p>
+</td>
+<td class="py-5 px-4">
+<a class="inline-flex items-center gap-1.5 text-primary text-xs font-medium hover:underline" href="#">
+<span class="material-icons text-xs">folder_open</span>
+                                    Case #2024-88-RT
+                                </a>
+</td>
+<td class="py-5 px-4">
+<span class="px-2 py-1 text-[10px] font-bold rounded bg-blue-100 dark:bg-primary/10 text-primary dark:text-primary uppercase tracking-tight">Medium</span>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-sm text-slate-400">event</span>
+<span class="text-xs">Tomorrow</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<span class="text-sm font-mono text-slate-600 dark:text-slate-400">01:10:00</span>
+<button class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-primary">
+<span class="material-icons text-sm">play_arrow</span>
+</button>
+</div>
+</td>
+<td class="py-5 px-4 text-right">
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-icons text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Task Row 3 (Active) -->
+<tr class="group bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer border-l-4 border-l-primary">
+<td class="py-5 px-6">
+<input class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary bg-transparent" type="checkbox"/>
+</td>
+<td class="py-5 px-4">
+<p class="text-sm font-semibold text-primary">Drafting Merit Opinion</p>
+<p class="text-xs text-slate-500 mt-1 line-clamp-1 italic">Summary of deviations from standard of care.</p>
+</td>
+<td class="py-5 px-4">
+<a class="inline-flex items-center gap-1.5 text-primary text-xs font-medium hover:underline" href="#">
+<span class="material-icons text-xs">folder_open</span>
+                                    Estate of Miller v. Nursing Home
+                                </a>
+</td>
+<td class="py-5 px-4">
+<span class="px-2 py-1 text-[10px] font-bold rounded bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400 uppercase tracking-tight">High Priority</span>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-sm text-primary">event</span>
+<span class="text-xs font-medium">Today</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<span class="text-sm font-mono text-primary font-bold">02:45:12</span>
+<button class="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center text-white ring-2 ring-primary ring-offset-2 dark:ring-offset-background-dark">
+<span class="material-icons text-sm">pause</span>
+</button>
+</div>
+</td>
+<td class="py-5 px-4 text-right">
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-icons text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+<!-- Task Row 4 -->
+<tr class="group hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors cursor-pointer">
+<td class="py-5 px-6">
+<input class="rounded border-slate-300 dark:border-slate-700 text-primary focus:ring-primary bg-transparent" type="checkbox"/>
+</td>
+<td class="py-5 px-4">
+<p class="text-sm font-semibold group-hover:text-primary transition-colors">Billing Record Audit</p>
+<p class="text-xs text-slate-500 mt-1 line-clamp-1">Reconciling billed procedures vs recorded vitals.</p>
+</td>
+<td class="py-5 px-4">
+<a class="inline-flex items-center gap-1.5 text-primary text-xs font-medium hover:underline" href="#">
+<span class="material-icons text-xs">folder_open</span>
+                                    HealthFirst Claim #9921
+                                </a>
+</td>
+<td class="py-5 px-4">
+<span class="px-2 py-1 text-[10px] font-bold rounded bg-slate-100 dark:bg-slate-800 text-slate-500 uppercase tracking-tight">Low</span>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-2">
+<span class="material-icons text-sm text-slate-400">event</span>
+<span class="text-xs text-slate-500">Oct 24, 2023</span>
+</div>
+</td>
+<td class="py-5 px-4">
+<div class="flex items-center gap-3">
+<span class="text-sm font-mono text-slate-600 dark:text-slate-400">00:00:00</span>
+<button class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-primary">
+<span class="material-icons text-sm">play_arrow</span>
+</button>
+</div>
+</td>
+<td class="py-5 px-4 text-right">
+<button class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+<span class="material-icons text-lg">more_horiz</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination / Table Footer -->
+<div class="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 flex items-center justify-between">
+<p class="text-xs text-slate-500">Showing 1-4 of 14 tasks</p>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-white dark:hover:bg-slate-800 disabled:opacity-30" disabled="">
+<span class="material-icons text-sm">chevron_left</span>
+</button>
+<button class="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-white dark:hover:bg-slate-800">
+<span class="material-icons text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Task Detail Drawer (Slide-out Concept) -->
+<div class="fixed top-0 right-0 w-[450px] h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-40 transform translate-x-full lg:translate-x-0 hidden lg:block overflow-y-auto custom-scrollbar">
+<div class="p-6">
+<div class="flex items-center justify-between mb-8">
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary px-2 py-1 bg-primary/10 rounded">Task Detail</span>
+<button class="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+<span class="material-icons text-slate-400">close</span>
+</button>
+</div>
+<div class="space-y-6">
+<div>
+<h2 class="text-xl font-bold mb-1">Medical Chronology Review</h2>
+<p class="text-sm text-slate-500 flex items-center gap-2">
+<span class="material-icons text-sm">business</span>
+                        Doe vs. Central Medical Hospital
+                    </p>
+</div>
+<div class="flex gap-4">
+<div class="flex-1 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+<p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Total Time</p>
+<p class="text-lg font-mono font-bold">04:22:15</p>
+</div>
+<div class="flex-1 bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
+<p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Billable Value</p>
+<p class="text-lg font-bold text-primary">$875.00</p>
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+<span class="material-icons text-sm">description</span>
+                        Confidential Notes (HIPAA-Secure)
+                    </label>
+<div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-800 text-sm leading-relaxed text-slate-600 dark:text-slate-400 italic">
+                        User reported history of chronic hypertension. Records from 05/12 are missing nursing flowsheets. Need to flag "Dr. Jensen" for potential conflict of interest check. 
+                    </div>
+</div>
+<div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between">
+<h3 class="text-sm font-bold">Recent Attachments</h3>
+<button class="text-xs text-primary font-medium flex items-center gap-1">
+<span class="material-icons text-xs">add_link</span>
+                            Link file
+                        </button>
+</div>
+<div class="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+<span class="material-icons text-red-500">picture_as_pdf</span>
+<div class="flex-grow">
+<p class="text-xs font-medium">Hospital_Records_Batch_A.pdf</p>
+<p class="text-[10px] text-slate-500">12.4 MB • Uploaded 2h ago</p>
+</div>
+<button class="material-icons text-slate-400 text-sm">download</button>
+</div>
+</div>
+<div class="pt-6 flex gap-3">
+<button class="flex-grow bg-primary text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/25">
+<span class="material-icons">check_circle</span> Mark Complete
+                    </button>
+<button class="p-3 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800">
+<span class="material-icons">edit</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-auto p-6 bg-slate-50 dark:bg-slate-800/20 border-t border-slate-100 dark:border-slate-800">
+<div class="flex items-center justify-between text-[10px] text-slate-500 uppercase font-bold tracking-widest">
+<span>Compliance Verified</span>
+<span>Session: Active</span>
+</div>
+</div>
+</div>
+<!-- HIPAA Compliance Footer Badge -->
+<div class="fixed bottom-4 left-6 bg-slate-900 text-[10px] text-emerald-400 px-3 py-1.5 rounded-full flex items-center gap-2 border border-emerald-500/30 backdrop-blur-md shadow-xl z-50">
+<span class="material-icons text-[12px]">security</span>
+        HIPAA COMPLIANT ENVIRONMENT
+    </div>
+</body></html>

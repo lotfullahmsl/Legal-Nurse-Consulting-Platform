@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Client Directory Management | Legal Nurse Consulting</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0891af",
+                        "background-light": "#f5f8f8",
+                        "background-dark": "#101f22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #1e3a3f;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen font-display">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-full w-64 bg-slate-50 dark:bg-background-dark border-r border-slate-200 dark:border-primary/20 z-50">
+<div class="p-6 flex items-center space-x-3">
+<div class="w-8 h-8 bg-primary rounded flex items-center justify-center">
+<span class="material-icons text-white text-lg">medical_services</span>
+</div>
+<span class="font-bold text-lg tracking-tight text-slate-800 dark:text-white">LNC Portal</span>
+</div>
+<nav class="mt-4 px-4 space-y-1">
+<a class="flex items-center px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-icons mr-3">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 bg-primary/10 text-primary rounded-lg transition-colors" href="#">
+<span class="material-icons mr-3">people</span>
+<span class="text-sm font-medium">Client Directory</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-icons mr-3">gavel</span>
+<span class="text-sm font-medium">Legal Cases</span>
+</a>
+<a class="flex items-center px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-icons mr-3">receipt_long</span>
+<span class="text-sm font-medium">Billing &amp; Invoices</span>
+</a>
+<div class="pt-4 pb-2 px-4 uppercase text-[10px] font-bold text-slate-400 dark:text-slate-600 tracking-widest">Security</div>
+<a class="flex items-center px-4 py-3 text-slate-600 dark:text-slate-400 hover:bg-primary/10 hover:text-primary rounded-lg transition-colors" href="#">
+<span class="material-icons mr-3">verified_user</span>
+<span class="text-sm font-medium">Audit Logs</span>
+</a>
+</nav>
+<div class="absolute bottom-0 left-0 w-full p-4">
+<div class="flex items-center p-3 rounded-xl bg-slate-100 dark:bg-primary/5">
+<img class="w-10 h-10 rounded-lg object-cover" data-alt="Professional female medical consultant headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvwdHN5MbZkc2Gfd0pVZbCEUDiQ2FJUmt-ryEnrJh9phwhPkOwYordoZNilaF6GTd9Znh_qkoohZM52Cxt-QBcyu2mVamYwv-YG-iL8dKZkPSy5VL6QVwsvznb0QayNvqGLXqV6WidEwI_xrWTZ0142glVs89pWxf3D3laeu3RiZoJo81rPrfNpJRFlBOGadg4fJOlNqEmXLU348A5Anuwdw5mx4q9Y1NXGGQnk50WbqX4pfhKRlFvDglI6dheslONOI1NwC5a42g"/>
+<div class="ml-3 overflow-hidden">
+<p class="text-xs font-semibold truncate">Dr. Sarah Miller</p>
+<p class="text-[10px] text-slate-500 truncate">Senior Consultant</p>
+</div>
+<button class="ml-auto text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-sm">logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 p-8 min-h-screen">
+<!-- Header Section -->
+<header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+<div>
+<h1 class="text-2xl font-bold text-slate-900 dark:text-white">Client Directory</h1>
+<p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage HIPAA-compliant attorney relationships and firm records.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm font-medium">
+<span class="material-icons text-sm mr-2">file_download</span>
+                    Export CSV
+                </button>
+<button class="flex items-center px-5 py-2.5 bg-primary hover:bg-primary/90 text-white rounded-lg shadow-lg shadow-primary/20 transition-all text-sm font-semibold">
+<span class="material-icons text-sm mr-2">person_add</span>
+                    New Client
+                </button>
+</div>
+</header>
+<!-- Search & Filter Bar -->
+<div class="bg-white dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-primary/10 mb-6 flex flex-wrap items-center gap-4">
+<div class="relative flex-1 min-w-[300px]">
+<span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none text-sm transition-all text-slate-700 dark:text-slate-200" placeholder="Search by name, firm, or email..." type="text"/>
+</div>
+<div class="flex items-center gap-2">
+<select class="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/50 outline-none">
+<option>Referral Source: All</option>
+<option>Direct Outreach</option>
+<option>Legal Conference</option>
+<option>Referral</option>
+<option>Website</option>
+</select>
+<select class="bg-slate-50 dark:bg-background-dark border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-sm text-slate-600 dark:text-slate-300 focus:ring-2 focus:ring-primary/50 outline-none">
+<option>Status: Active</option>
+<option>Inactive</option>
+<option>Pending Intake</option>
+</select>
+</div>
+<div class="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2 hidden lg:block"></div>
+<button class="text-slate-500 hover:text-primary transition-colors p-2">
+<span class="material-icons">filter_list</span>
+</button>
+</div>
+<!-- Clients Table Container -->
+<div class="bg-white dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-primary/10 shadow-sm overflow-hidden">
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-slate-50 dark:bg-primary/5 border-b border-slate-200 dark:border-slate-700">
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client &amp; Firm</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Contact Details</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Referral Source</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center">Active Cases</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-700/50">
+<!-- Row 1 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">JD</div>
+<div class="ml-4">
+<div class="text-sm font-semibold text-slate-900 dark:text-white">Jameson Daugherty</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Daugherty Legal Group LLP</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm text-slate-700 dark:text-slate-300">j.daugherty@dlg-law.com</div>
+<div class="text-xs text-slate-500 dark:text-slate-500 mt-1">(555) 012-8844</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    Direct Referral
+                                </span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                                    12
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end space-x-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+<span class="material-icons text-lg">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-600 font-bold text-sm">SR</div>
+<div class="ml-4">
+<div class="text-sm font-semibold text-slate-900 dark:text-white">Samantha Reynolds</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Reynolds Medical Law</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm text-slate-700 dark:text-slate-300">sreynolds@reynoldslaw.io</div>
+<div class="text-xs text-slate-500 dark:text-slate-500 mt-1">(555) 998-3321</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    ABA Conference
+                                </span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                                    4
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end space-x-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+<span class="material-icons text-lg">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-600 font-bold text-sm">MT</div>
+<div class="ml-4">
+<div class="text-sm font-semibold text-slate-900 dark:text-white">Marcus Thorne</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Thorne &amp; Associates</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm text-slate-700 dark:text-slate-300">m.thorne@thornelegal.com</div>
+<div class="text-xs text-slate-500 dark:text-slate-500 mt-1">(555) 441-2900</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    Organic Search
+                                </span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                                    0
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-slate-400 mr-2"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Inactive</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end space-x-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+<span class="material-icons text-lg">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">LW</div>
+<div class="ml-4">
+<div class="text-sm font-semibold text-slate-900 dark:text-white">Linda Wu</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Coastal Injury Law</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm text-slate-700 dark:text-slate-300">lwu@coastal-injury.com</div>
+<div class="text-xs text-slate-500 dark:text-slate-500 mt-1">(555) 772-0199</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    Website Lead
+                                </span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                                    7
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end space-x-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+<span class="material-icons text-lg">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-600 font-bold text-sm">BK</div>
+<div class="ml-4">
+<div class="text-sm font-semibold text-slate-900 dark:text-white">Benjamin Kael</div>
+<div class="text-xs text-slate-500 dark:text-slate-400">Kael Medical Litigation</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="text-sm text-slate-700 dark:text-slate-300">b.kael@kael-litigation.org</div>
+<div class="text-xs text-slate-500 dark:text-slate-500 mt-1">(555) 233-1104</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 text-[11px] font-medium rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-600">
+                                    Referral
+                                </span>
+</td>
+<td class="px-6 py-4 text-center">
+<span class="inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded-md bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                                    2
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center">
+<span class="w-2 h-2 rounded-full bg-amber-400 mr-2"></span>
+<span class="text-xs font-medium text-slate-600 dark:text-slate-400">On Hold</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex items-center justify-end space-x-2">
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">visibility</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-lg">edit</span>
+</button>
+<button class="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+<span class="material-icons text-lg">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-primary/5 flex items-center justify-between border-t border-slate-200 dark:border-slate-700">
+<p class="text-xs text-slate-500 dark:text-slate-400">
+                    Showing <span class="font-bold text-slate-700 dark:text-slate-200">1</span> to <span class="font-bold text-slate-700 dark:text-slate-200">5</span> of <span class="font-bold text-slate-700 dark:text-slate-200">42</span> clients
+                </p>
+<div class="flex items-center space-x-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-all">
+<span class="material-icons text-sm">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-primary text-white text-xs font-bold shadow-sm shadow-primary/20">
+                        1
+                    </button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 text-xs font-bold transition-all">
+                        2
+                    </button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 text-xs font-bold transition-all">
+                        3
+                    </button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg border border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-white dark:hover:bg-slate-700 transition-all">
+<span class="material-icons text-sm">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- System Stats Footer -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-primary/10 flex items-center">
+<div class="p-3 bg-primary/10 rounded-lg text-primary mr-4">
+<span class="material-icons">handshake</span>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Total Active Clients</p>
+<p class="text-xl font-bold text-slate-900 dark:text-white">38</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-primary/10 flex items-center">
+<div class="p-3 bg-emerald-500/10 rounded-lg text-emerald-500 mr-4">
+<span class="material-icons">trending_up</span>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">New Leads (30d)</p>
+<p class="text-xl font-bold text-slate-900 dark:text-white">+12.4%</p>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-800/40 p-4 rounded-xl border border-slate-200 dark:border-primary/10 flex items-center">
+<div class="p-3 bg-amber-500/10 rounded-lg text-amber-500 mr-4">
+<span class="material-icons">verified</span>
+</div>
+<div>
+<p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Compliance Status</p>
+<p class="text-xl font-bold text-slate-900 dark:text-white">HIPAA Secure</p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

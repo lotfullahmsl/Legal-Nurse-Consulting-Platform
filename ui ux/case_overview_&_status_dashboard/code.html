@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Case Overview &amp; Status Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0d59f2",
+                        "background-light": "#f5f6f8",
+                        "background-dark": "#101622",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 min-h-screen">
+<!-- Global Header -->
+<header class="bg-slate-900 border-b border-slate-800 pt-4 px-6">
+<div class="max-w-[1600px] mx-auto">
+<div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+<div class="flex items-center gap-4">
+<div class="p-2 bg-primary/20 rounded-lg">
+<span class="material-icons text-primary text-2xl">gavel</span>
+</div>
+<div>
+<div class="flex items-center gap-3">
+<h1 class="text-xl font-bold text-white leading-tight">Case #8821 — Johnson vs. General Hospital</h1>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-orange-500/20 text-orange-400 border border-orange-500/30">Urgent</span>
+<span class="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+<span class="material-icons text-[12px]">verified_user</span> HIPAA Secure
+                            </span>
+</div>
+<p class="text-slate-400 text-sm mt-1">Medical Malpractice | Lead Attorney: Sarah Jenkins</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">cloud_upload</span> Upload Records
+                    </button>
+<button class="bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm font-semibold border border-slate-700 transition-colors flex items-center gap-2">
+<span class="material-icons text-sm">print</span> Export PDF
+                    </button>
+</div>
+</div>
+<!-- Tabs -->
+<nav class="flex gap-8 border-b border-slate-800">
+<a class="pb-3 border-b-2 border-primary text-primary font-semibold text-sm flex items-center gap-2" href="#">
+<span class="material-icons text-sm">dashboard</span> Overview
+                </a>
+<a class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors flex items-center gap-2" href="#">
+<span class="material-icons text-sm">folder_open</span> Medical Records
+                </a>
+<a class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors flex items-center gap-2" href="#">
+<span class="material-icons text-sm">timeline</span> Fact Timeline
+                </a>
+<a class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors flex items-center gap-2" href="#">
+<span class="material-icons text-sm">payments</span> Billing
+                </a>
+<a class="pb-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200 font-medium text-sm transition-colors flex items-center gap-2" href="#">
+<span class="material-icons text-sm">forum</span> Messages
+                </a>
+</nav>
+</div>
+</header>
+<main class="p-6 max-w-[1600px] mx-auto">
+<!-- Status Progress Bar -->
+<section class="mb-8 overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+<div class="grid grid-cols-5 divide-x divide-slate-200 dark:divide-slate-800">
+<div class="p-4 bg-primary/10 flex flex-col items-center justify-center text-center relative">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Stage 1</span>
+<span class="text-sm font-semibold text-slate-900 dark:text-white">Intake &amp; Setup</span>
+<span class="material-icons text-primary mt-1">check_circle</span>
+</div>
+<div class="p-4 bg-primary/20 flex flex-col items-center justify-center text-center">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Stage 2</span>
+<span class="text-sm font-semibold text-slate-900 dark:text-white">Record Procurement</span>
+<span class="material-icons text-primary mt-1 text-base">check_circle</span>
+</div>
+<div class="p-4 bg-primary flex flex-col items-center justify-center text-center">
+<span class="text-[10px] font-bold text-blue-100 uppercase tracking-widest mb-1">Stage 3</span>
+<span class="text-sm font-bold text-white">Medical Review</span>
+<div class="w-1.5 h-1.5 bg-white rounded-full mt-2 animate-pulse"></div>
+</div>
+<div class="p-4 flex flex-col items-center justify-center text-center opacity-50">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Stage 4</span>
+<span class="text-sm font-semibold text-slate-400">Expert Analysis</span>
+</div>
+<div class="p-4 flex flex-col items-center justify-center text-center opacity-50">
+<span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Stage 5</span>
+<span class="text-sm font-semibold text-slate-400">Final Reporting</span>
+</div>
+</div>
+</section>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Left Column: Metrics & Activity -->
+<div class="col-span-12 lg:col-span-8 space-y-6">
+<!-- Quick Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Pages Processed</span>
+<div class="p-2 bg-blue-500/10 rounded-lg text-blue-500">
+<span class="material-icons">description</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 dark:text-white">1,240</span>
+<span class="text-xs text-slate-500 font-medium">/ 1,285 total</span>
+</div>
+<div class="mt-4 w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 96%"></div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Missing Records</span>
+<div class="p-2 bg-red-500/10 rounded-lg text-red-500">
+<span class="material-icons">error_outline</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-red-500">45</span>
+<span class="text-xs text-slate-500 font-medium">pending items</span>
+</div>
+<p class="mt-4 text-[10px] text-slate-500 leading-tight">Last request sent to St. Mary's 2 days ago.</p>
+</div>
+<div class="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Next Deadline</span>
+<div class="p-2 bg-amber-500/10 rounded-lg text-amber-500">
+<span class="material-icons">event</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2">
+<span class="text-3xl font-bold text-slate-900 dark:text-white">12</span>
+<span class="text-xs text-slate-500 font-medium">days remaining</span>
+</div>
+<p class="mt-4 text-[10px] text-slate-500 leading-tight">Preliminary Review due Oct 28th, 2023.</p>
+</div>
+</div>
+<!-- Recent Activity Feed -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Recent Activity</h3>
+<button class="text-primary text-xs font-semibold hover:underline">View All History</button>
+</div>
+<div class="divide-y divide-slate-200 dark:divide-slate-800">
+<div class="p-4 flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+<span class="material-icons text-sm">cloud_done</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">Medical Records received from <span class="font-bold">St. Jude Medical Center</span></p>
+<p class="text-xs text-slate-500 mt-0.5">Automated Import • 2 hours ago</p>
+</div>
+</div>
+<div class="p-4 flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+<span class="material-icons text-sm">edit</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">Sarah Jenkins updated <span class="font-bold">Case Status</span> to 'Medical Review'</p>
+<p class="text-xs text-slate-500 mt-0.5">User Action • 5 hours ago</p>
+</div>
+</div>
+<div class="p-4 flex gap-4 items-start">
+<div class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center shrink-0">
+<span class="material-icons text-sm">comment</span>
+</div>
+<div>
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">New comment added to <span class="font-bold">Internal Notes</span></p>
+<p class="text-xs text-slate-500 mt-0.5">David Miller • Yesterday at 4:32 PM</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Pending Tasks -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Pending Tasks</h3>
+<button class="text-primary text-xs font-semibold flex items-center gap-1">
+<span class="material-icons text-xs">add</span> New Task
+                        </button>
+</div>
+<div class="p-2">
+<div class="flex items-center gap-4 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors group">
+<div class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center group-hover:border-primary cursor-pointer"></div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">Identify missing radiology reports for 2022 visit</p>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-[10px] text-red-500 bg-red-500/10 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Overdue</span>
+<span class="text-[10px] text-slate-500 flex items-center gap-1"><span class="material-icons text-[12px]">person</span> Nurse Consultant</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors group">
+<div class="w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded flex items-center justify-center group-hover:border-primary cursor-pointer"></div>
+<div class="flex-1">
+<p class="text-sm font-medium text-slate-800 dark:text-slate-200">Prepare chronologies for Expert Reviewer</p>
+<div class="flex items-center gap-3 mt-1">
+<span class="text-[10px] text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">Due in 3d</span>
+<span class="text-[10px] text-slate-500 flex items-center gap-1"><span class="material-icons text-[12px]">person</span> Legal Team</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Sidebar Info -->
+<div class="col-span-12 lg:col-span-4 space-y-6">
+<!-- Client Info Card -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="bg-slate-50 dark:bg-slate-800/50 p-5 border-b border-slate-200 dark:border-slate-800">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Client Information</h3>
+</div>
+<div class="p-5 space-y-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full overflow-hidden bg-slate-200">
+<img class="w-full h-full object-cover" data-alt="Client profile portrait photo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiLCOGVwCTBVduTecXZ2nbCBJUoR1Qe1LtdMh58B40b9kRYqggrNQQuwhGy_gtCnJb1-9th2KDb67b03JpXT5OjLQDbZBBg4V07qmek4KQUuWSlaOBVDk4UoHxHih3fMCKSds1GN0ka7jwovHZofzhysbtUq2D2pS7Jw3CqIpP38vsfN0-nSic24nab_SorV4VTZo-aMdrkju1CpMSZqlQXcboFqruByPQrxQ-OlbCgqrcsBfgVbDSzkKvvkARYSNFBFk6EzfnjLM"/>
+</div>
+<div>
+<p class="text-base font-bold text-slate-900 dark:text-white">Marcus Johnson</p>
+<p class="text-xs text-slate-500">DOB: 05/14/1978 (45 yrs)</p>
+</div>
+</div>
+<div class="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Date of Incident</label>
+<p class="text-sm font-medium">November 12, 2022</p>
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Injury Type</label>
+<p class="text-sm font-medium">Post-Surgical Sepsis / Delayed Diagnosis</p>
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest block mb-0.5">Social Security</label>
+<p class="text-sm font-medium">***-**-4491 (Verified)</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Assigned Team Members -->
+<div class="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+<div class="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+<h3 class="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider">Case Team</h3>
+<button class="p-1 text-slate-400 hover:text-primary transition-colors">
+<span class="material-icons text-xl">person_add</span>
+</button>
+</div>
+<div class="p-5 space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-primary border border-primary/20">
+<span class="font-bold text-sm">SJ</span>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Sarah Jenkins</p>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Lead Attorney</p>
+</div>
+</div>
+<span class="material-icons text-slate-300">chat_bubble_outline</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Nurse consultant headshot avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDS-48es1SG5pA9_lUJc2a4P45wpoeQ-grb02GaOHKeibK4Nt7urVBenTzkSPdZUHjPkh-XU_0kmsoyfok22R0q2-rxllPjXQ4T5FMOnfwiM1Ugx3wulWtTqGqEnXDGupBcIclrP5Bs4kr2lvet-8nk7CgCOiU1ZBgQ4G2M0tvfnxUC39JEiE8HEDV1C6OdPUjqVhDdB1CUIFN6GaW0Lyl8hA_b7ZHPMg9jN2ohVKfhxoNUEAm3Qdp6sKu-noYdTS3n0cwcIVzqspk"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">Linda Moore, RN</p>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Nurse Consultant</p>
+</div>
+</div>
+<span class="material-icons text-slate-300">chat_bubble_outline</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Paralegal headshot avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcnTtB5l71WT6woyDyqMludA58tWXDIxjaLyIpL3zPDS9uVngP2k75DkZ_oSfr-nWVi2bDgT1ogvFZ_hIgbuxUUfNnQ8bZ6MJz_LPqckokTybQe0BKZ2TTJwaIS7PxAO1td5TUOE89N_v7OGsws1RVciPQb7cTxzD3u_kCX2NXe0CD4kh7H6sfp70HhVAPYxhFBPqq8BrD9Qkog6DI8Fd9WDZwmHzgIX-QoGBu6yrn7Kd182YPYdJuaxSzupKiupDLtQvNk3vEmqU"/>
+</div>
+<div>
+<p class="text-sm font-bold text-slate-900 dark:text-white">David Miller</p>
+<p class="text-[10px] text-slate-500 uppercase font-bold tracking-tight">Lead Paralegal</p>
+</div>
+</div>
+<span class="material-icons text-slate-300">chat_bubble_outline</span>
+</div>
+</div>
+</div>
+<!-- Case Notes Mini -->
+<div class="bg-primary/5 rounded-xl border border-primary/20 shadow-sm p-5">
+<h3 class="text-xs font-bold text-primary uppercase tracking-wider mb-3">Priority Note</h3>
+<p class="text-xs text-slate-700 dark:text-slate-300 leading-relaxed italic">
+                        "Initial record review suggests potential discrepancy in post-op vitals recording between nursing logs and EMR system data."
+                    </p>
+<div class="mt-4 flex items-center justify-between">
+<span class="text-[10px] text-slate-500">Updated 2d ago by L. Moore</span>
+<button class="text-primary text-[10px] font-bold uppercase hover:underline">Edit Note</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Map/Location Context Footer (Simulated) -->
+<footer class="mt-12 border-t border-slate-200 dark:border-slate-800 p-6 bg-white dark:bg-slate-900/50">
+<div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-6">
+<div class="flex items-center gap-8">
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Court Jurisdiction</p>
+<div class="flex items-center gap-2">
+<span class="material-icons text-slate-400 text-sm">location_on</span>
+<span class="text-sm font-medium">Superior Court of New Jersey, Mercer County</span>
+</div>
+</div>
+<div>
+<p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Defense Counsel</p>
+<p class="text-sm font-medium">Borden &amp; Associates LLP</p>
+</div>
+</div>
+<div class="w-48 h-12 rounded overflow-hidden relative grayscale opacity-40">
+<div class="absolute inset-0 bg-primary/10"></div>
+<img class="w-full h-full object-cover" data-alt="Abstract map pattern for location" data-location="Trenton, New Jersey" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA84Mp1fGCm3CdRTu9wzh1q6i1RnRhrWc4w0b97EqnBCspEpG4Xb8PmQr8hhPtEqx2TgSJ2hruH06cyaNA74BI2_ewnxE3Ot7qcs78XXdieEsGi4C1OegdDhoFRdLqbqiYnf3VLMnNfYaJ2EF9hqd6N0fJkCufSQHZckIkJZju0envyBV_hCV2x57KzgjOob1nlf9VSDVH3_TYEipmXS9JHi1LkpllPBzYYPZOU7bAEbQjIxcDfJUit40TjtsjpJ_jOEicDhHON8jE"/>
+</div>
+</div>
+</footer>
+</body></html>

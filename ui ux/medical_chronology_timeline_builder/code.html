@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Medical Chronology Timeline Builder</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f3b61",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#14181e",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-800 dark:text-slate-200 antialiased h-screen overflow-hidden">
+<!-- Top Utility Bar -->
+<header class="h-16 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/50 px-6 flex items-center justify-between sticky top-0 z-50">
+<div class="flex items-center gap-4">
+<div class="bg-primary text-white p-2 rounded-lg">
+<span class="material-icons text-xl">timeline</span>
+</div>
+<div>
+<h1 class="font-bold text-lg leading-tight">Case: Johnson vs. General Hospital</h1>
+<div class="flex items-center gap-2">
+<span class="inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+<span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">HIPAA Secured • Autosaved 2m ago</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 mr-4">
+<button class="px-3 py-1 text-xs font-medium rounded bg-white dark:bg-slate-700 shadow-sm">Timeline View</button>
+<button class="px-3 py-1 text-xs font-medium text-slate-500">Grid View</button>
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+<span class="material-icons text-sm">share</span>
+                Share
+            </button>
+<div class="relative group">
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg text-sm font-semibold hover:opacity-90 transition-opacity">
+<span class="material-icons text-sm">download</span>
+                    Export Report
+                    <span class="material-icons text-sm">expand_more</span>
+</button>
+<!-- Tooltip / Menu mockup -->
+<div class="hidden group-hover:block absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-slate-700 p-2 z-50">
+<button class="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-2">
+<span class="material-icons text-sm text-red-500">picture_as_pdf</span> PDF Document (.pdf)
+                    </button>
+<button class="w-full text-left px-3 py-2 rounded hover:bg-slate-50 dark:hover:bg-slate-700 text-sm flex items-center gap-2">
+<span class="material-icons text-sm text-blue-500">description</span> MS Word (.docx)
+                    </button>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex h-[calc(100vh-64px)] overflow-hidden">
+<!-- Left Filter & Navigation Panel -->
+<aside class="w-64 border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/30 p-4 flex flex-col gap-6 overflow-y-auto">
+<div>
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Search Events</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-2.5 text-slate-400 text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg text-sm focus:ring-1 focus:ring-primary/50" placeholder="Filter by keyword..." type="text"/>
+</div>
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Event Categories</label>
+<div class="space-y-1">
+<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Surgery &amp; Procedures</span>
+</label>
+<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">ER &amp; Admissions</span>
+</label>
+<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Medications</span>
+</label>
+<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Imaging / Labs</span>
+</label>
+<label class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer group">
+<input checked="" class="rounded border-slate-300 text-primary focus:ring-primary" type="checkbox"/>
+<span class="text-sm text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors">Notes &amp; Narrative</span>
+</label>
+</div>
+</div>
+<div>
+<label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block">Summary Statistics</label>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+<div class="text-xs text-slate-500">Events</div>
+<div class="text-xl font-bold">142</div>
+</div>
+<div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
+<div class="text-xs text-slate-500">Years</div>
+<div class="text-xl font-bold">4.2</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Timeline Canvas -->
+<section class="flex-1 overflow-y-auto relative bg-background-light dark:bg-background-dark p-8">
+<div class="max-w-3xl mx-auto relative">
+<!-- Vertical Line -->
+<div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700 transform -translate-x-1/2 z-0"></div>
+<!-- Timeline Nodes -->
+<div class="space-y-12 relative z-10">
+<!-- Date Header -->
+<div class="flex justify-center">
+<span class="px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-500 shadow-sm">
+                            OCTOBER 2023
+                        </span>
+</div>
+<!-- Event Card Left -->
+<div class="flex items-center w-full">
+<div class="w-1/2 pr-10 text-right">
+<div class="inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer group">
+<div class="text-[10px] font-bold text-primary dark:text-blue-400 uppercase mb-1">Oct 14, 2023 @ 08:30 AM</div>
+<h3 class="font-bold text-sm mb-1 group-hover:text-primary transition-colors">Initial ER Admission</h3>
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">Patient arrived via EMS with severe abdominal pain, localized to lower right quadrant.</p>
+<div class="mt-2 flex justify-end gap-2">
+<span class="px-2 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 rounded text-[10px] font-bold">EMERGENCY</span>
+</div>
+</div>
+</div>
+<div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-background-dark ring-4 ring-primary/10"></div>
+<div class="w-1/2 pl-10"></div>
+</div>
+<!-- Event Card Right (Active/Selected) -->
+<div class="flex items-center w-full">
+<div class="w-1/2 pr-10"></div>
+<div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-background-dark ring-4 ring-primary/10"></div>
+<div class="w-1/2 pl-10">
+<div class="inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md border-2 border-primary cursor-pointer ring-4 ring-primary/5">
+<div class="text-[10px] font-bold text-primary dark:text-blue-400 uppercase mb-1">Oct 14, 2023 @ 11:15 AM</div>
+<h3 class="font-bold text-sm mb-1">Diagnostic CT Scan</h3>
+<p class="text-xs text-slate-600 dark:text-slate-400">CT Imaging confirmed appendicitis with possible perforation. Prep for surgical intervention started.</p>
+<div class="mt-2 flex gap-2">
+<span class="px-2 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded text-[10px] font-bold">IMAGING</span>
+<span class="px-2 py-0.5 bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300 rounded text-[10px] font-bold">PAGE 42</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Date Header -->
+<div class="flex justify-center">
+<span class="px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-xs font-bold text-slate-500 shadow-sm uppercase">
+                            November 2023
+                        </span>
+</div>
+<!-- Event Card Left -->
+<div class="flex items-center w-full">
+<div class="w-1/2 pr-10 text-right">
+<div class="inline-block bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 hover:border-primary transition-colors cursor-pointer group">
+<div class="text-[10px] font-bold text-primary dark:text-blue-400 uppercase mb-1">Nov 02, 2023 @ 10:00 AM</div>
+<h3 class="font-bold text-sm mb-1 group-hover:text-primary transition-colors">Post-Op Follow-up</h3>
+<p class="text-xs text-slate-600 dark:text-slate-400 line-clamp-2">Incision site healing normally. Patient reports mild discomfort. Sutures removed.</p>
+<div class="mt-2 flex justify-end gap-2">
+<span class="px-2 py-0.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded text-[10px] font-bold">OUTPATIENT</span>
+</div>
+</div>
+</div>
+<div class="absolute left-1/2 transform -translate-x-1/2 w-4 h-4 bg-primary rounded-full border-4 border-white dark:border-background-dark ring-4 ring-primary/10"></div>
+<div class="w-1/2 pl-10"></div>
+</div>
+<!-- Empty State / Add New -->
+<div class="flex justify-center pt-8">
+<button class="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:border-primary hover:text-primary transition-all">
+<span class="material-icons">add_circle_outline</span>
+<span class="font-semibold text-sm">Add New Event to Timeline</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Edit Panel -->
+<aside class="w-96 border-l border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark/30 p-6 overflow-y-auto">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+<span class="material-icons text-primary">edit_note</span>
+                    Edit Event Details
+                </h2>
+<button class="text-slate-400 hover:text-red-500">
+<span class="material-icons">delete_outline</span>
+</button>
+</div>
+<div class="space-y-5">
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Event Title</label>
+<input class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:ring-2 focus:ring-primary/20 focus:border-primary" type="text" value="Diagnostic CT Scan"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Date</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-2.5 text-xs text-slate-400">calendar_today</span>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" type="text" value="10/14/2023"/>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Time</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-2.5 text-xs text-slate-400">schedule</span>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" type="text" value="11:15 AM"/>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Narrative Description</label>
+<textarea class="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm leading-relaxed focus:ring-2 focus:ring-primary/20" rows="5">CT Imaging confirmed appendicitis with possible perforation. Appendicolith noted in the base of the appendix. No free air detected. Prep for surgical intervention started immediately per protocol.</textarea>
+</div>
+<div>
+<label class="block text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Facility / Provider</label>
+<div class="relative">
+<span class="material-icons absolute left-3 top-2.5 text-xs text-slate-400">location_on</span>
+<input class="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20" type="text" value="St. Jude Memorial Hospital - Radiology Dept"/>
+</div>
+</div>
+<div class="bg-primary/5 dark:bg-primary/20 border border-primary/20 rounded-xl p-4">
+<label class="block text-xs font-bold text-primary dark:text-blue-400 uppercase tracking-widest mb-3">Source Citation</label>
+<div class="space-y-3">
+<div class="flex items-center gap-3">
+<div class="flex-1">
+<label class="text-[10px] text-slate-500 mb-1 block">Document ID</label>
+<input class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-xs" type="text" value="BATES_00452"/>
+</div>
+<div class="w-20">
+<label class="text-[10px] text-slate-500 mb-1 block">Page</label>
+<input class="w-full px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-xs" type="text" value="42"/>
+</div>
+</div>
+<button class="w-full py-2 bg-white dark:bg-slate-800 border border-primary/30 text-primary dark:text-blue-400 rounded-lg text-xs font-bold hover:bg-primary hover:text-white transition-colors">
+                            View Source Image
+                        </button>
+</div>
+</div>
+<div class="pt-6 flex gap-3">
+<button class="flex-1 py-2.5 bg-primary text-white rounded-lg font-semibold text-sm shadow-lg shadow-primary/20">Save Changes</button>
+<button class="px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-800">Cancel</button>
+</div>
+</div>
+</aside>
+</main>
+<!-- Overlay Hint (Floating Action) -->
+<div class="fixed bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4 px-6 py-3 bg-slate-900 text-white rounded-full shadow-2xl z-50">
+<span class="text-xs font-medium opacity-80">Shortcut: Press <kbd class="px-1.5 py-0.5 bg-slate-700 rounded text-[10px]">N</kbd> for New Event</span>
+<div class="w-px h-4 bg-slate-700 mx-2"></div>
+<button class="flex items-center gap-2 hover:text-blue-400 transition-colors">
+<span class="material-icons text-sm">help_outline</span>
+<span class="text-xs font-medium">Quick Guide</span>
+</button>
+</div>
+</body></html>

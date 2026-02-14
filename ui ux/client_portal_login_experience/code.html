@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Client Portal - Secure Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#144bb8",
+                        "background-light": "#f6f6f8",
+                        "background-dark": "#111621",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4">
+<!-- Main Container -->
+<div class="max-w-5xl w-full bg-white dark:bg-slate-900 rounded-xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[650px]">
+<!-- Left Side: Welcome & Form -->
+<div class="w-full md:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
+<div class="mb-10 flex items-center gap-2">
+<div class="bg-primary/10 p-2 rounded-lg">
+<span class="material-icons-outlined text-primary text-3xl">gavel</span>
+</div>
+<span class="text-xl font-bold text-slate-800 dark:text-white tracking-tight">LexMed <span class="text-primary">Consulting</span></span>
+</div>
+<div class="mb-8">
+<h1 class="text-4xl font-bold text-slate-900 dark:text-white mb-3">Welcome back</h1>
+<p class="text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Log in to your secure portal to manage cases, medical records, and expert reviews.
+                </p>
+</div>
+<form class="space-y-6">
+<!-- Email Field -->
+<div class="relative">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5" for="email">Email Address</label>
+<div class="relative group">
+<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">email</span>
+<input class="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all dark:text-white" id="email" name="email" placeholder="attorney@firm.com" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="relative">
+<div class="flex justify-between items-center mb-1.5">
+<label class="block text-sm font-medium text-slate-700 dark:text-slate-300" for="password">Password</label>
+<a class="text-xs font-semibold text-primary hover:text-primary/80 transition-colors" href="#">Forgot password?</a>
+</div>
+<div class="relative group">
+<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full pl-10 pr-12 py-3 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all dark:text-white" id="password" name="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" type="button">
+<span class="material-icons-outlined text-xl">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary" id="remember" name="remember" type="checkbox"/>
+<label class="ml-2 text-sm text-slate-600 dark:text-slate-400" for="remember">Keep me logged in for 30 days</label>
+</div>
+<button class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3.5 rounded-lg shadow-lg shadow-primary/20 transition-all flex items-center justify-center gap-2" type="submit">
+<span>Secure Sign In</span>
+<span class="material-icons-outlined text-lg">login</span>
+</button>
+</form>
+<div class="mt-8 flex flex-col gap-4">
+<div class="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
+<span class="material-icons-outlined text-primary">verified_user</span>
+<span>HIPAA Compliant &amp; 256-bit AES Encrypted</span>
+</div>
+<div class="pt-6 border-t border-slate-100 dark:border-slate-800">
+<a class="inline-flex items-center gap-2 text-primary font-medium hover:underline group" href="#">
+<span class="material-icons-outlined text-xl">help_outline</span>
+<span>Need help? Contact our support team</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Right Side: Branded Visual -->
+<div class="hidden md:block w-1/2 relative">
+<div class="absolute inset-0 bg-primary/90 mix-blend-multiply z-10"></div>
+<img alt="Legal Environment" class="absolute inset-0 w-full h-full object-cover" data-alt="Modern law firm office interior with glass walls" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB66Rf_B9v5aWyo_0B3hox_ZphZHEZyGHoUc5ufwvhcVl1Ut8speoOQrL4-STbBCxGhBOsL_Bu1VQUGYsVAIG6Rzh6djiI2j3QW5PSApFS74Pz35Nt8F7-Ppy57j7xXfjchT_K5_gqzo9NuNayEDvMqVKTMLn5RkHFNdd_9rTSHo-ZM-QK_c9nffC4GOXNUQ7yaf-22Opx474avQ5i5dmeukoWyzBiu80VVldrI6HUq_x29IqNkuI8n53NfAjVhPriAw-3Nt-fVlIw"/>
+<!-- Overlay Content -->
+<div class="absolute inset-0 z-20 flex flex-col justify-end p-12 text-white">
+<div class="bg-white/10 backdrop-blur-md p-8 rounded-xl border border-white/20">
+<div class="flex gap-1 mb-4">
+<span class="material-icons-outlined text-yellow-400">star</span>
+<span class="material-icons-outlined text-yellow-400">star</span>
+<span class="material-icons-outlined text-yellow-400">star</span>
+<span class="material-icons-outlined text-yellow-400">star</span>
+<span class="material-icons-outlined text-yellow-400">star</span>
+</div>
+<p class="text-lg italic mb-6 leading-relaxed">
+                        "The most efficient way for our firm to bridge the gap between complex medical records and winning litigation strategies."
+                    </p>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-slate-200 border-2 border-white overflow-hidden">
+<img alt="Attorney" class="w-full h-full object-cover" data-alt="Professional attorney headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAV91oQ9DyfDojB1Qq9jiSy5gtLpts-JyFZMt_Xg6ncZ1vnHcaSDqziH8VeiB8F6zAn-PpkYr9RyPUimnljtjrcSSJiRb7bMJtHgID6MDZhqcwqi1hIy7M4QCZxZIWlWhg6yO9X6kvNtnmz7FEfvHlV8XIqy4GQiXAzfCQbWBtwa0vaj-DsgUB6RKXkNSXOq1i3AtKmZezpQjN-ps4_jF3z8Q-I8OV_LRMGSbLfggYx-GLQxPJXxWrAStbPTyedKpGz6Z1OqLqanC0"/>
+</div>
+<div>
+<p class="font-bold text-sm">David Chen, JD</p>
+<p class="text-xs text-white/70">Senior Partner, Sterling &amp; Associates</p>
+</div>
+</div>
+</div>
+<div class="mt-12 flex justify-between items-center text-xs text-white/50 tracking-widest uppercase">
+<span>© 2024 LexMed Systems</span>
+<div class="flex gap-4">
+<a class="hover:text-white transition-colors" href="#">Privacy</a>
+<a class="hover:text-white transition-colors" href="#">Terms</a>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>
