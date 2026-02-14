@@ -36,6 +36,10 @@ const messageRoutes = require('./modules/collaboration/routes/message.routes');
 const conversationRoutes = require('./modules/collaboration/routes/conversation.routes');
 const reportRoutes = require('./modules/reporting/routes/report.routes');
 const analyticsRoutes = require('./modules/analytics/routes/analytics.routes');
+const auditRoutes = require('./modules/compliance-security/routes/audit.routes');
+
+// Import security middleware
+const securityMiddleware = require('./shared/middleware/security.middleware');
 
 // Import services
 const { schedulerService } = require('./modules/task-workflow');
@@ -67,6 +71,10 @@ mongoose.connect(process.env.MONGODB_URI, {
 
 // Security middleware
 app.use(helmet());
+app.use(securityMiddleware.hipaaHeaders);
+app.use(securityMiddleware.sanitizeData);
+app.use(securityMiddleware.preventXSS);
+app.use(securityMiddleware.auditLogger);
 
 // CORS
 app.use(cors({
@@ -131,6 +139,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/audit', auditRoutes);
 
 // 404 handler
 app.use((req, res) => {
