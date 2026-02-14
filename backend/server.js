@@ -23,6 +23,9 @@ const caseAnalysisRoutes = require('./modules/case-analysis/routes/caseAnalysis.
 const searchRoutes = require('./modules/ocr-search/routes/search.routes');
 const fileShareRoutes = require('./modules/file-sharing-portal/routes/fileShare.routes');
 const timelineRoutes = require('./modules/timeline-chronology/routes/timeline.routes');
+const taskRoutes = require('./modules/task-workflow/routes/task.routes');
+const workflowRoutes = require('./modules/task-workflow/routes/workflow.routes');
+const deadlineRoutes = require('./modules/task-workflow/routes/deadline.routes');
 
 // Initialize app
 const app = express();
@@ -94,6 +97,9 @@ app.use('/api/case-analysis', caseAnalysisRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/files', fileShareRoutes);
 app.use('/api/timelines', timelineRoutes);
+app.use('/api/tasks', taskRoutes);
+app.use('/api/workflows', workflowRoutes);
+app.use('/api/deadlines', deadlineRoutes);
 
 // 404 handler
 app.use((req, res) => {

@@ -1,54 +1,123 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import taskService from '../../../services/task.service';
 
 const TasksPage = () => {
     const [filter, setFilter] = useState('all');
+    const [tasks, setTasks] = useState([]);
+    const [stats, setStats] = useState({
+        totalTasks: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        inProgressTasks: 0,
+        overdueTasks: 0
+    });
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const tasks = [
-        {
-            id: 1,
-            title: 'Medical Chronology Review',
-            description: 'Reviewing 400pg records from Mercy Hospital.',
-            caseRef: 'Doe vs. Central Medical',
-            priority: 'high',
-            dueDate: 'Overdue (2d)',
-            timeTracked: '04:22:15',
-            isOverdue: true,
-            isActive: false
-        },
-        {
-            id: 2,
-            title: 'Expert Witness Screening',
-            description: 'Interviewing Dr. Smith regarding neurological trauma.',
-            caseRef: 'Case #2024-88-RT',
-            priority: 'medium',
-            dueDate: 'Tomorrow',
-            timeTracked: '01:10:00',
-            isOverdue: false,
-            isActive: false
-        },
-        {
-            id: 3,
-            title: 'Drafting Merit Opinion',
-            description: 'Summary of deviations from standard of care.',
-            caseRef: 'Estate of Miller v. Nursing Home',
-            priority: 'high',
-            dueDate: 'Today',
-            timeTracked: '02:45:12',
-            isOverdue: false,
-            isActive: true
-        },
-        {
-            id: 4,
-            title: 'Billing Record Audit',
-            description: 'Reconciling billed procedures vs recorded vitals.',
-            caseRef: 'HealthFirst Claim #9921',
-            priority: 'low',
-            dueDate: 'Oct 24, 2023',
-            timeTracked: '00:00:00',
-            isOverdue: false,
-            isActive: false
+    useEffect(() => {
+        fetchTasks();
+        fetchStats();
+    }, [filter]);
+
+    const fetchTasks = async () => {
+        try {
+            setLoading(true);
+            const params = {};
+
+            if (filter === 'overdue') {
+                params.status = 'pending,in-progress';
+            }
+
+            const data = await taskService.getMyTasks(params);
+            setTasks(data || []);
+        } catch (error) {
+            console.error('Failed to load tasks:', error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const fetchStats = async () => {
+        try {
+            const data = await taskService.getTaskStats();
+            setStats(data);
+        } catch (error) {
+            console.error('Failed to load stats:', error);
+        }
+    };
+
+    const handleStatusChange = async (taskId, newStatus) => {
+        try {
+            await taskService.updateTaskStatus(taskId, newStatus);
+            alert('Task status updated successfully');
+            fetchTasks();
+            fetchStats();
+        } catch (error) {
+            alert('Failed to update task status: ' + error.message);
+        }
+    };
+
+    const handleDeleteTask = async (taskId) => {
+        if (!window.confirm('Are you sure you want to delete this task?')) return;
+
+        try {
+            await taskService.deleteTask(taskId);
+            alert('Task deleted successfully');
+            fetchTasks();
+            fetchStats();
+        } catch (error) {
+            alert('Failed to delete task: ' + error.message);
+        }
+    };
+
+    const isOverdue = (dueDate) => {
+        return new Date(dueDate) < new Date();
+    };
+
+    const formatDueDate = (dueDate) => {
+        const date = new Date(dueDate);
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        if (date.toDateString() === today.toDateString()) {
+            return 'Today';
+        } else if (date.toDateString() === tomorrow.toDateString()) {
+            return 'Tomorrow';
+        } else if (date < today) {
+            const daysOverdue = Math.ceil((today - date) / (1000 * 60 * 60 * 24));
+            return `Overdue (${daysOverdue}d)`;
+        } else {
+            return date.toLocaleDateString();
+        }
+    };
+
+    const getPriorityColor = (priority) => {
+        const colors = {
+            urgent: 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
+            high: 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400',
+            medium: 'bg-blue-100 dark:bg-[#0891b2]/10 text-[#0891b2]',
+            low: 'bg-slate-100 dark:bg-slate-800 text-slate-500'
+        };
+        return colors[priority] || colors.low;
+    };
+
+    const filteredTasks = tasks.filter(task => {
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
+            return task.title.toLowerCase().includes(query) ||
+                task.description?.toLowerCase().includes(query) ||
+                task.case?.caseNumber?.toLowerCase().includes(query);
+        }
+        if (filter === 'today') {
+            const today = new Date().toDateString();
+            return new Date(task.dueDate).toDateString() === today;
+        }
+        if (filter === 'overdue') {
+            return isOverdue(task.dueDate) && task.status !== 'completed';
+        }
+        return true;
+    });
 
     return (
         <div className="max-w-[1600px] mx-auto">
@@ -56,19 +125,19 @@ const TasksPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
                     <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Active Tasks</p>
-                    <p className="text-2xl font-bold">14</p>
+                    <p className="text-2xl font-bold">{(stats.pendingTasks || 0) + (stats.inProgressTasks || 0)}</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl border-l-4 border-l-red-500">
                     <p className="text-xs text-red-500 uppercase font-bold tracking-wider mb-1">Overdue</p>
-                    <p className="text-2xl font-bold">03</p>
+                    <p className="text-2xl font-bold">{stats.overdueTasks || 0}</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
-                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Billable Hours (Week)</p>
-                    <p className="text-2xl font-bold text-[#0891b2]">32.4</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Completed</p>
+                    <p className="text-2xl font-bold text-[#0891b2]">{stats.completedTasks || 0}</p>
                 </div>
                 <div className="bg-white dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-4 rounded-xl">
-                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Pending Review</p>
-                    <p className="text-2xl font-bold">05</p>
+                    <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Total Tasks</p>
+                    <p className="text-2xl font-bold">{stats.totalTasks || 0}</p>
                 </div>
             </div>
 
@@ -109,6 +178,8 @@ const TasksPage = () => {
                             className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-[#0891b2]/50 focus:border-[#0891b2] outline-none transition-all"
                             placeholder="Search tasks or case IDs..."
                             type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                         />
                     </div>
                     <button className="p-2 border border-slate-200 dark:border-slate-800 rounded-lg text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
@@ -133,89 +204,95 @@ const TasksPage = () => {
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Case Reference</th>
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Due Date</th>
-                                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Time Tracked</th>
+                                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                            {tasks.map((task) => (
-                                <tr
-                                    key={task.id}
-                                    className={`group hover:bg-slate-50 dark:hover:bg-[#0891b2]/5 transition-colors cursor-pointer ${task.isActive ? 'bg-[#0891b2]/5 hover:bg-[#0891b2]/10 border-l-4 border-l-[#0891b2]' : ''
-                                        }`}
-                                >
-                                    <td className="py-5 px-6">
-                                        <input
-                                            className="rounded border-slate-300 dark:border-slate-700 text-[#0891b2] focus:ring-[#0891b2] bg-transparent"
-                                            type="checkbox"
-                                        />
-                                    </td>
-                                    <td className="py-5 px-4">
-                                        <p className={`text-sm font-semibold group-hover:text-[#0891b2] transition-colors ${task.isActive ? 'text-[#0891b2]' : ''
-                                            }`}>
-                                            {task.title}
-                                        </p>
-                                        <p className="text-xs text-slate-500 mt-1 line-clamp-1 italic">{task.description}</p>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                        <a className="inline-flex items-center gap-1.5 text-[#0891b2] text-xs font-medium hover:underline" href="#">
-                                            <span className="material-icons text-xs">folder_open</span>
-                                            {task.caseRef}
-                                        </a>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                        <span
-                                            className={`px-2 py-1 text-[10px] font-bold rounded uppercase tracking-tight ${task.priority === 'high'
-                                                    ? 'bg-red-100 dark:bg-red-500/10 text-red-600 dark:text-red-400'
-                                                    : task.priority === 'medium'
-                                                        ? 'bg-blue-100 dark:bg-[#0891b2]/10 text-[#0891b2]'
-                                                        : 'bg-slate-100 dark:bg-slate-800 text-slate-500'
-                                                }`}
-                                        >
-                                            {task.priority === 'high' ? 'High Priority' : task.priority === 'medium' ? 'Medium' : 'Low'}
-                                        </span>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`material-icons text-sm ${task.isOverdue ? 'text-red-500' : task.isActive ? 'text-[#0891b2]' : 'text-slate-400'}`}>
-                                                {task.isOverdue ? 'event_busy' : 'event'}
-                                            </span>
-                                            <span className={`text-xs ${task.isOverdue ? 'text-red-500 font-medium' : task.isActive ? 'font-medium' : ''}`}>
-                                                {task.dueDate}
-                                            </span>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="py-12 text-center text-slate-500">
+                                        <div className="flex items-center justify-center">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0891b2]"></div>
+                                            <span className="ml-3">Loading tasks...</span>
                                         </div>
-                                    </td>
-                                    <td className="py-5 px-4">
-                                        <div className="flex items-center gap-3">
-                                            <span className={`text-sm font-mono ${task.isActive ? 'text-[#0891b2] font-bold' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                {task.timeTracked}
-                                            </span>
-                                            <button
-                                                className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${task.isActive
-                                                        ? 'bg-slate-900 ring-2 ring-[#0891b2] ring-offset-2 dark:ring-offset-[#14181e]'
-                                                        : task.timeTracked === '00:00:00'
-                                                            ? 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-[#0891b2]'
-                                                            : 'bg-[#0891b2] shadow-lg shadow-[#0891b2]/20'
-                                                    }`}
-                                            >
-                                                <span className="material-icons text-sm">{task.isActive ? 'pause' : 'play_arrow'}</span>
-                                            </button>
-                                        </div>
-                                    </td>
-                                    <td className="py-5 px-4 text-right">
-                                        <button className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
-                                            <span className="material-icons text-lg">more_horiz</span>
-                                        </button>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : filteredTasks.length > 0 ? (
+                                filteredTasks.map((task) => (
+                                    <tr
+                                        key={task._id}
+                                        className={`group hover:bg-slate-50 dark:hover:bg-[#0891b2]/5 transition-colors cursor-pointer ${task.status === 'in-progress' ? 'bg-[#0891b2]/5 hover:bg-[#0891b2]/10 border-l-4 border-l-[#0891b2]' : ''}`}
+                                    >
+                                        <td className="py-5 px-6">
+                                            <input
+                                                className="rounded border-slate-300 dark:border-slate-700 text-[#0891b2] focus:ring-[#0891b2] bg-transparent"
+                                                type="checkbox"
+                                                onChange={() => handleStatusChange(task._id, task.status === 'completed' ? 'pending' : 'completed')}
+                                                checked={task.status === 'completed'}
+                                            />
+                                        </td>
+                                        <td className="py-5 px-4">
+                                            <p className={`text-sm font-semibold group-hover:text-[#0891b2] transition-colors ${task.status === 'in-progress' ? 'text-[#0891b2]' : ''}`}>
+                                                {task.title}
+                                            </p>
+                                            <p className="text-xs text-slate-500 mt-1 line-clamp-1 italic">{task.description || 'No description'}</p>
+                                        </td>
+                                        <td className="py-5 px-4">
+                                            <a className="inline-flex items-center gap-1.5 text-[#0891b2] text-xs font-medium hover:underline" href={`/cases/${task.case?._id}`}>
+                                                <span className="material-icons text-xs">folder_open</span>
+                                                {task.case?.title || task.case?.caseNumber || 'N/A'}
+                                            </a>
+                                        </td>
+                                        <td className="py-5 px-4">
+                                            <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase tracking-tight ${getPriorityColor(task.priority)}`}>
+                                                {task.priority}
+                                            </span>
+                                        </td>
+                                        <td className="py-5 px-4">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`material-icons text-sm ${isOverdue(task.dueDate) && task.status !== 'completed' ? 'text-red-500' : task.status === 'in-progress' ? 'text-[#0891b2]' : 'text-slate-400'}`}>
+                                                    {isOverdue(task.dueDate) && task.status !== 'completed' ? 'event_busy' : 'event'}
+                                                </span>
+                                                <span className={`text-xs ${isOverdue(task.dueDate) && task.status !== 'completed' ? 'text-red-500 font-medium' : task.status === 'in-progress' ? 'font-medium' : ''}`}>
+                                                    {formatDueDate(task.dueDate)}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="py-5 px-4">
+                                            <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase ${task.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                                    task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                                                        task.status === 'on-hold' ? 'bg-yellow-100 text-yellow-700' :
+                                                            'bg-slate-100 text-slate-700'
+                                                }`}>
+                                                {task.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-5 px-4 text-right">
+                                            <button
+                                                onClick={() => handleDeleteTask(task._id)}
+                                                className="p-1.5 text-slate-400 hover:text-red-500"
+                                                title="Delete task"
+                                            >
+                                                <span className="material-icons text-lg">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" className="py-12 text-center text-slate-500">
+                                        No tasks found
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
 
                 {/* Pagination */}
                 <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-800/20 flex items-center justify-between">
-                    <p className="text-xs text-slate-500">Showing 1-4 of 14 tasks</p>
+                    <p className="text-xs text-slate-500">Showing {filteredTasks.length} of {tasks.length} tasks</p>
                     <div className="flex items-center gap-2">
                         <button className="p-2 border border-slate-200 dark:border-slate-700 rounded hover:bg-white dark:hover:bg-slate-800 disabled:opacity-30" disabled>
                             <span className="material-icons text-sm">chevron_left</span>
