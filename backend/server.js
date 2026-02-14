@@ -33,6 +33,8 @@ const timeTrackingRoutes = require('./modules/billing-time-tracking/routes/timeT
 const noteRoutes = require('./modules/collaboration/routes/note.routes');
 const messageRoutes = require('./modules/collaboration/routes/message.routes');
 const conversationRoutes = require('./modules/collaboration/routes/conversation.routes');
+const reportRoutes = require('./modules/reporting/routes/report.routes');
+const analyticsRoutes = require('./modules/analytics/routes/analytics.routes');
 
 // Import services
 const { schedulerService } = require('./modules/task-workflow');
@@ -125,6 +127,8 @@ app.use('/api/time-tracking', timeTrackingRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/conversations', conversationRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // 404 handler
 app.use((req, res) => {

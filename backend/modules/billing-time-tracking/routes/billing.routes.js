@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const billingController = require('../controllers/billing.controller');
-const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
+const { protect, authorize } = require('../../../shared/middleware/auth.middleware');
 
 // All routes require authentication
-router.use(authenticate);
+router.use(protect);
 
 // Billing statistics and reports
 router.get('/stats', authorize(['admin', 'attorney']), billingController.getBillingStats);

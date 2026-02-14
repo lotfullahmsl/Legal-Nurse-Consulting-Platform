@@ -1,71 +1,84 @@
+import { useEffect, useState } from 'react';
+import reportService from '../../../services/report.service';
 
 const ReportsPage = () => {
-    const templates = [
-        {
-            id: 1,
-            icon: 'summarize',
-            title: 'Attorney-Ready Summary',
-            description: 'High-level medical expert opinions and case merits formatted for legal review.',
-            color: 'text-[#0891b2]'
-        },
-        {
-            id: 2,
-            icon: 'history',
-            title: 'Medical Chronology',
-            description: 'Detailed chronological timeline of medical events and provider interventions.',
-            color: 'text-[#0891b2]'
-        },
-        {
-            id: 3,
-            icon: 'error_outline',
-            title: 'Missing Records Audit',
-            description: 'Systematic identification of gaps in the medical record production.',
-            color: 'text-[#0891b2]'
-        },
-        {
-            id: 4,
-            icon: 'medical_services',
-            title: 'Life Care Plan',
-            description: 'Comprehensive projection of future medical needs and associated costs.',
-            color: 'text-[#0891b2]'
-        }
-    ];
+    const [templates, setTemplates] = useState([]);
+    const [recentReports, setRecentReports] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const recentReports = [
-        {
-            id: 1,
-            icon: 'picture_as_pdf',
-            title: 'Medical Chronology - Johnson, Robert',
-            template: 'Standard Template',
-            caseId: '#4492-SMITH-HOSP',
-            date: 'Oct 24, 2023, 11:20 AM',
-            status: 'ready',
-            statusLabel: 'Ready',
-            statusColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-        },
-        {
-            id: 2,
-            icon: 'article',
-            title: 'Attorney-Ready Merit Review',
-            template: 'Custom Builder',
-            caseId: '#8812-DAVIS-PI',
-            date: 'Oct 23, 2023, 04:45 PM',
-            status: 'processing',
-            statusLabel: 'Processing',
-            statusColor: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400'
-        },
-        {
-            id: 3,
-            icon: 'description',
-            title: 'Missing Records Affidavit - Est. 2023',
-            template: 'Standard Template',
-            caseId: '#5521-GARCIA-MED',
-            date: 'Oct 22, 2023, 09:12 AM',
-            status: 'ready',
-            statusLabel: 'Ready',
-            statusColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            const [templatesRes, reportsRes] = await Promise.all([
+                reportService.getTemplates(),
+                reportService.getAll({ page: 1, limit: 10 })
+            ]);
+
+            setTemplates(templatesRes.data || []);
+            setRecentReports(reportsRes.data?.reports || []);
+        } catch (error) {
+            console.error('Error fetching reports:', error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const handleGenerateReport = async (templateId) => {
+        try {
+            // This would open a modal to select case and parameters
+            console.log('Generate report with template:', templateId);
+        } catch (error) {
+            console.error('Error generating report:', error);
+        }
+    };
+
+    const handleDownload = async (reportId) => {
+        try {
+            const response = await reportService.download(reportId);
+            window.open(response.data.fileUrl, '_blank');
+        } catch (error) {
+            console.error('Error downloading report:', error);
+        }
+    };
+
+    const handleDelete = async (reportId) => {
+        if (window.confirm('Are you sure you want to delete this report?')) {
+            try {
+                await reportService.delete(reportId);
+                fetchData();
+            } catch (error) {
+                console.error('Error deleting report:', error);
+            }
+        }
+    };
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'completed':
+                return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400';
+            case 'generating':
+                return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
+            case 'failed':
+                return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400';
+            default:
+                return 'bg-slate-100 dark:bg-slate-900/30 text-slate-700 dark:text-slate-400';
+        }
+    };
+
+    const templateIcons = {
+        'attorney-summary': 'summarize',
+        'chronology': 'history',
+        'trial-brief': 'gavel',
+        'custom': 'dashboard_customize'
+    };
+
+    if (loading) {
+        return <div className="flex justify-center items-center h-64">Loading...</div>;
+    }
 
     return (
         <div className="max-w-7xl mx-auto">
@@ -96,11 +109,12 @@ const ReportsPage = () => {
                         <div
                             key={template.id}
                             className="group bg-white dark:bg-[#0891b2]/5 border border-slate-200 dark:border-[#0891b2]/10 rounded-xl p-5 hover:border-[#0891b2]/50 transition-all cursor-pointer shadow-sm hover:shadow-md"
+                            onClick={() => handleGenerateReport(template.id)}
                         >
-                            <div className={`w-12 h-12 rounded-lg bg-[#0891b2]/10 ${template.color} flex items-center justify-center mb-4 group-hover:bg-[#0891b2] group-hover:text-white transition-colors`}>
-                                <span className="material-icons">{template.icon}</span>
+                            <div className="w-12 h-12 rounded-lg bg-[#0891b2]/10 text-[#0891b2] flex items-center justify-center mb-4 group-hover:bg-[#0891b2] group-hover:text-white transition-colors">
+                                <span className="material-icons">{templateIcons[template.id] || 'description'}</span>
                             </div>
-                            <h3 className="font-bold mb-2 group-hover:text-[#0891b2] transition-colors">{template.title}</h3>
+                            <h3 className="font-bold mb-2 group-hover:text-[#0891b2] transition-colors">{template.name}</h3>
                             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">{template.description}</p>
                             <button className="w-full py-2 text-sm font-medium border border-[#0891b2]/20 rounded-lg hover:bg-[#0891b2]/10 transition-colors flex items-center justify-center gap-1">
                                 Start New <span className="material-icons text-sm">chevron_right</span>
@@ -136,33 +150,40 @@ const ReportsPage = () => {
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-[#0891b2]/10">
                             {recentReports.map((report) => (
-                                <tr key={report.id} className="hover:bg-slate-50/50 dark:hover:bg-[#0891b2]/5 transition-colors">
+                                <tr key={report._id} className="hover:bg-slate-50/50 dark:hover:bg-[#0891b2]/5 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
-                                            <span className="material-icons text-[#0891b2]">{report.icon}</span>
+                                            <span className="material-icons text-[#0891b2]">picture_as_pdf</span>
                                             <div>
                                                 <div className="font-semibold text-sm">{report.title}</div>
-                                                <div className="text-[10px] text-slate-500 uppercase font-medium">{report.template}</div>
+                                                <div className="text-[10px] text-slate-500 uppercase font-medium">{report.template || report.type}</div>
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">{report.caseId}</td>
-                                    <td className="px-6 py-4 text-sm">{report.date}</td>
+                                    <td className="px-6 py-4 text-sm font-mono text-slate-600 dark:text-slate-400">
+                                        {report.case?.caseNumber || 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 text-sm">
+                                        {new Date(report.createdAt).toLocaleString()}
+                                    </td>
                                     <td className="px-6 py-4">
                                         <div className="flex justify-center">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${report.statusColor}`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${report.status === 'ready' ? 'bg-green-500' : 'bg-amber-500'
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${report.status === 'completed' ? 'bg-green-500' :
+                                                        report.status === 'generating' ? 'bg-amber-500' : 'bg-red-500'
                                                     }`}></span>
-                                                {report.statusLabel}
+                                                {report.status}
                                             </span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <div className={`flex items-center justify-end gap-2 ${report.status === 'processing' ? 'opacity-50 pointer-events-none' : ''
+                                        <div className={`flex items-center justify-end gap-2 ${report.status !== 'completed' ? 'opacity-50 pointer-events-none' : ''
                                             }`}>
                                             <button
+                                                onClick={() => handleDownload(report._id)}
                                                 className="p-2 hover:bg-[#0891b2]/10 rounded-lg text-[#0891b2] transition-colors"
                                                 title="Download PDF"
+                                                disabled={report.status !== 'completed'}
                                             >
                                                 <span className="material-icons">download</span>
                                             </button>
@@ -173,10 +194,11 @@ const ReportsPage = () => {
                                                 <span className="material-icons">share</span>
                                             </button>
                                             <button
+                                                onClick={() => handleDelete(report._id)}
                                                 className="p-2 hover:bg-red-500/10 rounded-lg text-red-400 transition-colors"
-                                                title="Archive"
+                                                title="Delete"
                                             >
-                                                <span className="material-icons">archive</span>
+                                                <span className="material-icons">delete</span>
                                             </button>
                                         </div>
                                     </td>

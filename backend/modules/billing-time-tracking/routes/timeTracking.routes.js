@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const timeTrackingController = require('../controllers/timeTracking.controller');
-const { authenticate, authorize } = require('../../../shared/middleware/auth.middleware');
+const { protect, authorize } = require('../../../shared/middleware/auth.middleware');
 
 // All routes require authentication
-router.use(authenticate);
+router.use(protect);
 
 // Timer operations
 router.post('/timer/start', authorize(['admin', 'attorney', 'staff']), timeTrackingController.startTimer);

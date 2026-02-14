@@ -1,10 +1,63 @@
+import { useEffect, useState } from 'react';
+import analyticsService from '../services/analytics.service';
+
 const Dashboard = () => {
-    const stats = [
-        { icon: 'cases', label: 'Active Cases', value: '128', change: '+4.2%', color: 'primary', positive: true },
-        { icon: 'pending_actions', label: 'Pending Tasks', value: '24', badge: 'High Priority', color: 'orange' },
-        { icon: 'monetization_on', label: 'Monthly Revenue', value: '$42,850', change: '+12.5%', color: 'green', positive: true },
-        { icon: 'person_add', label: 'New Clients', value: '8', badge: 'New This Month', color: 'blue' },
-    ];
+    const [stats, setStats] = useState([
+        { icon: 'cases', label: 'Active Cases', value: '...', change: '', color: 'primary', positive: true },
+        { icon: 'pending_actions', label: 'Pending Tasks', value: '...', badge: '', color: 'orange' },
+        { icon: 'monetization_on', label: 'Monthly Revenue', value: '...', change: '', color: 'green', positive: true },
+        { icon: 'person_add', label: 'New Clients', value: '...', badge: '', color: 'blue' },
+    ]);
+
+    useEffect(() => {
+        fetchAnalytics();
+    }, []);
+
+    const fetchAnalytics = async () => {
+        try {
+            const [caseAnalytics, revenueAnalytics] = await Promise.all([
+                analyticsService.getCaseAnalytics({ status: 'active' }),
+                analyticsService.getRevenueAnalytics({ groupBy: 'month' })
+            ]);
+
+            const updatedStats = [
+                {
+                    icon: 'cases',
+                    label: 'Active Cases',
+                    value: caseAnalytics.data?.totalCases?.toString() || '0',
+                    change: '+4.2%',
+                    color: 'primary',
+                    positive: true
+                },
+                {
+                    icon: 'pending_actions',
+                    label: 'Pending Tasks',
+                    value: '24',
+                    badge: 'High Priority',
+                    color: 'orange'
+                },
+                {
+                    icon: 'monetization_on',
+                    label: 'Monthly Revenue',
+                    value: `$${(revenueAnalytics.data?.totalRevenue?.paid || 0).toLocaleString()}`,
+                    change: '+12.5%',
+                    color: 'green',
+                    positive: true
+                },
+                {
+                    icon: 'person_add',
+                    label: 'New Clients',
+                    value: '8',
+                    badge: 'New This Month',
+                    color: 'blue'
+                },
+            ];
+
+            setStats(updatedStats);
+        } catch (error) {
+            console.error('Error fetching analytics:', error);
+        }
+    };
 
     const recentCases = [
         { name: 'Miller vs. City Hospital', id: '#2023-MED-042', attorney: 'James P. Sterling', activity: '2h ago', status: 'IN REVIEW', statusColor: 'blue' },

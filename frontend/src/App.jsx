@@ -8,8 +8,13 @@ import ClientsList from './modules/crm-case-intake/pages/ClientsList';
 import CreateCase from './modules/crm-case-intake/pages/CreateCase';
 import LawFirmsList from './modules/crm-case-intake/pages/LawFirmsList';
 import DamagesTracking from './modules/damages-tracking/pages/DamagesTracking';
+import ClientBilling from './modules/file-sharing-portal/pages/ClientBilling';
 import ClientCaseView from './modules/file-sharing-portal/pages/ClientCaseView';
 import ClientDashboard from './modules/file-sharing-portal/pages/ClientDashboard';
+import ClientDocuments from './modules/file-sharing-portal/pages/ClientDocuments';
+import ClientReports from './modules/file-sharing-portal/pages/ClientReports';
+import ClientTimeline from './modules/file-sharing-portal/pages/ClientTimeline';
+import ClientUpdates from './modules/file-sharing-portal/pages/ClientUpdates';
 import MessagesPage from './modules/file-sharing-portal/pages/MessagesPage';
 import MedicalRecordsList from './modules/medical-records/pages/MedicalRecordsList';
 import SearchPage from './modules/ocr-search/pages/SearchPage';
@@ -73,8 +78,14 @@ function App() {
 
                 {/* Client Portal Routes */}
                 <Route path="/client/dashboard" element={<ClientLayout><ClientDashboard /></ClientLayout>} />
+                <Route path="/client/cases" element={<ClientLayout><ClientDashboard /></ClientLayout>} />
                 <Route path="/client/case/:id" element={<ClientLayout><ClientCaseView /></ClientLayout>} />
+                <Route path="/client/timeline" element={<ClientLayout><ClientTimeline /></ClientLayout>} />
+                <Route path="/client/documents" element={<ClientLayout><ClientDocuments /></ClientLayout>} />
                 <Route path="/client/messages" element={<ClientLayout><MessagesPage /></ClientLayout>} />
+                <Route path="/client/billing" element={<ClientLayout><ClientBilling /></ClientLayout>} />
+                <Route path="/client/reports" element={<ClientLayout><ClientReports /></ClientLayout>} />
+                <Route path="/client/updates" element={<ClientLayout><ClientUpdates /></ClientLayout>} />
             </Routes>
         </Router>
     );

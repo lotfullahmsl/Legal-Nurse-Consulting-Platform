@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
+import analyticsService from '../services/analytics.service';
 import deadlineService from '../services/deadline.service';
 import taskService from '../services/task.service';
 
 const StaffDashboard = () => {
     const [tasks, setTasks] = useState([]);
     const [deadlines, setDeadlines] = useState([]);
+    const [workloadAnalytics, setWorkloadAnalytics] = useState(null);
     const [stats, setStats] = useState({
         totalTasks: 0,
         completedTasks: 0,
@@ -21,14 +23,16 @@ const StaffDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const [tasksData, statsData, deadlinesData] = await Promise.all([
+            const [tasksData, statsData, deadlinesData, workloadData] = await Promise.all([
                 taskService.getMyTasks({ limit: 5 }),
                 taskService.getTaskStats(),
-                deadlineService.getUpcomingDeadlines(7)
+                deadlineService.getUpcomingDeadlines(7),
+                analyticsService.getWorkloadAnalytics({})
             ]);
             setTasks(tasksData || []);
             setStats(statsData || {});
             setDeadlines(deadlinesData || []);
+            setWorkloadAnalytics(workloadData.data || null);
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
         } finally {
