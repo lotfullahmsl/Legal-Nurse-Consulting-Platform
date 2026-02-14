@@ -1,11 +1,33 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import BillingPage from './modules/billing-time-tracking/pages/BillingPage';
+import CaseAnalysis from './modules/case-analysis/pages/CaseAnalysis';
+import NotesPage from './modules/collaboration/pages/NotesPage';
+import CaseDetail from './modules/crm-case-intake/pages/CaseDetail';
 import CasesList from './modules/crm-case-intake/pages/CasesList';
+import ClientsList from './modules/crm-case-intake/pages/ClientsList';
+import CreateCase from './modules/crm-case-intake/pages/CreateCase';
+import LawFirmsList from './modules/crm-case-intake/pages/LawFirmsList';
+import DamagesTracking from './modules/damages-tracking/pages/DamagesTracking';
+import ClientCaseView from './modules/file-sharing-portal/pages/ClientCaseView';
+import ClientDashboard from './modules/file-sharing-portal/pages/ClientDashboard';
+import MessagesPage from './modules/file-sharing-portal/pages/MessagesPage';
+import MedicalRecordsList from './modules/medical-records/pages/MedicalRecordsList';
+import SearchPage from './modules/ocr-search/pages/SearchPage';
+import ReportsPage from './modules/reporting/pages/ReportsPage';
+import TasksPage from './modules/task-workflow/pages/TasksPage';
+import TimelineBuilder from './modules/timeline-chronology/pages/TimelineBuilder';
+import TimelineWork from './modules/timeline-chronology/pages/TimelineWork';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Register from './pages/Register';
 import Settings from './pages/Settings';
+import StaffDashboard from './pages/StaffDashboard';
+import UsersManagement from './pages/UsersManagement';
 
 // Layouts
 import AdminLayout from './layouts/AdminLayout';
+import ClientLayout from './layouts/ClientLayout';
+import StaffLayout from './layouts/StaffLayout';
 
 function App() {
     return (
@@ -13,6 +35,7 @@ function App() {
             <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
                 <Route path="/client-login" element={<Login />} />
 
                 {/* Admin/Attorney Routes */}
@@ -22,11 +45,36 @@ function App() {
                 <Route path="/cases/:id" element={<AdminLayout><CaseDetail /></AdminLayout>} />
                 <Route path="/cases/new" element={<AdminLayout><CreateCase /></AdminLayout>} />
                 <Route path="/clients" element={<AdminLayout><ClientsList /></AdminLayout>} />
+                <Route path="/users" element={<AdminLayout><UsersManagement /></AdminLayout>} />
+                <Route path="/medical-records" element={<AdminLayout><MedicalRecordsList /></AdminLayout>} />
+                <Route path="/case-analysis" element={<AdminLayout><CaseAnalysis /></AdminLayout>} />
+                <Route path="/damages" element={<AdminLayout><DamagesTracking /></AdminLayout>} />
+                <Route path="/notes" element={<AdminLayout><NotesPage /></AdminLayout>} />
                 <Route path="/law-firms" element={<AdminLayout><LawFirmsList /></AdminLayout>} />
                 <Route path="/search" element={<AdminLayout><SearchPage /></AdminLayout>} />
+                <Route path="/timeline" element={<AdminLayout><TimelineBuilder /></AdminLayout>} />
+                <Route path="/reports" element={<AdminLayout><ReportsPage /></AdminLayout>} />
+                <Route path="/billing" element={<AdminLayout><BillingPage /></AdminLayout>} />
+                <Route path="/tasks" element={<AdminLayout><TasksPage /></AdminLayout>} />
                 <Route path="/settings" element={<AdminLayout><Settings /></AdminLayout>} />
+                {/* Staff Routes */}
+                <Route path="/staff-dashboard" element={<StaffLayout><StaffDashboard /></StaffLayout>} />
+                <Route path="/staff/cases" element={<StaffLayout><CasesList /></StaffLayout>} />
+                <Route path="/staff/cases/:id" element={<StaffLayout><CaseDetail /></StaffLayout>} />
+                <Route path="/staff/tasks" element={<StaffLayout><TasksPage /></StaffLayout>} />
+                <Route path="/staff/medical-records" element={<StaffLayout><MedicalRecordsList /></StaffLayout>} />
+                <Route path="/staff/case-analysis" element={<StaffLayout><CaseAnalysis /></StaffLayout>} />
+                <Route path="/staff/damages" element={<StaffLayout><DamagesTracking /></StaffLayout>} />
+                <Route path="/staff/notes" element={<StaffLayout><NotesPage /></StaffLayout>} />
+                <Route path="/staff/billing" element={<StaffLayout><BillingPage /></StaffLayout>} />
+                <Route path="/staff/search" element={<StaffLayout><SearchPage /></StaffLayout>} />
+                <Route path="/staff/settings" element={<StaffLayout><Settings /></StaffLayout>} />
+                <Route path="/timeline-work" element={<StaffLayout><TimelineWork /></StaffLayout>} />
 
-                {/* Add more routes as components are created */}
+                {/* Client Portal Routes */}
+                <Route path="/client/dashboard" element={<ClientLayout><ClientDashboard /></ClientLayout>} />
+                <Route path="/client/case/:id" element={<ClientLayout><ClientCaseView /></ClientLayout>} />
+                <Route path="/client/messages" element={<ClientLayout><MessagesPage /></ClientLayout>} />
             </Routes>
         </Router>
     );

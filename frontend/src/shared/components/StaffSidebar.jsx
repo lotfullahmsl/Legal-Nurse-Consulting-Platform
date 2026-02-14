@@ -1,11 +1,11 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 
-const Sidebar = () => {
+const StaffSidebar = () => {
     const location = useLocation();
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        // Clear any stored authentication data (add your auth logic here)
+        // Clear any stored authentication data
         // localStorage.removeItem('token');
         // sessionStorage.clear();
 
@@ -14,22 +14,20 @@ const Sidebar = () => {
     };
 
     const menuItems = [
-        { icon: 'dashboard', label: 'Dashboard', path: '/dashboard' },
-        { icon: 'folder', label: 'Cases', path: '/cases' },
-        { icon: 'people', label: 'Clients', path: '/clients' },
-        { icon: 'group', label: 'Users', path: '/users' },
-        { icon: 'description', label: 'Medical Records', path: '/medical-records' },
-        { icon: 'analytics', label: 'Case Analysis', path: '/case-analysis' },
-        { icon: 'attach_money', label: 'Damages Tracking', path: '/damages' },
-        { icon: 'assignment', label: 'Task Manager', path: '/tasks' },
-        { icon: 'notes', label: 'Notes & Collaboration', path: '/notes' },
-        { icon: 'payments', label: 'Billing & Invoices', path: '/billing' },
-        { icon: 'assessment', label: 'Reporting', path: '/reports' },
+        { icon: 'dashboard', label: 'My Dashboard', path: '/staff-dashboard' },
+        { icon: 'assignment', label: 'My Cases', path: '/staff/cases' },
+        { icon: 'task_alt', label: 'My Tasks', path: '/staff/tasks' },
+        { icon: 'description', label: 'Medical Records', path: '/staff/medical-records' },
+        { icon: 'analytics', label: 'Case Analysis', path: '/staff/case-analysis' },
+        { icon: 'attach_money', label: 'Damages Tracking', path: '/staff/damages' },
+        { icon: 'notes', label: 'Notes', path: '/staff/notes' },
+        { icon: 'timeline', label: 'Timeline Work', path: '/timeline-work' },
+        { icon: 'schedule', label: 'Time Tracking', path: '/staff/billing' },
     ];
 
     const toolItems = [
-        { icon: 'medical_services', label: 'Medline Access', path: '/medline' },
-        { icon: 'settings', label: 'Portal Settings', path: '/settings' },
+        { icon: 'search', label: 'Medical Search', path: '/staff/search' },
+        { icon: 'settings', label: 'My Settings', path: '/staff/settings' },
     ];
 
     return (
@@ -51,7 +49,7 @@ const Sidebar = () => {
 
                 <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">
-                        Internal Tools
+                        Tools
                     </p>
                     {toolItems.map((item) => (
                         <Link
@@ -82,11 +80,11 @@ const Sidebar = () => {
                     <span className="text-xs font-bold">Need Help?</span>
                 </div>
                 <p className="text-[11px] text-slate-500 leading-relaxed">
-                    Contact portal technical support for HIPAA security inquiries.
+                    Contact your supervisor or technical support for assistance.
                 </p>
             </div>
         </aside>
     );
 };
 
-export default Sidebar;
+export default StaffSidebar;

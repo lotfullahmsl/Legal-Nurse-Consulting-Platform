@@ -1,3 +1,4 @@
+import DashboardSwitcher from '../shared/components/DashboardSwitcher';
 import Navbar from '../shared/components/Navbar';
 import Sidebar from '../shared/components/Sidebar';
 
@@ -11,6 +12,7 @@ const AdminLayout = ({ children }) => {
                     {children}
                 </main>
             </div>
+            <DashboardSwitcher />
         </div>
     );
 };

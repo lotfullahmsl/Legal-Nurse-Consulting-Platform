@@ -7,12 +7,21 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [role, setRole] = useState('admin');
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // TODO: Implement authentication logic
-        console.log('Login attempt:', { email, password, rememberMe });
-        navigate('/dashboard');
+        // Store role in localStorage for demo purposes
+        localStorage.setItem('userRole', role);
+
+        // Redirect based on selected role
+        if (role === 'admin') {
+            navigate('/dashboard');
+        } else if (role === 'staff') {
+            navigate('/staff-dashboard');
+        } else if (role === 'client') {
+            navigate('/client/dashboard');
+        }
     };
 
     return (
@@ -149,6 +158,22 @@ const Login = () => {
                         </label>
                     </div>
 
+                    {/* Role Selection for Demo */}
+                    <div>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" htmlFor="role">
+                            Login As (Demo Mode)
+                        </label>
+                        <select
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#2b6cee] focus:border-transparent outline-none transition-all dark:text-white"
+                            id="role"
+                            value={role}
+                            onChange={(e) => setRole(e.target.value)}
+                        >
+                            <option value="admin">Admin/Attorney Dashboard</option>
+                            <option value="staff">Staff Dashboard</option>
+                            <option value="client">Client Portal</option>
+                        </select>
+                    </div>
                     <button
                         className="w-full bg-[#2b6cee] hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-lg shadow-[#2b6cee]/25 flex items-center justify-center gap-2"
                         type="submit"
@@ -161,18 +186,17 @@ const Login = () => {
                 <div className="mt-8 pt-8 border-t border-slate-100 dark:border-slate-800">
                     <div className="text-center">
                         <p className="text-slate-500 dark:text-slate-400 text-sm mb-4">
-                            Are you a medical client looking for your case files?
+                            Don't have an account?
                         </p>
-                        <a
+                        <button
+                            onClick={() => navigate('/register')}
                             className="inline-flex items-center gap-2 px-6 py-2 border-2 border-[#2b6cee]/20 hover:border-[#2b6cee] text-[#2b6cee] font-semibold rounded-full transition-all group"
-                            href="/client-login"
                         >
-                            Sign in as Client
+                            Create Account
                             <span className="material-icons-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                        </a>
+                        </button>
                     </div>
                 </div>
-
                 <footer className="mt-auto pt-10 text-center">
                     <p className="text-xs text-slate-400 dark:text-slate-500 mb-2">
                         © 2024 MedLegal Pro Platform. All Rights Reserved.

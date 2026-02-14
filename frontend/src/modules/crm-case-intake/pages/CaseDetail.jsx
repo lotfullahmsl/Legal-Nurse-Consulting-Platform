@@ -50,8 +50,8 @@ const CaseDetail = () => {
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
                             className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                                    ? 'border-[#1f3b61] text-[#1f3b61]'
-                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                                ? 'border-[#1f3b61] text-[#1f3b61]'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
                                 }`}
                         >
                             <span className="material-icons text-sm">{tab.icon}</span>
