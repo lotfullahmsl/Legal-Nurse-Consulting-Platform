@@ -8,19 +8,41 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [role, setRole] = useState('admin');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Store role in localStorage for demo purposes
-        localStorage.setItem('userRole', role);
+        setLoading(true);
 
-        // Redirect based on selected role
-        if (role === 'admin') {
-            navigate('/dashboard');
-        } else if (role === 'staff') {
-            navigate('/staff-dashboard');
-        } else if (role === 'client') {
-            navigate('/client/dashboard');
+        try {
+            // Import auth service
+            const authService = (await import('../services/auth.service')).default;
+
+            // Call login API
+            const response = await authService.login({
+                email,
+                password
+            });
+
+            if (response.success) {
+                const user = response.data.user;
+
+                // Show success alert
+                alert(`✅ Login successful! Welcome back, ${user.fullName}!`);
+
+                // Redirect based on user role from backend
+                if (user.role === 'admin' || user.role === 'attorney') {
+                    navigate('/dashboard');
+                } else if (user.role === 'consultant') {
+                    navigate('/staff-dashboard');
+                } else if (user.role === 'client') {
+                    navigate('/client/dashboard');
+                }
+            }
+        } catch (error) {
+            console.error('Login error:', error);
+            alert(error.response?.data?.message || 'Login failed. Please check your credentials.');
+            setLoading(false);
         }
     };
 
@@ -175,11 +197,21 @@ const Login = () => {
                         </select>
                     </div>
                     <button
-                        className="w-full bg-[#2b6cee] hover:bg-blue-700 text-white font-bold py-3.5 rounded-lg transition-colors shadow-lg shadow-[#2b6cee]/25 flex items-center justify-center gap-2"
+                        className="w-full bg-[#2b6cee] hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3.5 rounded-lg transition-colors shadow-lg shadow-[#2b6cee]/25 flex items-center justify-center gap-2"
                         type="submit"
+                        disabled={loading}
                     >
-                        <span className="material-icons-outlined text-xl">login</span>
-                        Sign In to Portal
+                        {loading ? (
+                            <>
+                                <span className="material-icons-outlined text-xl animate-spin">refresh</span>
+                                Signing In...
+                            </>
+                        ) : (
+                            <>
+                                <span className="material-icons-outlined text-xl">login</span>
+                                Sign In to Portal
+                            </>
+                        )}
                     </button>
                 </form>
 

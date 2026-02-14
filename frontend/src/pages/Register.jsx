@@ -5,6 +5,7 @@ const Register = () => {
     const navigate = useNavigate();
     const [selectedRole, setSelectedRole] = useState('attorney');
     const [showPassword, setShowPassword] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -19,16 +20,43 @@ const Register = () => {
         { id: 'client', icon: 'business', label: 'Client' }
     ];
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Register:', { ...formData, role: selectedRole });
-        // Redirect based on role
-        if (selectedRole === 'attorney') {
-            navigate('/dashboard');
-        } else if (selectedRole === 'consultant') {
-            navigate('/staff-dashboard');
-        } else {
-            navigate('/client/dashboard');
+        setLoading(true);
+
+        try {
+            // Import auth service
+            const authService = (await import('../services/auth.service')).default;
+
+            // Prepare data for API
+            const registrationData = {
+                fullName: formData.fullName,
+                email: formData.email,
+                phone: formData.phone,
+                password: formData.password,
+                role: selectedRole
+            };
+
+            // Call register API
+            const response = await authService.register(registrationData);
+
+            if (response.success) {
+                // Show success alert
+                alert('✅ Registration successful! Redirecting to your dashboard...');
+
+                // Redirect based on role
+                if (selectedRole === 'attorney') {
+                    navigate('/dashboard');
+                } else if (selectedRole === 'consultant') {
+                    navigate('/staff-dashboard');
+                } else {
+                    navigate('/client/dashboard');
+                }
+            }
+        } catch (error) {
+            console.error('Registration error:', error);
+            alert(error.response?.data?.message || 'Registration failed. Please try again.');
+            setLoading(false);
         }
     };
 
@@ -72,8 +100,8 @@ const Register = () => {
                             type="button"
                             onClick={() => setSelectedRole(role.id)}
                             className={`flex flex-col items-center gap-2 py-4 rounded-lg transition-all ${selectedRole === role.id
-                                    ? 'bg-[#088eaf] text-white shadow-md'
-                                    : 'hover:bg-white/10 text-white/70'
+                                ? 'bg-[#088eaf] text-white shadow-md'
+                                : 'hover:bg-white/10 text-white/70'
                                 }`}
                         >
                             <span className="material-icons text-2xl">{role.icon}</span>
@@ -220,10 +248,20 @@ const Register = () => {
                             {/* Submit Button */}
                             <button
                                 type="submit"
-                                className="w-full py-4 bg-[#088eaf] hover:bg-[#088eaf]/90 text-white font-bold rounded-lg shadow-lg shadow-[#088eaf]/30 transition-all flex items-center justify-center gap-2 mt-4 text-lg"
+                                disabled={loading}
+                                className="w-full py-4 bg-[#088eaf] hover:bg-[#088eaf]/90 disabled:bg-[#088eaf]/50 text-white font-bold rounded-lg shadow-lg shadow-[#088eaf]/30 transition-all flex items-center justify-center gap-2 mt-4 text-lg"
                             >
-                                <span>Create My Account</span>
-                                <span className="material-icons">arrow_forward</span>
+                                {loading ? (
+                                    <>
+                                        <span className="material-icons animate-spin">refresh</span>
+                                        <span>Creating Account...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>Create My Account</span>
+                                        <span className="material-icons">arrow_forward</span>
+                                    </>
+                                )}
                             </button>
                         </form>
 
