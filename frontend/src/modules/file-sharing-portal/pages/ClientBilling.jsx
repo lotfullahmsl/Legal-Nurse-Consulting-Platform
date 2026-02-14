@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import clientPortalService from '../../../services/clientPortal.service';
 
 const ClientBilling = () => {
-    const { caseId } = useParams();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filter, setFilter] = useState('all');
 
     useEffect(() => {
         fetchInvoices();
@@ -13,42 +13,8 @@ const ClientBilling = () => {
     const fetchInvoices = async () => {
         try {
             setLoading(true);
-            // API call would go here
-            // const data = await invoiceService.getClientInvoices(caseId);
-            // setInvoices(data);
-
-            // Mock data for now
-            setInvoices([
-                {
-                    id: 'INV-2024-001',
-                    caseNumber: 'ML-88291',
-                    caseName: 'Miller vs. Sterling Medical',
-                    issueDate: '2024-01-15',
-                    dueDate: '2024-02-15',
-                    amount: 4250.00,
-                    amountPaid: 4250.00,
-                    status: 'paid',
-                    items: [
-                        { description: 'Medical Record Review - 15 hours', amount: 2250.00 },
-                        { description: 'Timeline Creation', amount: 1500.00 },
-                        { description: 'Expert Consultation', amount: 500.00 }
-                    ]
-                },
-                {
-                    id: 'INV-2024-002',
-                    caseNumber: 'ML-88291',
-                    caseName: 'Miller vs. Sterling Medical',
-                    issueDate: '2024-02-15',
-                    dueDate: '2024-03-15',
-                    amount: 3800.00,
-                    amountPaid: 0,
-                    status: 'pending',
-                    items: [
-                        { description: 'Case Analysis - 12 hours', amount: 1800.00 },
-                        { description: 'Report Generation', amount: 2000.00 }
-                    ]
-                }
-            ]);
+            const data = await clientPortalService.getClientInvoices();
+            setInvoices(data);
         } catch (error) {
             console.error('Failed to load invoices:', error);
         } finally {
@@ -56,150 +22,165 @@ const ClientBilling = () => {
         }
     };
 
-    const getStatusBadge = (status) => {
-        const badges = {
-            paid: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-            pending: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-            overdue: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-        };
-        return badges[status] || badges.pending;
+    const formatDate = (date) => {
+        if (!date) return 'N/A';
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
 
-    const totalBilled = invoices.reduce((sum, inv) => sum + inv.amount, 0);
-    const totalPaid = invoices.reduce((sum, inv) => sum + inv.amountPaid, 0);
-    const totalOutstanding = totalBilled - totalPaid;
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+    };
+
+    const getStatusColor = (status) => {
+        const colors = {
+            'Paid': 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+            'Pending': 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+            'Overdue': 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+            'Draft': 'bg-gray-100 dark:bg-gray-900/30 text-gray-700 dark:text-gray-400'
+        };
+        return colors[status] || colors['Pending'];
+    };
+
+    const filteredInvoices = invoices.filter(inv => {
+        if (filter === 'all') return true;
+        return inv.status.toLowerCase() === filter;
+    });
+
+    const totalAmount = invoices.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const paidAmount = invoices.filter(inv => inv.status === 'Paid').reduce((sum, inv) => sum + (inv.amount || 0), 0);
+    const pendingAmount = invoices.filter(inv => inv.status === 'Pending').reduce((sum, inv) => sum + (inv.amount || 0), 0);
+
+    if (loading) {
+        return (
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="text-center py-12">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0891b2] mx-auto"></div>
+                    <p className="mt-4 text-slate-600 dark:text-slate-400">Loading billing information...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {/* Header */}
-            <div className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Billing & Invoices</h1>
-                            <p className="text-slate-600 dark:text-slate-400 mt-1">View and manage your case invoices</p>
-                        </div>
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold">
-                            <span className="material-icons text-sm">lock</span>
-                            SECURE
-                        </div>
+            <div className="mb-8">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Billing & Invoices</h1>
+                <p className="text-slate-600 dark:text-slate-400">Manage your invoices and payment history</p>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-500">Total Billed</span>
+                        <span className="material-icons text-slate-400">receipt_long</span>
                     </div>
+                    <p className="text-3xl font-bold text-slate-900 dark:text-white">{formatCurrency(totalAmount)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-500">Paid</span>
+                        <span className="material-icons text-green-500">check_circle</span>
+                    </div>
+                    <p className="text-3xl font-bold text-green-600">{formatCurrency(paidAmount)}</p>
+                </div>
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm text-slate-500">Pending</span>
+                        <span className="material-icons text-amber-500">schedule</span>
+                    </div>
+                    <p className="text-3xl font-bold text-amber-600">{formatCurrency(pendingAmount)}</p>
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Billed</span>
-                            <span className="material-icons text-[#0891b2]">receipt_long</span>
-                        </div>
-                        <p className="text-3xl font-bold text-slate-900 dark:text-white">${totalBilled.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Paid</span>
-                            <span className="material-icons text-green-500">check_circle</span>
-                        </div>
-                        <p className="text-3xl font-bold text-green-600">${totalPaid.toLocaleString()}</p>
-                    </div>
-                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">Outstanding</span>
-                            <span className="material-icons text-amber-500">pending</span>
-                        </div>
-                        <p className="text-3xl font-bold text-amber-600">${totalOutstanding.toLocaleString()}</p>
-                    </div>
-                </div>
+            {/* Filter Tabs */}
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-2 mb-6 flex gap-2">
+                <button
+                    onClick={() => setFilter('all')}
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'all' ? 'bg-[#0891b2] text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                >
+                    All Invoices
+                </button>
+                <button
+                    onClick={() => setFilter('pending')}
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'pending' ? 'bg-[#0891b2] text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                >
+                    Pending
+                </button>
+                <button
+                    onClick={() => setFilter('paid')}
+                    className={`flex-1 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'paid' ? 'bg-[#0891b2] text-white' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        }`}
+                >
+                    Paid
+                </button>
+            </div>
 
-                {/* Invoices List */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                        <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                            <span className="material-icons text-[#0891b2]">description</span>
-                            Invoice History
-                        </h2>
-                    </div>
-
-                    {loading ? (
-                        <div className="p-12 text-center text-slate-500">Loading invoices...</div>
-                    ) : invoices.length > 0 ? (
-                        <div className="divide-y divide-slate-200 dark:divide-slate-700">
-                            {invoices.map((invoice) => (
-                                <div key={invoice.id} className="p-6 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-2">
-                                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">{invoice.id}</h3>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${getStatusBadge(invoice.status)}`}>
-                                                    {invoice.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-slate-600 dark:text-slate-400">{invoice.caseName}</p>
-                                            <p className="text-xs text-slate-500 mt-1">
-                                                Issued: {new Date(invoice.issueDate).toLocaleDateString()} •
-                                                Due: {new Date(invoice.dueDate).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-2xl font-bold text-slate-900 dark:text-white">${invoice.amount.toLocaleString()}</p>
-                                            {invoice.amountPaid > 0 && (
-                                                <p className="text-sm text-green-600">Paid: ${invoice.amountPaid.toLocaleString()}</p>
+            {/* Invoices Table */}
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+                {filteredInvoices.length > 0 ? (
+                    <table className="w-full">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                            <tr>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Invoice</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Case</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Date</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Due Date</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Amount</th>
+                                <th className="px-6 py-4 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                            {filteredInvoices.map((invoice) => (
+                                <tr key={invoice._id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td className="px-6 py-4">
+                                        <div className="font-semibold text-slate-900 dark:text-white">{invoice.invoiceNumber}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-slate-600 dark:text-slate-400">{invoice.case?.caseNumber}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-slate-600 dark:text-slate-400">{formatDate(invoice.createdAt)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-slate-600 dark:text-slate-400">{formatDate(invoice.dueDate)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="font-semibold text-slate-900 dark:text-white">{formatCurrency(invoice.amount)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(invoice.status)}`}>
+                                            {invoice.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <span className="material-icons text-sm">visibility</span>
+                                            </button>
+                                            <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <span className="material-icons text-sm">download</span>
+                                            </button>
+                                            {invoice.status === 'Pending' && (
+                                                <button className="px-3 py-1 bg-[#0891b2] text-white rounded text-xs font-bold hover:bg-[#0891b2]/90 transition-colors">
+                                                    Pay Now
+                                                </button>
                                             )}
                                         </div>
-                                    </div>
-
-                                    {/* Invoice Items */}
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 mb-4">
-                                        <h4 className="text-xs font-bold text-slate-500 uppercase mb-3">Invoice Items</h4>
-                                        <div className="space-y-2">
-                                            {invoice.items.map((item, idx) => (
-                                                <div key={idx} className="flex justify-between text-sm">
-                                                    <span className="text-slate-700 dark:text-slate-300">{item.description}</span>
-                                                    <span className="font-semibold text-slate-900 dark:text-white">${item.amount.toLocaleString()}</span>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Actions */}
-                                    <div className="flex gap-3">
-                                        <button className="flex-1 bg-[#0891b2] text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-[#0891b2]/90 transition-colors flex items-center justify-center gap-2">
-                                            <span className="material-icons text-lg">download</span>
-                                            Download PDF
-                                        </button>
-                                        {invoice.status === 'pending' && (
-                                            <button className="flex-1 bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
-                                                <span className="material-icons text-lg">payment</span>
-                                                Pay Now
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
+                                    </td>
+                                </tr>
                             ))}
-                        </div>
-                    ) : (
-                        <div className="p-12 text-center text-slate-500">No invoices found</div>
-                    )}
-                </div>
-
-                {/* Payment Methods */}
-                <div className="mt-8 bg-[#0891b2]/5 border border-[#0891b2]/20 rounded-xl p-6">
-                    <div className="flex items-start gap-4">
-                        <span className="material-icons text-[#0891b2] text-3xl">info</span>
-                        <div>
-                            <h3 className="font-bold text-slate-900 dark:text-white mb-2">Payment Information</h3>
-                            <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
-                                We accept various payment methods including credit cards, ACH transfers, and checks.
-                                All payments are processed securely through our encrypted payment gateway.
-                            </p>
-                            <p className="text-xs text-slate-500">
-                                For questions about billing, please contact our billing department at billing@medlegal.com
-                            </p>
-                        </div>
+                        </tbody>
+                    </table>
+                ) : (
+                    <div className="p-12 text-center text-slate-500">
+                        No invoices found
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );

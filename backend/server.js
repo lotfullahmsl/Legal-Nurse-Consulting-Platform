@@ -22,6 +22,7 @@ const medicalRecordRoutes = require('./modules/medical-records/routes/medicalRec
 const caseAnalysisRoutes = require('./modules/case-analysis/routes/caseAnalysis.routes');
 const searchRoutes = require('./modules/ocr-search/routes/search.routes');
 const fileShareRoutes = require('./modules/file-sharing-portal/routes/fileShare.routes');
+const clientPortalRoutes = require('./modules/file-sharing-portal/routes/clientPortal.routes');
 const timelineRoutes = require('./modules/timeline-chronology/routes/timeline.routes');
 const taskRoutes = require('./modules/task-workflow/routes/task.routes');
 const workflowRoutes = require('./modules/task-workflow/routes/workflow.routes');
@@ -116,6 +117,7 @@ app.use('/api/medical-records', medicalRecordRoutes);
 app.use('/api/case-analysis', caseAnalysisRoutes);
 app.use('/api/search', searchRoutes);
 app.use('/api/files', fileShareRoutes);
+app.use('/api/client', clientPortalRoutes);
 app.use('/api/timelines', timelineRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/workflows', workflowRoutes);
