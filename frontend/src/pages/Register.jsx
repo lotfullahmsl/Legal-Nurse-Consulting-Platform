@@ -22,6 +22,12 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        if (!formData.agreeToTerms) {
+            alert('Please agree to the Terms of Service and HIPAA Compliance Policy');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -37,25 +43,33 @@ const Register = () => {
                 role: selectedRole
             };
 
+            console.log('Attempting registration with:', registrationData);
+
             // Call register API
             const response = await authService.register(registrationData);
 
+            console.log('Registration response:', response);
+
             if (response.success) {
                 // Show success alert
-                alert('✅ Registration successful! Redirecting to your dashboard...');
+                alert(`✅ Registration successful! Welcome, ${response.data.user.fullName}!`);
 
                 // Redirect based on role
-                if (selectedRole === 'attorney') {
+                if (selectedRole === 'attorney' || selectedRole === 'admin') {
                     navigate('/dashboard');
                 } else if (selectedRole === 'consultant') {
                     navigate('/staff-dashboard');
                 } else {
                     navigate('/client/dashboard');
                 }
+            } else {
+                alert('Registration failed: ' + (response.message || 'Unknown error'));
+                setLoading(false);
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert(error.response?.data?.message || 'Registration failed. Please try again.');
+            const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
+            alert('❌ ' + errorMessage);
             setLoading(false);
         }
     };
