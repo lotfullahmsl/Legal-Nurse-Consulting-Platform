@@ -9,7 +9,7 @@ const { validate } = require('../../../shared/middleware/validation.middleware')
 const clientValidation = [
     body('fullName').trim().notEmpty().withMessage('Full name is required'),
     body('email').isEmail().withMessage('Valid email is required'),
-    body('phone').notEmpty().withMessage('Phone number is required')
+    body('phone').optional().trim()
 ];
 
 // Get all clients (requires authentication)

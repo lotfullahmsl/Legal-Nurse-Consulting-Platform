@@ -8,6 +8,16 @@ const MedicalRecordsList = () => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0, ocrPending: 0 });
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+    const [showUploadModal, setShowUploadModal] = useState(false);
+    const [uploadData, setUploadData] = useState({
+        file: null,
+        fileName: '',
+        documentType: 'medical-record',
+        provider: '',
+        recordDate: '',
+        notes: ''
+    });
+    const [uploading, setUploading] = useState(false);
 
     useEffect(() => {
         fetchRecords();
@@ -64,6 +74,54 @@ const MedicalRecordsList = () => {
         return new Date(dateString).toLocaleDateString();
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setUploadData({
+                ...uploadData,
+                file,
+                fileName: file.name
+            });
+        }
+    };
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        if (!uploadData.file) {
+            alert('Please select a file to upload');
+            return;
+        }
+
+        try {
+            setUploading(true);
+            const formData = new FormData();
+            formData.append('file', uploadData.file);
+            formData.append('documentType', uploadData.documentType);
+            if (uploadData.provider) formData.append('provider', uploadData.provider);
+            if (uploadData.recordDate) formData.append('recordDate', uploadData.recordDate);
+            if (uploadData.notes) formData.append('notes', uploadData.notes);
+
+            await medicalRecordService.uploadRecord(formData);
+            setShowUploadModal(false);
+            setUploadData({
+                file: null,
+                fileName: '',
+                documentType: 'medical-record',
+                provider: '',
+                recordDate: '',
+                notes: ''
+            });
+            fetchRecords();
+            fetchStats();
+            alert('Record uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading record:', error);
+            alert('Failed to upload record. Please try again.');
+        } finally {
+            setUploading(false);
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -80,7 +138,10 @@ const MedicalRecordsList = () => {
                             <span className="material-icons text-sm mr-2">filter_list</span>
                             Filters
                         </button>
-                        <button className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg transition-all text-sm font-semibold">
+                        <button
+                            onClick={() => setShowUploadModal(true)}
+                            className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg transition-all text-sm font-semibold"
+                        >
                             <span className="material-icons text-sm mr-2">upload_file</span>
                             Upload Records
                         </button>
@@ -203,9 +264,9 @@ const MedicalRecordsList = () => {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${record.ocrStatus === 'completed' ? 'bg-green-100 text-green-800' :
-                                                    record.ocrStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
-                                                        record.ocrStatus === 'failed' ? 'bg-red-100 text-red-800' :
-                                                            'bg-amber-100 text-amber-800'
+                                                record.ocrStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
+                                                    record.ocrStatus === 'failed' ? 'bg-red-100 text-red-800' :
+                                                        'bg-amber-100 text-amber-800'
                                                 }`}>
                                                 {record.ocrStatus}
                                             </span>
@@ -256,6 +317,164 @@ const MedicalRecordsList = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Upload Modal */}
+            {showUploadModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Upload Medical Record</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Upload and process medical documentation with OCR</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowUploadModal(false)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <form onSubmit={handleUpload} className="p-6 space-y-5">
+                            {/* File Upload Area */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Document File *
+                                </label>
+                                <div className="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center hover:border-[#0891b2] transition-colors">
+                                    <input
+                                        type="file"
+                                        id="file-upload"
+                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                        onChange={handleFileChange}
+                                        className="hidden"
+                                        required
+                                    />
+                                    <label htmlFor="file-upload" className="cursor-pointer">
+                                        <div className="flex flex-col items-center">
+                                            <span className="material-icons text-5xl text-[#0891b2] mb-3">cloud_upload</span>
+                                            {uploadData.fileName ? (
+                                                <div>
+                                                    <p className="text-sm font-medium text-slate-900 dark:text-white">{uploadData.fileName}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">Click to change file</p>
+                                                </div>
+                                            ) : (
+                                                <div>
+                                                    <p className="text-sm font-medium text-slate-900 dark:text-white">Click to upload or drag and drop</p>
+                                                    <p className="text-xs text-slate-500 mt-1">PDF, DOC, DOCX, JPG, PNG (Max 50MB)</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Document Type */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        Document Type *
+                                    </label>
+                                    <select
+                                        required
+                                        value={uploadData.documentType}
+                                        onChange={(e) => setUploadData({ ...uploadData, documentType: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    >
+                                        <option value="medical-record">Medical Record</option>
+                                        <option value="lab-report">Lab Report</option>
+                                        <option value="imaging">Imaging</option>
+                                        <option value="prescription">Prescription</option>
+                                        <option value="consultation">Consultation</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+
+                                {/* Record Date */}
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        Record Date
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={uploadData.recordDate}
+                                        onChange={(e) => setUploadData({ ...uploadData, recordDate: e.target.value })}
+                                        className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Provider */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Healthcare Provider
+                                </label>
+                                <input
+                                    type="text"
+                                    value={uploadData.provider}
+                                    onChange={(e) => setUploadData({ ...uploadData, provider: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    placeholder="Dr. Smith, City Hospital, etc."
+                                />
+                            </div>
+
+                            {/* Notes */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Notes
+                                </label>
+                                <textarea
+                                    value={uploadData.notes}
+                                    onChange={(e) => setUploadData({ ...uploadData, notes: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    rows="3"
+                                    placeholder="Add any additional notes or context..."
+                                />
+                            </div>
+
+                            {/* Info Box */}
+                            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                                <div className="flex items-start">
+                                    <span className="material-icons text-blue-600 dark:text-blue-400 text-lg mr-3">info</span>
+                                    <div className="text-sm text-blue-800 dark:text-blue-300">
+                                        <p className="font-medium mb-1">OCR Processing</p>
+                                        <p className="text-xs">Uploaded documents will be automatically processed with OCR technology to extract text and make them searchable.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowUploadModal(false)}
+                                    className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={uploading || !uploadData.file}
+                                    className="flex-1 px-4 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
+                                >
+                                    {uploading ? (
+                                        <>
+                                            <span className="material-icons animate-spin text-sm">refresh</span>
+                                            Uploading...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-icons text-sm">upload</span>
+                                            Upload Record
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

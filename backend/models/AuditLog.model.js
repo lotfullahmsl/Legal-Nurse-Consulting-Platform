@@ -17,7 +17,8 @@ const auditLogSchema = new mongoose.Schema({
             'view_referral_analytics', 'view_performance_metrics', 'export_analytics',
             'view_task_stats', 'view_client_stats', 'view_case_stats',
             'view_deadline_stats', 'view_audit_logs', 'export_audit_logs',
-            'generate_compliance_report', 'view_audit_statistics'
+            'generate_compliance_report', 'view_audit_statistics',
+            'view_notifications', 'mark_notification_read', 'delete_notification'
         ]
     },
     resource: {

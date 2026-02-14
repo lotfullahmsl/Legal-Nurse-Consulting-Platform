@@ -1,35 +1,70 @@
 import { useEffect, useState } from 'react';
 import billingService from '../../../services/billing.service';
+import ManualTimeEntryModal from '../components/ManualTimeEntryModal';
 
 const BillingPage = () => {
     const [activeTab, setActiveTab] = useState('time');
     const [timeEntries, setTimeEntries] = useState([]);
     const [invoices, setInvoices] = useState([]);
-    const [stats, setStats] = useState({});
+    const [stats, setStats] = useState({
+        unbilledAmount: 0,
+        billableHours: 0,
+        averageRate: 0
+    });
     const [loading, setLoading] = useState(true);
     const [timerRunning, setTimerRunning] = useState(false);
-    const [activeCase, setActiveCase] = useState('Case #2023-884 - Miller vs. General Hospital');
+    const [activeCase, setActiveCase] = useState('');
     const [taskCategory, setTaskCategory] = useState('Medical Record Review');
-    const [runningTime, setRunningTime] = useState('02:34:18');
+    const [runningTime, setRunningTime] = useState('00:00:00');
+    const [cases, setCases] = useState([]);
+    const [showManualEntryModal, setShowManualEntryModal] = useState(false);
+    const [timerInterval, setTimerInterval] = useState(null);
 
     useEffect(() => {
         fetchData();
+        fetchCases();
     }, [activeTab]);
+
+    useEffect(() => {
+        return () => {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+        };
+    }, [timerInterval]);
+
+    const fetchCases = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/cases', {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const data = await response.json();
+            setCases(data.cases || []);
+            if (data.cases && data.cases.length > 0 && !activeCase) {
+                setActiveCase(data.cases[0]._id);
+            }
+        } catch (error) {
+            console.error('Failed to fetch cases:', error);
+        }
+    };
 
     const fetchData = async () => {
         try {
             setLoading(true);
-            if (activeTab === 'time') {
-                const data = await billingService.getAllTimeEntries({ limit: 50 });
-                setTimeEntries(data.entries || []);
-            } else {
-                const [invoiceData, statsData] = await Promise.all([
-                    billingService.getAllInvoices({ limit: 20 }),
-                    billingService.getBillingStats()
-                ]);
-                setInvoices(invoiceData.invoices || []);
-                setStats(statsData || {});
-            }
+            const [entriesData, invoiceData, statsData] = await Promise.all([
+                billingService.getAllTimeEntries({ limit: 50 }),
+                billingService.getAllInvoices({ limit: 20 }),
+                billingService.getBillingStats()
+            ]);
+            setTimeEntries(entriesData.entries || []);
+            setInvoices(invoiceData.invoices || []);
+            setStats({
+                unbilledAmount: statsData.unbilledAmount || 0,
+                billableHours: statsData.billableHours || 0,
+                averageRate: statsData.averageRate || 0
+            });
         } catch (error) {
             console.error('Failed to load billing data:', error);
         } finally {
@@ -38,89 +73,105 @@ const BillingPage = () => {
     };
 
     const handleStartTimer = async () => {
+        if (!activeCase) {
+            alert('Please select a case first');
+            return;
+        }
+
         try {
-            await billingService.startTimer({
-                case: 'CASE_ID',
-                description: 'Working on case',
-                billableRate: 150
-            });
             setTimerRunning(true);
+            const startTime = Date.now();
+
+            const interval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const hours = Math.floor(elapsed / 3600000);
+                const minutes = Math.floor((elapsed % 3600000) / 60000);
+                const seconds = Math.floor((elapsed % 60000) / 1000);
+                setRunningTime(
+                    `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+                );
+            }, 1000);
+
+            setTimerInterval(interval);
         } catch (error) {
             console.error('Failed to start timer:', error);
+            setTimerRunning(false);
         }
     };
 
     const handleStopTimer = async () => {
         try {
-            await billingService.stopTimer();
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                setTimerInterval(null);
+            }
+
+            const timeParts = runningTime.split(':');
+            const hours = parseFloat(timeParts[0]) + parseFloat(timeParts[1]) / 60 + parseFloat(timeParts[2]) / 3600;
+
+            await billingService.createTimeEntry({
+                case: activeCase,
+                description: taskCategory,
+                hours: hours.toFixed(2),
+                rate: 150,
+                isBillable: true,
+                date: new Date().toISOString()
+            });
+
             setTimerRunning(false);
+            setRunningTime('00:00:00');
+            alert('Time entry saved successfully');
             fetchData();
         } catch (error) {
             console.error('Failed to stop timer:', error);
+            alert('Failed to save time entry: ' + error.message);
+        }
+    };
+
+    const handleExportCSV = async () => {
+        try {
+            const data = await billingService.exportTimeEntries();
+            const blob = new Blob([data], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `time-entries-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Failed to export CSV:', error);
+            alert('Failed to export data');
+        }
+    };
+
+    const handleToggleBillable = async (entryId, currentStatus) => {
+        try {
+            await billingService.updateTimeEntry(entryId, { isBillable: !currentStatus });
+            fetchData();
+        } catch (error) {
+            console.error('Failed to update billable status:', error);
+        }
+    };
+
+    const handleDeleteEntry = async (entryId) => {
+        if (!window.confirm('Are you sure you want to delete this time entry?')) return;
+
+        try {
+            await billingService.deleteTimeEntry(entryId);
+            alert('Time entry deleted successfully');
+            fetchData();
+        } catch (error) {
+            console.error('Failed to delete entry:', error);
+            alert('Failed to delete time entry');
         }
     };
 
     // Mock data for UI display
-    const mockTimeEntries = [
-        {
-            id: 1,
-            date: 'May 18, 2024',
-            consultant: 'Sarah Johnson, RN',
-            matter: 'Case #2023-884',
-            description: 'Medical record review and chronology',
-            duration: '3.5h',
-            billable: true
-        },
-        {
-            id: 2,
-            date: 'May 17, 2024',
-            consultant: 'Michael Chen, LNC',
-            matter: 'Case #2024-112',
-            description: 'Expert consultation and report prep',
-            duration: '2.0h',
-            billable: true
-        },
-        {
-            id: 3,
-            date: 'May 17, 2024',
-            consultant: 'Sarah Johnson, RN',
-            matter: 'Case #2024-045',
-            description: 'Client correspondence',
-            duration: '0.5h',
-            billable: false
-        }
-    ];
+    const mockTimeEntries = [];
 
-    const mockInvoices = [
-        {
-            id: 'INV-2024-0019',
-            client: 'Thompson & Associates',
-            amount: '$3,420.00',
-            status: 'paid',
-            statusLabel: 'Paid',
-            statusColor: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-            date: 'Paid on May 15'
-        },
-        {
-            id: 'INV-2024-0015',
-            client: 'Rivera Legal Group',
-            amount: '$8,115.00',
-            status: 'overdue',
-            statusLabel: 'Overdue',
-            statusColor: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
-            date: 'Due: May 01',
-            dateColor: 'text-red-500'
-        },
-        {
-            id: 'INV-2024-0018',
-            client: 'Johnson & Miller LLP',
-            amount: '$1,250.00',
-            status: 'draft',
-            statusLabel: 'Draft',
-            statusColor: 'bg-slate-100 dark:bg-slate-600/50 text-slate-600 dark:text-slate-300',
-            date: 'Last updated 2h ago'
-        }
-    ];
+    const mockInvoices = [];
 
     const displayTimeEntries = timeEntries.length > 0 ? timeEntries : mockTimeEntries;
     const displayInvoices = invoices.length > 0 ? invoices : mockInvoices;
@@ -137,10 +188,16 @@ const BillingPage = () => {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-50 transition">
+                        <button
+                            onClick={handleExportCSV}
+                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-slate-50 transition"
+                        >
                             <span className="material-icons text-sm">download</span> Export CSV
                         </button>
-                        <button className="bg-[#1f3b61] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition">
+                        <button
+                            onClick={() => setShowManualEntryModal(true)}
+                            className="bg-[#1f3b61] text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 hover:bg-opacity-90 transition"
+                        >
                             <span className="material-icons text-sm">add</span> Manual Entry
                         </button>
                     </div>
@@ -159,9 +216,12 @@ const BillingPage = () => {
                                     value={activeCase}
                                     onChange={(e) => setActiveCase(e.target.value)}
                                 >
-                                    <option>Case #2023-884 - Miller vs. General Hospital</option>
-                                    <option>Case #2024-112 - Estate of Thompson</option>
-                                    <option>Case #2024-045 - Rivera Workers Comp</option>
+                                    <option value="">Select a case</option>
+                                    {cases.map(c => (
+                                        <option key={c._id} value={c._id}>
+                                            {c.caseNumber} - {c.title}
+                                        </option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
@@ -241,41 +301,62 @@ const BillingPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {displayTimeEntries.map((entry) => (
-                                        <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-medium">{entry.date}</div>
-                                                <div className="text-xs text-slate-400">{entry.consultant}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="text-sm font-semibold truncate max-w-[200px]">{entry.matter}</div>
-                                                <div className="text-xs text-slate-500">{entry.description}</div>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <span className="text-sm font-mono font-medium">{entry.duration}</span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex justify-center">
-                                                    <div
-                                                        className={`w-10 h-5 rounded-full relative cursor-pointer ${entry.billable ? 'bg-[#1f3b61]/20' : 'bg-slate-200 dark:bg-slate-600'
-                                                            }`}
-                                                    >
-                                                        <div
-                                                            className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm ${entry.billable
-                                                                ? 'right-0.5 bg-[#1f3b61]'
-                                                                : 'left-0.5 bg-white'
-                                                                }`}
-                                                        ></div>
-                                                    </div>
+                                    {loading ? (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                                <div className="flex items-center justify-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1f3b61]"></div>
+                                                    <span className="ml-3">Loading entries...</span>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <button className="text-slate-400 hover:text-[#1f3b61] transition">
-                                                    <span className="material-icons text-xl">edit</span>
-                                                </button>
+                                        </tr>
+                                    ) : displayTimeEntries.length > 0 ? (
+                                        displayTimeEntries.map((entry) => (
+                                            <tr key={entry._id || entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm font-medium">{new Date(entry.date || entry.createdAt).toLocaleDateString()}</div>
+                                                    <div className="text-xs text-slate-400">{entry.user?.name || entry.consultant || 'N/A'}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm font-semibold truncate max-w-[200px]">{entry.case?.caseNumber || entry.matter || 'N/A'}</div>
+                                                    <div className="text-xs text-slate-500">{entry.description}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className="text-sm font-mono font-medium">{entry.hours || entry.duration}h</span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex justify-center">
+                                                        <div
+                                                            onClick={() => handleToggleBillable(entry._id, entry.isBillable || entry.billable)}
+                                                            className={`w-10 h-5 rounded-full relative cursor-pointer ${(entry.isBillable || entry.billable) ? 'bg-[#1f3b61]/20' : 'bg-slate-200 dark:bg-slate-600'
+                                                                }`}
+                                                        >
+                                                            <div
+                                                                className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm ${(entry.isBillable || entry.billable)
+                                                                    ? 'right-0.5 bg-[#1f3b61]'
+                                                                    : 'left-0.5 bg-white'
+                                                                    }`}
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button
+                                                        onClick={() => handleDeleteEntry(entry._id)}
+                                                        className="text-slate-400 hover:text-red-500 transition"
+                                                    >
+                                                        <span className="material-icons text-xl">delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                                No time entries found. Start the timer or add a manual entry.
                                             </td>
                                         </tr>
-                                    ))}
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -293,16 +374,16 @@ const BillingPage = () => {
                     <div className="bg-[#1f3b61] rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                         <div className="relative z-10">
                             <h4 className="text-white/70 text-sm font-medium mb-1 uppercase tracking-wider">Unbilled Amount</h4>
-                            <div className="text-3xl font-bold mb-4">$14,240.50</div>
+                            <div className="text-3xl font-bold mb-4">${stats.unbilledAmount?.toFixed(2) || '0.00'}</div>
                             <div className="flex items-center gap-4">
                                 <div>
                                     <div className="text-xs text-white/60 mb-1">Billable Hours</div>
-                                    <div className="text-lg font-semibold">48.2h</div>
+                                    <div className="text-lg font-semibold">{stats.billableHours?.toFixed(1) || '0.0'}h</div>
                                 </div>
                                 <div className="w-px h-8 bg-white/20"></div>
                                 <div>
                                     <div className="text-xs text-white/60 mb-1">Current Rate (Avg)</div>
-                                    <div className="text-lg font-semibold">$295/hr</div>
+                                    <div className="text-lg font-semibold">${stats.averageRate?.toFixed(0) || '0'}/hr</div>
                                 </div>
                             </div>
                         </div>
@@ -320,23 +401,45 @@ const BillingPage = () => {
                             </button>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {displayInvoices.map((invoice) => (
-                                <div key={invoice.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <div className="text-sm font-bold">{invoice.id}</div>
-                                            <div className="text-xs text-slate-500">{invoice.client}</div>
+                            {displayInvoices.length > 0 ? (
+                                displayInvoices.map((invoice) => {
+                                    const getStatusColor = (status) => {
+                                        const colors = {
+                                            paid: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+                                            overdue: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400',
+                                            draft: 'bg-slate-100 dark:bg-slate-600/50 text-slate-600 dark:text-slate-300',
+                                            pending: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                                        };
+                                        return colors[status] || colors.draft;
+                                    };
+
+                                    return (
+                                        <div key={invoice._id || invoice.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <div className="text-sm font-bold">{invoice.invoiceNumber || invoice.id}</div>
+                                                    <div className="text-xs text-slate-500">{invoice.client?.name || invoice.client}</div>
+                                                </div>
+                                                <div className={`px-2 py-1 text-[10px] font-bold rounded uppercase ${getStatusColor(invoice.status)}`}>
+                                                    {invoice.status}
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-between items-end">
+                                                <div className="text-xs italic text-slate-400">
+                                                    {invoice.dueDate ? `Due: ${new Date(invoice.dueDate).toLocaleDateString()}` : 'No due date'}
+                                                </div>
+                                                <div className="text-sm font-bold text-slate-800 dark:text-white">
+                                                    ${invoice.totalAmount?.toFixed(2) || invoice.amount}
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div className={`px-2 py-1 text-[10px] font-bold rounded uppercase ${invoice.statusColor}`}>
-                                            {invoice.statusLabel}
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between items-end">
-                                        <div className={`text-xs italic ${invoice.dateColor || 'text-slate-400'}`}>{invoice.date}</div>
-                                        <div className="text-sm font-bold text-slate-800 dark:text-white">{invoice.amount}</div>
-                                    </div>
+                                    );
+                                })
+                            ) : (
+                                <div className="p-8 text-center text-slate-500">
+                                    No invoices found
                                 </div>
-                            ))}
+                            )}
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-900/50 text-center">
                             <a
@@ -367,6 +470,13 @@ const BillingPage = () => {
                     <span className="material-icons">timer</span>
                 </button>
             </div>
+
+            {/* Manual Time Entry Modal */}
+            <ManualTimeEntryModal
+                isOpen={showManualEntryModal}
+                onClose={() => setShowManualEntryModal(false)}
+                onEntryCreated={fetchData}
+            />
         </div>
     );
 };

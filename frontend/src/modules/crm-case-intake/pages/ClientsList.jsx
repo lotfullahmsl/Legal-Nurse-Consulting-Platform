@@ -9,6 +9,20 @@ const ClientsList = () => {
     const [loading, setLoading] = useState(true);
     const [stats, setStats] = useState({ total: 0 });
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        phone: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: ''
+        },
+        status: 'active'
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchClients();
@@ -58,6 +72,34 @@ const ClientsList = () => {
         return colors[index % colors.length];
     };
 
+    const handleCreateClient = async (e) => {
+        e.preventDefault();
+        try {
+            setSubmitting(true);
+            await clientService.createClient(formData);
+            setShowCreateModal(false);
+            setFormData({
+                fullName: '',
+                email: '',
+                phone: '',
+                address: {
+                    street: '',
+                    city: '',
+                    state: '',
+                    zipCode: ''
+                },
+                status: 'active'
+            });
+            fetchClients();
+            fetchStats();
+        } catch (error) {
+            console.error('Error creating client:', error);
+            alert('Failed to create client. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -74,7 +116,10 @@ const ClientsList = () => {
                             <span className="material-icons text-sm mr-2">file_download</span>
                             Export CSV
                         </button>
-                        <button className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg shadow-[#0891b2]/20 transition-all text-sm font-semibold">
+                        <button
+                            onClick={() => setShowCreateModal(true)}
+                            className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg shadow-[#0891b2]/20 transition-all text-sm font-semibold"
+                        >
                             <span className="material-icons text-sm mr-2">person_add</span>
                             New Client
                         </button>
@@ -242,6 +287,106 @@ const ClientsList = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Create Client Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Client</h2>
+                                <button
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <form onSubmit={handleCreateClient} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Full Name *
+                                </label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.fullName}
+                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    placeholder="Enter client full name"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Email *
+                                </label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    placeholder="client@lawfirm.com"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Phone
+                                </label>
+                                <input
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    placeholder="(555) 123-4567"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Address
+                                </label>
+                                <textarea
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    rows="3"
+                                    placeholder="123 Main St, City, State ZIP"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Status
+                                </label>
+                                <select
+                                    value={formData.status}
+                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {submitting ? 'Creating...' : 'Create Client'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

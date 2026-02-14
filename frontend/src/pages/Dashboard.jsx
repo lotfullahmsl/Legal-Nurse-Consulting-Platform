@@ -181,7 +181,7 @@ const Dashboard = () => {
                     <p className="text-slate-500 mt-1">Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.</p>
                 </div>
                 <button
-                    onClick={() => navigate('/cases/create')}
+                    onClick={() => navigate('/cases/new')}
                     className="bg-[#0891b2] hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm transition-all transform active:scale-95"
                 >
                     <span className="material-icons text-sm">add</span>

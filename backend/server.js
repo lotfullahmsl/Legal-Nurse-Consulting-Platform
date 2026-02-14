@@ -37,6 +37,7 @@ const conversationRoutes = require('./modules/collaboration/routes/conversation.
 const reportRoutes = require('./modules/reporting/routes/report.routes');
 const analyticsRoutes = require('./modules/analytics/routes/analytics.routes');
 const auditRoutes = require('./modules/compliance-security/routes/audit.routes');
+const notificationRoutes = require('./modules/notifications/routes/notification.routes');
 
 // Import security middleware
 const securityMiddleware = require('./shared/middleware/security.middleware');
@@ -140,6 +141,7 @@ app.use('/api/conversations', conversationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/audit', auditRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // 404 handler
 app.use((req, res) => {

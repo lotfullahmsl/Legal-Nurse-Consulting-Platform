@@ -8,6 +8,19 @@ const CaseAnalysis = () => {
     const [cases, setCases] = useState([]);
     const [analysis, setAnalysis] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [findingType, setFindingType] = useState('standard'); // 'standard' or 'deviation'
+    const [formData, setFormData] = useState({
+        category: '',
+        standard: '',
+        assessment: '',
+        evidence: '',
+        description: '',
+        severity: 'medium',
+        impact: '',
+        date: new Date().toISOString().split('T')[0]
+    });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchCases();
@@ -58,6 +71,56 @@ const CaseAnalysis = () => {
         return colors[severity] || colors['None'];
     };
 
+    const handleSubmitFinding = async (e) => {
+        e.preventDefault();
+        if (!selectedCase) {
+            alert('Please select a case first');
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+            const payload = {
+                caseId: selectedCase,
+                ...(findingType === 'standard' ? {
+                    standardsOfCare: [{
+                        category: formData.category,
+                        standard: formData.standard,
+                        assessment: formData.assessment,
+                        evidence: formData.evidence
+                    }]
+                } : {
+                    breaches: [{
+                        description: formData.description,
+                        severity: formData.severity,
+                        impact: formData.impact,
+                        date: formData.date
+                    }]
+                })
+            };
+
+            await caseAnalysisService.createAnalysis(payload);
+            setShowAddModal(false);
+            setFormData({
+                category: '',
+                standard: '',
+                assessment: '',
+                evidence: '',
+                description: '',
+                severity: 'medium',
+                impact: '',
+                date: new Date().toISOString().split('T')[0]
+            });
+            fetchAnalysis();
+            alert('Finding added successfully');
+        } catch (error) {
+            console.error('Error adding finding:', error);
+            alert('Failed to add finding. Please try again.');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -66,7 +129,10 @@ const CaseAnalysis = () => {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Case Analysis</h1>
                     <p className="text-slate-500 mt-1">Analyze standards of care and identify deviations</p>
                 </div>
-                <button className="bg-[#0891b2] hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm transition-all transform active:scale-95">
+                <button
+                    onClick={() => setShowAddModal(true)}
+                    className="bg-[#0891b2] hover:bg-teal-700 text-white px-5 py-2.5 rounded-lg font-semibold flex items-center gap-2 shadow-sm transition-all transform active:scale-95"
+                >
                     <span className="material-icons text-sm">add</span>
                     Add Finding
                 </button>
@@ -241,6 +307,208 @@ const CaseAnalysis = () => {
                     </div>
                 )}
             </div>
+
+            {/* Add Finding Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Add Finding</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Document standards of care or deviations</p>
+                                </div>
+                                <button
+                                    onClick={() => setShowAddModal(false)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <form onSubmit={handleSubmitFinding} className="p-6 space-y-5">
+                            {/* Finding Type Selector */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
+                                    Finding Type *
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFindingType('standard')}
+                                        className={`p-4 rounded-lg border-2 transition-all ${findingType === 'standard'
+                                            ? 'border-[#0891b2] bg-[#0891b2]/10'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                            }`}
+                                    >
+                                        <span className="material-icons text-2xl mb-2 text-[#0891b2]">check_circle</span>
+                                        <p className="font-semibold text-sm">Standard of Care</p>
+                                        <p className="text-xs text-slate-500 mt-1">Document expected standards</p>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFindingType('deviation')}
+                                        className={`p-4 rounded-lg border-2 transition-all ${findingType === 'deviation'
+                                            ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                            }`}
+                                    >
+                                        <span className="material-icons text-2xl mb-2 text-red-500">warning</span>
+                                        <p className="font-semibold text-sm">Deviation</p>
+                                        <p className="text-xs text-slate-500 mt-1">Document breaches found</p>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Standard of Care Form */}
+                            {findingType === 'standard' && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Category *
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            placeholder="e.g., Medication Administration, Patient Monitoring"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Standard Description *
+                                        </label>
+                                        <textarea
+                                            required
+                                            value={formData.standard}
+                                            onChange={(e) => setFormData({ ...formData, standard: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            rows="3"
+                                            placeholder="Describe the expected standard of care..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Assessment *
+                                        </label>
+                                        <textarea
+                                            required
+                                            value={formData.assessment}
+                                            onChange={(e) => setFormData({ ...formData, assessment: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            rows="3"
+                                            placeholder="Your assessment of compliance..."
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Evidence
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.evidence}
+                                            onChange={(e) => setFormData({ ...formData, evidence: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            placeholder="Reference to supporting documentation..."
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Deviation Form */}
+                            {findingType === 'deviation' && (
+                                <>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Deviation Description *
+                                        </label>
+                                        <textarea
+                                            required
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            rows="3"
+                                            placeholder="Describe the deviation from standard of care..."
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                                Severity *
+                                            </label>
+                                            <select
+                                                required
+                                                value={formData.severity}
+                                                onChange={(e) => setFormData({ ...formData, severity: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            >
+                                                <option value="low">Low</option>
+                                                <option value="medium">Medium</option>
+                                                <option value="high">High</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                                Date *
+                                            </label>
+                                            <input
+                                                type="date"
+                                                required
+                                                value={formData.date}
+                                                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                                className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                            Impact *
+                                        </label>
+                                        <textarea
+                                            required
+                                            value={formData.impact}
+                                            onChange={(e) => setFormData({ ...formData, impact: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                            rows="3"
+                                            placeholder="Describe the impact of this deviation..."
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
+                                >
+                                    {submitting ? (
+                                        <>
+                                            <span className="material-icons animate-spin text-sm">refresh</span>
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="material-icons text-sm">add</span>
+                                            Add Finding
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

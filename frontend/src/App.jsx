@@ -47,8 +47,8 @@ function App() {
                 <Route path="/" element={<Navigate to="/dashboard" replace />} />
                 <Route path="/dashboard" element={<AdminLayout><Dashboard /></AdminLayout>} />
                 <Route path="/cases" element={<AdminLayout><CasesList /></AdminLayout>} />
-                <Route path="/cases/:id" element={<AdminLayout><CaseDetail /></AdminLayout>} />
                 <Route path="/cases/new" element={<AdminLayout><CreateCase /></AdminLayout>} />
+                <Route path="/cases/:id" element={<AdminLayout><CaseDetail /></AdminLayout>} />
                 <Route path="/clients" element={<AdminLayout><ClientsList /></AdminLayout>} />
                 <Route path="/users" element={<AdminLayout><UsersManagement /></AdminLayout>} />
                 <Route path="/medical-records" element={<AdminLayout><MedicalRecordsList /></AdminLayout>} />

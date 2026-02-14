@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import taskService from '../../../services/task.service';
+import CreateTaskModal from '../components/CreateTaskModal';
 
 const TasksPage = () => {
     const [filter, setFilter] = useState('all');
@@ -13,6 +14,7 @@ const TasksPage = () => {
     });
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     useEffect(() => {
         fetchTasks();
@@ -102,6 +104,17 @@ const TasksPage = () => {
         return colors[priority] || colors.low;
     };
 
+    const handleCreateTask = async (taskData) => {
+        try {
+            await taskService.createTask(taskData);
+            alert('Task created successfully');
+            fetchTasks();
+            fetchStats();
+        } catch (error) {
+            throw error;
+        }
+    };
+
     const filteredTasks = tasks.filter(task => {
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
@@ -144,7 +157,10 @@ const TasksPage = () => {
             {/* Toolbar */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
                 <div className="flex flex-wrap items-center gap-2">
-                    <button className="bg-[#0891b2] hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all">
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="bg-[#0891b2] hover:bg-teal-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-all"
+                    >
                         <span className="material-icons text-sm">add</span> New Task
                     </button>
                     <div className="flex items-center bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
@@ -261,9 +277,9 @@ const TasksPage = () => {
                                         </td>
                                         <td className="py-5 px-4">
                                             <span className={`px-2 py-1 text-[10px] font-bold rounded uppercase ${task.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                                    task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                                                        task.status === 'on-hold' ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-slate-100 text-slate-700'
+                                                task.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
+                                                    task.status === 'on-hold' ? 'bg-yellow-100 text-yellow-700' :
+                                                        'bg-slate-100 text-slate-700'
                                                 }`}>
                                                 {task.status}
                                             </span>
@@ -309,6 +325,13 @@ const TasksPage = () => {
                 <span className="material-icons text-[12px]">security</span>
                 HIPAA COMPLIANT ENVIRONMENT
             </div>
+
+            {/* Create Task Modal */}
+            <CreateTaskModal
+                isOpen={isCreateModalOpen}
+                onClose={() => setIsCreateModalOpen(false)}
+                onTaskCreated={handleCreateTask}
+            />
         </div>
     );
 };

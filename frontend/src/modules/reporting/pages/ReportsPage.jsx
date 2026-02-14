@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import reportService from '../../../services/report.service';
+import CustomReportBuilderModal from '../components/CustomReportBuilderModal';
 
 const ReportsPage = () => {
     const [templates, setTemplates] = useState([]);
     const [recentReports, setRecentReports] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showCustomReportModal, setShowCustomReportModal] = useState(false);
 
     useEffect(() => {
         fetchData();
@@ -90,7 +92,10 @@ const ReportsPage = () => {
                         Select a standardized template to begin your medical-legal analysis or create a custom structured report.
                     </p>
                 </div>
-                <button className="inline-flex items-center justify-center gap-2 bg-[#0891b2] hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-[#0891b2]/20 hover:shadow-[#0891b2]/40 group">
+                <button
+                    onClick={() => setShowCustomReportModal(true)}
+                    className="inline-flex items-center justify-center gap-2 bg-[#0891b2] hover:bg-teal-700 text-white px-6 py-3 rounded-xl font-semibold transition-all shadow-lg shadow-[#0891b2]/20 hover:shadow-[#0891b2]/40 group"
+                >
                     <span className="material-icons transition-transform group-hover:rotate-12">dashboard_customize</span>
                     Custom Report Builder
                 </button>
@@ -170,7 +175,7 @@ const ReportsPage = () => {
                                         <div className="flex justify-center">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${report.status === 'completed' ? 'bg-green-500' :
-                                                        report.status === 'generating' ? 'bg-amber-500' : 'bg-red-500'
+                                                    report.status === 'generating' ? 'bg-amber-500' : 'bg-red-500'
                                                     }`}></span>
                                                 {report.status}
                                             </span>
@@ -242,6 +247,13 @@ const ReportsPage = () => {
             <button className="fixed bottom-6 right-6 w-12 h-12 bg-white dark:bg-[#0891b2] text-[#0891b2] dark:text-white rounded-full shadow-xl border border-[#0891b2]/20 flex items-center justify-center hover:scale-110 transition-transform z-40">
                 <span className="material-icons">help_outline</span>
             </button>
+
+            {/* Custom Report Builder Modal */}
+            <CustomReportBuilderModal
+                isOpen={showCustomReportModal}
+                onClose={() => setShowCustomReportModal(false)}
+                onReportGenerated={fetchData}
+            />
         </div>
     );
 };
