@@ -15,6 +15,9 @@ const logger = require('./shared/utils/logger.util');
 // Import routes
 const authRoutes = require('./modules/auth');
 const userRoutes = require('./modules/user-management');
+const clientRoutes = require('./modules/crm-case-intake/routes/client.routes');
+const lawFirmRoutes = require('./modules/crm-case-intake/routes/lawFirm.routes');
+const caseRoutes = require('./modules/crm-case-intake/routes/case.routes');
 
 // Initialize app
 const app = express();
@@ -78,6 +81,9 @@ app.get('/health', (req, res) => {
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/clients', clientRoutes);
+app.use('/api/law-firms', lawFirmRoutes);
+app.use('/api/cases', caseRoutes);
 
 // 404 handler
 app.use((req, res) => {
