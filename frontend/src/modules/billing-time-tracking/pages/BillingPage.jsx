@@ -1,53 +1,100 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import billingService from '../../../services/billing.service';
 
 const BillingPage = () => {
+    const [activeTab, setActiveTab] = useState('time');
+    const [timeEntries, setTimeEntries] = useState([]);
+    const [invoices, setInvoices] = useState([]);
+    const [stats, setStats] = useState({});
+    const [loading, setLoading] = useState(true);
+    const [timerRunning, setTimerRunning] = useState(false);
     const [activeCase, setActiveCase] = useState('Case #2023-884 - Miller vs. General Hospital');
     const [taskCategory, setTaskCategory] = useState('Medical Record Review');
-    const [runningTime, setRunningTime] = useState('01:42:15');
+    const [runningTime, setRunningTime] = useState('02:34:18');
 
-    const timeEntries = [
+    useEffect(() => {
+        fetchData();
+    }, [activeTab]);
+
+    const fetchData = async () => {
+        try {
+            setLoading(true);
+            if (activeTab === 'time') {
+                const data = await billingService.getAllTimeEntries({ limit: 50 });
+                setTimeEntries(data.entries || []);
+            } else {
+                const [invoiceData, statsData] = await Promise.all([
+                    billingService.getAllInvoices({ limit: 20 }),
+                    billingService.getBillingStats()
+                ]);
+                setInvoices(invoiceData.invoices || []);
+                setStats(statsData || {});
+            }
+        } catch (error) {
+            console.error('Failed to load billing data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleStartTimer = async () => {
+        try {
+            await billingService.startTimer({
+                case: 'CASE_ID',
+                description: 'Working on case',
+                billableRate: 150
+            });
+            setTimerRunning(true);
+        } catch (error) {
+            console.error('Failed to start timer:', error);
+        }
+    };
+
+    const handleStopTimer = async () => {
+        try {
+            await billingService.stopTimer();
+            setTimerRunning(false);
+            fetchData();
+        } catch (error) {
+            console.error('Failed to stop timer:', error);
+        }
+    };
+
+    // Mock data for UI display
+    const mockTimeEntries = [
         {
             id: 1,
-            date: 'May 24, 2024',
-            consultant: 'Sarah Johnson',
-            matter: 'Miller vs. General Hospital',
-            description: 'Initial review of orthopedic surgery logs',
-            duration: '04.5h',
+            date: 'May 18, 2024',
+            consultant: 'Sarah Johnson, RN',
+            matter: 'Case #2023-884',
+            description: 'Medical record review and chronology',
+            duration: '3.5h',
             billable: true
         },
         {
             id: 2,
-            date: 'May 23, 2024',
-            consultant: 'Robert Chen',
-            matter: 'Estate of Thompson',
-            description: 'Toxicology report analysis and summary',
-            duration: '02.2h',
+            date: 'May 17, 2024',
+            consultant: 'Michael Chen, LNC',
+            matter: 'Case #2024-112',
+            description: 'Expert consultation and report prep',
+            duration: '2.0h',
             billable: true
         },
         {
             id: 3,
-            date: 'May 23, 2024',
-            consultant: 'Sarah Johnson',
-            matter: 'General Admin',
-            description: 'Internal consultant meeting',
-            duration: '01.0h',
+            date: 'May 17, 2024',
+            consultant: 'Sarah Johnson, RN',
+            matter: 'Case #2024-045',
+            description: 'Client correspondence',
+            duration: '0.5h',
             billable: false
-        },
-        {
-            id: 4,
-            date: 'May 22, 2024',
-            consultant: 'Sarah Johnson',
-            matter: 'Miller vs. General Hospital',
-            description: 'Chronological timeline compilation',
-            duration: '05.8h',
-            billable: true
         }
     ];
 
-    const invoices = [
+    const mockInvoices = [
         {
-            id: 'INV-2024-0012',
-            client: 'Sterling & Assoc. Law',
+            id: 'INV-2024-0019',
+            client: 'Thompson & Associates',
             amount: '$3,420.00',
             status: 'paid',
             statusLabel: 'Paid',
@@ -74,6 +121,9 @@ const BillingPage = () => {
             date: 'Last updated 2h ago'
         }
     ];
+
+    const displayTimeEntries = timeEntries.length > 0 ? timeEntries : mockTimeEntries;
+    const displayInvoices = invoices.length > 0 ? invoices : mockInvoices;
 
     return (
         <div className="max-w-7xl mx-auto">
@@ -137,9 +187,21 @@ const BillingPage = () => {
                             </div>
                         </div>
                         <div className="md:col-span-3 flex items-center gap-3">
-                            <button className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition">
-                                <span className="material-icons">stop</span> Stop Timer
-                            </button>
+                            {timerRunning ? (
+                                <button
+                                    onClick={handleStopTimer}
+                                    className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                                >
+                                    <span className="material-icons">stop</span> Stop Timer
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={handleStartTimer}
+                                    className="flex-1 bg-green-500 hover:bg-green-600 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                                >
+                                    <span className="material-icons">play_arrow</span> Start Timer
+                                </button>
+                            )}
                             <button className="w-12 h-12 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-200 transition">
                                 <span className="material-icons">more_vert</span>
                             </button>
@@ -179,7 +241,7 @@ const BillingPage = () => {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {timeEntries.map((entry) => (
+                                    {displayTimeEntries.map((entry) => (
                                         <tr key={entry.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                                             <td className="px-6 py-4">
                                                 <div className="text-sm font-medium">{entry.date}</div>
@@ -200,8 +262,8 @@ const BillingPage = () => {
                                                     >
                                                         <div
                                                             className={`absolute top-0.5 w-4 h-4 rounded-full shadow-sm ${entry.billable
-                                                                    ? 'right-0.5 bg-[#1f3b61]'
-                                                                    : 'left-0.5 bg-white'
+                                                                ? 'right-0.5 bg-[#1f3b61]'
+                                                                : 'left-0.5 bg-white'
                                                                 }`}
                                                         ></div>
                                                     </div>
@@ -258,7 +320,7 @@ const BillingPage = () => {
                             </button>
                         </div>
                         <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {invoices.map((invoice) => (
+                            {displayInvoices.map((invoice) => (
                                 <div key={invoice.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition">
                                     <div className="flex justify-between items-start mb-2">
                                         <div>

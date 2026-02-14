@@ -26,6 +26,13 @@ const timelineRoutes = require('./modules/timeline-chronology/routes/timeline.ro
 const taskRoutes = require('./modules/task-workflow/routes/task.routes');
 const workflowRoutes = require('./modules/task-workflow/routes/workflow.routes');
 const deadlineRoutes = require('./modules/task-workflow/routes/deadline.routes');
+const timeEntryRoutes = require('./modules/billing-time-tracking/routes/timeEntry.routes');
+const invoiceRoutes = require('./modules/billing-time-tracking/routes/invoice.routes');
+const billingRoutes = require('./modules/billing-time-tracking/routes/billing.routes');
+const timeTrackingRoutes = require('./modules/billing-time-tracking/routes/timeTracking.routes');
+const noteRoutes = require('./modules/collaboration/routes/note.routes');
+const messageRoutes = require('./modules/collaboration/routes/message.routes');
+const conversationRoutes = require('./modules/collaboration/routes/conversation.routes');
 
 // Import services
 const { schedulerService } = require('./modules/task-workflow');
@@ -111,6 +118,13 @@ app.use('/api/timelines', timelineRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/workflows', workflowRoutes);
 app.use('/api/deadlines', deadlineRoutes);
+app.use('/api/time-entries', timeEntryRoutes);
+app.use('/api/invoices', invoiceRoutes);
+app.use('/api/billing', billingRoutes);
+app.use('/api/time-tracking', timeTrackingRoutes);
+app.use('/api/notes', noteRoutes);
+app.use('/api/messages', messageRoutes);
+app.use('/api/conversations', conversationRoutes);
 
 // 404 handler
 app.use((req, res) => {
