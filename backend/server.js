@@ -18,6 +18,10 @@ const userRoutes = require('./modules/user-management');
 const clientRoutes = require('./modules/crm-case-intake/routes/client.routes');
 const lawFirmRoutes = require('./modules/crm-case-intake/routes/lawFirm.routes');
 const caseRoutes = require('./modules/crm-case-intake/routes/case.routes');
+const medicalRecordRoutes = require('./modules/medical-records/routes/medicalRecord.routes');
+const caseAnalysisRoutes = require('./modules/case-analysis/routes/caseAnalysis.routes');
+const searchRoutes = require('./modules/ocr-search/routes/search.routes');
+const fileShareRoutes = require('./modules/file-sharing-portal/routes/fileShare.routes');
 
 // Initialize app
 const app = express();
@@ -84,6 +88,10 @@ app.use('/api/users', userRoutes);
 app.use('/api/clients', clientRoutes);
 app.use('/api/law-firms', lawFirmRoutes);
 app.use('/api/cases', caseRoutes);
+app.use('/api/medical-records', medicalRecordRoutes);
+app.use('/api/case-analysis', caseAnalysisRoutes);
+app.use('/api/search', searchRoutes);
+app.use('/api/files', fileShareRoutes);
 
 // 404 handler
 app.use((req, res) => {
