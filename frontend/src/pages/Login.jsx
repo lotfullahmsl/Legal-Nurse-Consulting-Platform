@@ -38,6 +38,9 @@ const Login = () => {
                 } else if (user.role === 'client') {
                     navigate('/client/dashboard');
                 }
+            } else {
+                alert('Login failed. Please check your credentials.');
+                setLoading(false);
             }
         } catch (error) {
             console.error('Login error:', error);
