@@ -248,11 +248,11 @@ const Register = () => {
                                 />
                                 <label htmlFor="compliance" className="text-sm text-slate-600 leading-relaxed">
                                     I agree to the{' '}
-                                    <a href="#" className="text-[#088eaf] font-semibold hover:underline">
+                                    <a href="/terms" className="text-[#088eaf] font-semibold hover:underline">
                                         Terms of Service
                                     </a>{' '}
                                     and{' '}
-                                    <a href="#" className="text-[#088eaf] font-semibold hover:underline">
+                                    <a href="/hipaa-policy" className="text-[#088eaf] font-semibold hover:underline">
                                         HIPAA Compliance Policy
                                     </a>
                                     . I understand my data is protected by industry-standard encryption.
@@ -294,9 +294,9 @@ const Register = () => {
                 {/* Accessibility/Help Footer */}
                 <div className="flex flex-wrap justify-between items-center mt-8 px-2 text-white/50 text-xs">
                     <div className="flex gap-4">
-                        <a href="#" className="hover:text-white transition-colors">Privacy Center</a>
-                        <a href="#" className="hover:text-white transition-colors">Security Standards</a>
-                        <a href="#" className="hover:text-white transition-colors">Support</a>
+                        <a href="/privacy" className="hover:text-white transition-colors">Privacy Center</a>
+                        <a href="/security" className="hover:text-white transition-colors">Security Standards</a>
+                        <a href="/support" className="hover:text-white transition-colors">Support</a>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="material-icons text-sm">lock</span>

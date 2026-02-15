@@ -234,11 +234,11 @@ const Login = () => {
                         © 2024 MedLegal Pro Platform. All Rights Reserved.
                     </p>
                     <div className="flex justify-center gap-4 text-xs font-medium text-slate-500 dark:text-slate-400">
-                        <a className="hover:text-[#2b6cee]" href="#">Terms of Service</a>
+                        <a className="hover:text-[#2b6cee]" href="/terms">Terms of Service</a>
                         <span>•</span>
-                        <a className="hover:text-[#2b6cee]" href="#">Privacy Policy</a>
+                        <a className="hover:text-[#2b6cee]" href="/privacy">Privacy Policy</a>
                         <span>•</span>
-                        <a className="hover:text-[#2b6cee]" href="#">Security</a>
+                        <a className="hover:text-[#2b6cee]" href="/security">Security</a>
                     </div>
                 </footer>
             </section>
