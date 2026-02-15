@@ -21,7 +21,8 @@ const transports = [
 ];
 
 // Only add file transports in non-serverless environments
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+// Skip file logging on Vercel or in production
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'production') {
     const fs = require('fs');
     const logsDir = path.join(__dirname, '../../logs');
 
