@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../../services/auth.service';
 import notificationService from '../../services/notification.service';
 
-const ClientNavbar = () => {
+const ClientNavbar = ({ sidebarOpen, setSidebarOpen }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
@@ -118,18 +118,27 @@ const ClientNavbar = () => {
     };
 
     return (
-        <header className="fixed top-0 left-64 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 z-40">
+        <header className="fixed top-0 left-0 md:left-64 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 z-40">
             <div className="flex items-center gap-4">
-                <h1 className="text-xl font-bold text-slate-900 dark:text-white">
+                {/* Mobile menu button */}
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="md:hidden p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                >
+                    <span className="material-icons text-slate-600 dark:text-slate-400">menu</span>
+                </button>
+
+                <h1 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
                     Client Portal
                 </h1>
             </div>
 
-            <div className="flex items-center gap-6">
-                <div className="flex items-center gap-1.5 bg-green-100 dark:bg-green-900/20 px-3 py-1 rounded-full">
+            <div className="flex items-center gap-3 md:gap-6">
+                <div className="hidden sm:flex items-center gap-1.5 bg-green-100 dark:bg-green-900/20 px-2 md:px-3 py-1 rounded-full">
                     <span className="material-icons text-green-600 dark:text-green-400 text-xs">shield</span>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">
-                        Secure Connection
+                        <span className="hidden md:inline">Secure Connection</span>
+                        <span className="md:hidden">Secure</span>
                     </span>
                 </div>
 

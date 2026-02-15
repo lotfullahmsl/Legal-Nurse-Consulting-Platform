@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import authService from '../../services/auth.service';
 import notificationService from '../../services/notification.service';
 
-const Navbar = () => {
+const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [notificationCount, setNotificationCount] = useState(0);
@@ -138,15 +138,24 @@ const Navbar = () => {
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 h-16 bg-[#1f3b61] text-white flex items-center justify-between px-6 z-50">
+        <header className="fixed top-0 left-0 right-0 h-16 bg-[#1f3b61] text-white flex items-center justify-between px-4 md:px-6 z-50">
             <div className="flex items-center gap-4">
+                {/* Mobile menu button */}
+                <button
+                    onClick={() => setSidebarOpen(!sidebarOpen)}
+                    className="md:hidden p-2 hover:bg-white/10 rounded-lg transition-colors"
+                >
+                    <span className="material-icons">menu</span>
+                </button>
+
                 <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/dashboard')}>
                     <span className="material-icons text-[#0891b2]">gavel</span>
-                    <span className="font-bold text-xl tracking-tight uppercase">
-                        LegalNurse<span className="text-[#0891b2]">Portal</span>
+                    <span className="font-bold text-lg md:text-xl tracking-tight uppercase">
+                        <span className="hidden sm:inline">LegalNurse</span>
+                        <span className="text-[#0891b2]">Portal</span>
                     </span>
                 </div>
-                <form onSubmit={handleSearch} className="ml-8 hidden md:flex items-center bg-white/10 rounded-lg px-3 py-1.5 w-80">
+                <form onSubmit={handleSearch} className="ml-4 md:ml-8 hidden lg:flex items-center bg-white/10 rounded-lg px-3 py-1.5 w-60 xl:w-80">
                     <span className="material-icons text-white/60 text-sm">search</span>
                     <input
                         className="bg-transparent border-none focus:ring-0 text-sm w-full placeholder-white/60 text-white outline-none"
@@ -157,11 +166,12 @@ const Navbar = () => {
                     />
                 </form>
             </div>
-            <div className="flex items-center gap-6">
-                <div className="flex items-center gap-1.5 bg-green-500/20 px-3 py-1 rounded-full border border-green-500/30">
+            <div className="flex items-center gap-3 md:gap-6">
+                <div className="hidden sm:flex items-center gap-1.5 bg-green-500/20 px-2 md:px-3 py-1 rounded-full border border-green-500/30">
                     <span className="material-icons text-green-400 text-xs">shield</span>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400">
-                        HIPAA Compliant Session
+                        <span className="hidden md:inline">HIPAA Compliant Session</span>
+                        <span className="md:hidden">HIPAA</span>
                     </span>
                 </div>
 
