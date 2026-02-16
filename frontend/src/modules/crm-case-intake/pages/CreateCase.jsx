@@ -122,9 +122,8 @@ const CreateCase = () => {
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Law Firm *</label>
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Law Firm</label>
                         <select
-                            required
                             className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0891b2] outline-none"
                             value={formData.lawFirm}
                             onChange={(e) => setFormData({ ...formData, lawFirm: e.target.value })}
