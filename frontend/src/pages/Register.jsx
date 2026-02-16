@@ -68,7 +68,20 @@ const Register = () => {
             }
         } catch (error) {
             console.error('Registration error:', error);
-            const errorMessage = error.response?.data?.message || error.message || 'Registration failed. Please try again.';
+            console.error('Error response:', error.response);
+
+            // Get detailed error message
+            let errorMessage = 'Registration failed. Please try again.';
+
+            if (error.response?.data?.errors) {
+                // Validation errors array
+                errorMessage = error.response.data.errors.map(err => err.msg).join(', ');
+            } else if (error.response?.data?.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
             alert('❌ ' + errorMessage);
             setLoading(false);
         }
