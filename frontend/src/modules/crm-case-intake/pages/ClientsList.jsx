@@ -14,12 +14,7 @@ const ClientsList = () => {
         fullName: '',
         email: '',
         phone: '',
-        address: {
-            street: '',
-            city: '',
-            state: '',
-            zipCode: ''
-        },
+        address: '',
         status: 'active'
     });
     const [submitting, setSubmitting] = useState(false);
@@ -82,12 +77,7 @@ const ClientsList = () => {
                 fullName: '',
                 email: '',
                 phone: '',
-                address: {
-                    street: '',
-                    city: '',
-                    state: '',
-                    zipCode: ''
-                },
+                address: '',
                 status: 'active'
             });
             fetchClients();

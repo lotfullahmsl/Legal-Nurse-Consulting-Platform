@@ -51,9 +51,6 @@ const Register = () => {
             console.log('Registration response:', response);
 
             if (response.success) {
-                // Show success alert
-                alert(`✅ Registration successful! Welcome, ${response.data.user.fullName}!`);
-
                 // Redirect based on role
                 if (selectedRole === 'attorney' || selectedRole === 'admin') {
                     navigate('/dashboard');

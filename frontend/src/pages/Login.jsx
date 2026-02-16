@@ -7,7 +7,6 @@ const Login = () => {
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
-    const [role, setRole] = useState('admin');
     const [loading, setLoading] = useState(false);
 
     const handleSubmit = async (e) => {
@@ -26,9 +25,6 @@ const Login = () => {
 
             if (response.success) {
                 const user = response.data.user;
-
-                // Show success alert
-                alert(`✅ Login successful! Welcome back, ${user.fullName}!`);
 
                 // Redirect based on user role from backend
                 if (user.role === 'admin' || user.role === 'attorney') {
@@ -183,22 +179,6 @@ const Login = () => {
                         </label>
                     </div>
 
-                    {/* Role Selection for Demo */}
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2" htmlFor="role">
-                            Login As (Demo Mode)
-                        </label>
-                        <select
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#2b6cee] focus:border-transparent outline-none transition-all dark:text-white"
-                            id="role"
-                            value={role}
-                            onChange={(e) => setRole(e.target.value)}
-                        >
-                            <option value="admin">Admin/Attorney Dashboard</option>
-                            <option value="staff">Staff Dashboard</option>
-                            <option value="client">Client Portal</option>
-                        </select>
-                    </div>
                     <button
                         className="w-full bg-[#2b6cee] hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3.5 rounded-lg transition-colors shadow-lg shadow-[#2b6cee]/25 flex items-center justify-center gap-2"
                         type="submit"
