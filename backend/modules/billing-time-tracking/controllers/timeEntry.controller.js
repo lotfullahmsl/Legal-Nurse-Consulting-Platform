@@ -64,7 +64,7 @@ exports.createTimeEntry = async (req, res, next) => {
 
         const entry = new TimeEntry({
             case: caseId,
-            user: req.user.id,
+            user: req.user._id,
             task,
             description,
             date: date || new Date(),
@@ -195,14 +195,14 @@ exports.startTimer = async (req, res, next) => {
     try {
         const { case: caseId, task, description, billableRate } = req.body;
 
-        const activeTimer = await TimeEntry.findOne({ user: req.user.id, isTimerActive: true });
+        const activeTimer = await TimeEntry.findOne({ user: req.user._id, isTimerActive: true });
         if (activeTimer) {
             return res.status(400).json({ message: 'Timer already running. Stop current timer first.' });
         }
 
         const entry = new TimeEntry({
             case: caseId,
-            user: req.user.id,
+            user: req.user._id,
             task,
             description,
             billableRate,
@@ -223,7 +223,7 @@ exports.startTimer = async (req, res, next) => {
 
 exports.stopTimer = async (req, res, next) => {
     try {
-        const entry = await TimeEntry.findOne({ user: req.user.id, isTimerActive: true });
+        const entry = await TimeEntry.findOne({ user: req.user._id, isTimerActive: true });
         if (!entry) {
             return res.status(404).json({ message: 'No active timer found' });
         }
@@ -252,7 +252,7 @@ exports.bulkCreateTimeEntries = async (req, res, next) => {
         for (const entryData of entries) {
             const entry = new TimeEntry({
                 ...entryData,
-                user: req.user.id
+                user: req.user._id
             });
             await entry.save();
             createdEntries.push(entry);

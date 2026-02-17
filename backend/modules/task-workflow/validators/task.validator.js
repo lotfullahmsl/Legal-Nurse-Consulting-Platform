@@ -25,26 +25,19 @@ exports.createTaskValidator = [
 
     body('priority')
         .optional()
-        .isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority value'),
+        .isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority value'),
 
     body('status')
         .optional()
-        .isIn(['pending', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status value'),
+        .isIn(['pending', 'in-progress', 'completed', 'cancelled', 'on-hold']).withMessage('Invalid status value'),
 
     body('type')
         .optional()
-        .isIn(['general', 'review', 'analysis', 'communication', 'administrative', 'billing', 'legal', 'medical', 'document-request', 'indexing', 'processing', 'timeline']).withMessage('Invalid task type'),
+        .isIn(['review', 'analysis', 'timeline', 'report', 'court-date', 'deadline', 'follow-up', 'other']).withMessage('Invalid task type'),
 
     body('dueDate')
-        .optional()
-        .isISO8601().withMessage('Invalid due date format')
-        .custom((value) => {
-            const date = new Date(value);
-            if (date < new Date()) {
-                throw new Error('Due date cannot be in the past');
-            }
-            return true;
-        }),
+        .optional({ checkFalsy: true })
+        .isISO8601().withMessage('Invalid due date format'),
 
     body('tags')
         .optional()
@@ -83,15 +76,15 @@ exports.updateTaskValidator = [
 
     body('priority')
         .optional()
-        .isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority value'),
+        .isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority value'),
 
     body('status')
         .optional()
-        .isIn(['pending', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status value'),
+        .isIn(['pending', 'in-progress', 'completed', 'cancelled', 'on-hold']).withMessage('Invalid status value'),
 
     body('type')
         .optional()
-        .isIn(['general', 'review', 'analysis', 'communication', 'administrative', 'billing', 'legal', 'medical', 'document-request', 'indexing', 'processing', 'timeline']).withMessage('Invalid task type'),
+        .isIn(['review', 'analysis', 'timeline', 'report', 'court-date', 'deadline', 'follow-up', 'other']).withMessage('Invalid task type'),
 
     body('dueDate')
         .optional()
@@ -104,7 +97,7 @@ exports.updateTaskStatusValidator = [
 
     body('status')
         .notEmpty().withMessage('Status is required')
-        .isIn(['pending', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status value')
+        .isIn(['pending', 'in-progress', 'completed', 'cancelled', 'on-hold']).withMessage('Invalid status value')
 ];
 
 exports.assignTaskValidator = [
@@ -129,11 +122,11 @@ exports.addCommentValidator = [
 exports.getTasksValidator = [
     query('status')
         .optional()
-        .isIn(['pending', 'in-progress', 'completed', 'cancelled']).withMessage('Invalid status value'),
+        .isIn(['pending', 'in-progress', 'completed', 'cancelled', 'on-hold']).withMessage('Invalid status value'),
 
     query('priority')
         .optional()
-        .isIn(['low', 'medium', 'high', 'critical']).withMessage('Invalid priority value'),
+        .isIn(['low', 'medium', 'high', 'urgent']).withMessage('Invalid priority value'),
 
     query('assignedTo')
         .optional()

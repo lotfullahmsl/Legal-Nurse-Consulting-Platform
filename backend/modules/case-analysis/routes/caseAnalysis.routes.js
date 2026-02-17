@@ -4,7 +4,7 @@ const caseAnalysisController = require('../controllers/caseAnalysis.controller')
 const { protect, authorize } = require('../../../shared/middleware/auth.middleware');
 
 // Case Analysis routes
-router.get('/:caseId', protect, caseAnalysisController.getAnalysis);
+router.get('/case/:caseId', protect, caseAnalysisController.getAnalysis);
 router.post('/',
     protect,
     authorize('admin', 'attorney', 'consultant'),
@@ -12,7 +12,7 @@ router.post('/',
 );
 
 // Damages routes
-router.get('/damages/:caseId', protect, caseAnalysisController.getDamages);
+router.get('/case/:caseId/damages', protect, caseAnalysisController.getDamages);
 router.post('/damages',
     protect,
     authorize('admin', 'attorney', 'consultant'),

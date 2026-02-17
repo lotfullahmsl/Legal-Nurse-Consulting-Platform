@@ -45,7 +45,8 @@ const DamagesTracking = () => {
         try {
             setLoading(true);
             const response = await damagesService.getDamagesByCase(selectedCase);
-            setDamages(response.data?.damages || response.damages || []);
+            // Backend returns { success: true, data: { damages, summary } }
+            setDamages(response.data?.damages || []);
         } catch (error) {
             console.error('Failed to load damages:', error);
             setDamages([]);
@@ -162,7 +163,7 @@ const DamagesTracking = () => {
                                 <span className="material-icons text-purple-600">attach_money</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">${(totalDamages / 1000).toFixed(0)}K</p>
+                                <p className="text-2xl font-bold">${totalDamages.toLocaleString()}</p>
                                 <p className="text-xs text-slate-500 uppercase font-bold">Total Damages</p>
                             </div>
                         </div>
@@ -173,7 +174,7 @@ const DamagesTracking = () => {
                                 <span className="material-icons text-green-600">verified</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">${(verifiedDamages / 1000).toFixed(0)}K</p>
+                                <p className="text-2xl font-bold">${verifiedDamages.toLocaleString()}</p>
                                 <p className="text-xs text-slate-500 uppercase font-bold">Verified</p>
                             </div>
                         </div>
@@ -184,7 +185,7 @@ const DamagesTracking = () => {
                                 <span className="material-icons text-blue-600">calculate</span>
                             </div>
                             <div>
-                                <p className="text-2xl font-bold">${(estimatedDamages / 1000).toFixed(0)}K</p>
+                                <p className="text-2xl font-bold">${estimatedDamages.toLocaleString()}</p>
                                 <p className="text-xs text-slate-500 uppercase font-bold">Estimated</p>
                             </div>
                         </div>
@@ -263,21 +264,6 @@ const DamagesTracking = () => {
                                 </tr>
                             )}
                         </tbody>
-                        {damages.length > 0 && (
-                            <tfoot className="bg-slate-50 dark:bg-slate-800/50">
-                                <tr>
-                                    <td colSpan="3" className="px-6 py-4 text-right font-bold text-slate-900 dark:text-white">
-                                        Total Damages:
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-lg font-bold text-[#0891b2]">
-                                            ${totalDamages.toLocaleString()}
-                                        </span>
-                                    </td>
-                                    <td colSpan="3"></td>
-                                </tr>
-                            </tfoot>
-                        )}
                     </table>
                 </div>
             </div>

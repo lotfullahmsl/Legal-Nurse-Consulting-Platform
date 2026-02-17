@@ -13,7 +13,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
         assignedTo: '',
         priority: 'medium',
         status: 'pending',
-        type: 'general',
+        type: 'other',
         dueDate: '',
         tags: '',
         isRecurring: false
@@ -28,19 +28,22 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
 
     const fetchCases = async () => {
         try {
-            const data = await caseService.getAllCases();
-            setCases(data.cases || data || []);
+            const response = await caseService.getAllCases();
+            setCases(response.data?.cases || []);
         } catch (error) {
             console.error('Failed to fetch cases:', error);
+            setCases([]); // Set empty array on error
         }
     };
 
     const fetchUsers = async () => {
         try {
             const response = await apiClient.get('/users');
-            setUsers(response.data.users || response.data || []);
+            // Backend returns { success: true, data: { users, pagination } }
+            setUsers(response.data?.data?.users || response.data?.users || []);
         } catch (error) {
             console.error('Failed to fetch users:', error);
+            setUsers([]); // Set empty array on error
         }
     };
 
@@ -72,7 +75,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
                 assignedTo: '',
                 priority: 'medium',
                 status: 'pending',
-                type: 'general',
+                type: 'other',
                 dueDate: '',
                 tags: '',
                 isRecurring: false
@@ -81,7 +84,17 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
             onClose();
         } catch (error) {
             console.error('Failed to create task:', error);
-            alert('Failed to create task: ' + (error.response?.data?.message || error.message));
+            console.error('Error response:', error.response?.data);
+
+            // Show detailed validation errors if available
+            let errorMessage = 'Failed to create task: ';
+            if (error.response?.data?.errors) {
+                errorMessage += error.response.data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+            } else {
+                errorMessage += error.response?.data?.message || error.message;
+            }
+
+            alert(errorMessage);
         } finally {
             setLoading(false);
         }
@@ -173,7 +186,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
                                 <option value="">Select a user</option>
                                 {users.map(u => (
                                     <option key={u._id} value={u._id}>
-                                        {u.name || u.firstName + ' ' + u.lastName} ({u.role})
+                                        {u.fullName} ({u.role})
                                     </option>
                                 ))}
                             </select>
@@ -193,7 +206,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
                                 <option value="high">High</option>
-                                <option value="critical">Critical</option>
+                                <option value="urgent">Urgent</option>
                             </select>
                         </div>
 
@@ -209,6 +222,7 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
                                 <option value="in-progress">In Progress</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
+                                <option value="on-hold">On Hold</option>
                             </select>
                         </div>
 
@@ -220,18 +234,14 @@ const CreateTaskModal = ({ isOpen, onClose, onTaskCreated }) => {
                                 onChange={handleChange}
                                 className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none"
                             >
-                                <option value="general">General</option>
+                                <option value="other">Other</option>
                                 <option value="review">Review</option>
                                 <option value="analysis">Analysis</option>
-                                <option value="communication">Communication</option>
-                                <option value="administrative">Administrative</option>
-                                <option value="billing">Billing</option>
-                                <option value="legal">Legal</option>
-                                <option value="medical">Medical</option>
-                                <option value="document-request">Document Request</option>
-                                <option value="indexing">Indexing</option>
-                                <option value="processing">Processing</option>
                                 <option value="timeline">Timeline</option>
+                                <option value="report">Report</option>
+                                <option value="court-date">Court Date</option>
+                                <option value="deadline">Deadline</option>
+                                <option value="follow-up">Follow Up</option>
                             </select>
                         </div>
                     </div>

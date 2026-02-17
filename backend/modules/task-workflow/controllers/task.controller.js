@@ -39,7 +39,7 @@ exports.getMyTasks = async (req, res, next) => {
     try {
         const { status, priority } = req.query;
 
-        const filter = { assignedTo: req.user.id };
+        const filter = { assignedTo: req.user._id };
         if (status) filter.status = status;
         if (priority) filter.priority = priority;
 
@@ -109,7 +109,7 @@ exports.createTask = async (req, res, next) => {
             description,
             case: caseId,
             assignedTo,
-            assignedBy: req.user.id,
+            assignedBy: req.user._id,
             priority,
             status,
             type,
@@ -244,7 +244,7 @@ exports.addComment = async (req, res, next) => {
         }
 
         task.comments.push({
-            user: req.user.id,
+            user: req.user._id,
             comment,
             createdAt: new Date()
         });
@@ -261,7 +261,7 @@ exports.addComment = async (req, res, next) => {
 // Get task statistics
 exports.getTaskStats = async (req, res, next) => {
     try {
-        const userId = req.query.userId || req.user.id;
+        const userId = req.query.userId || req.user._id;
 
         const totalTasks = await Task.countDocuments({ assignedTo: userId });
         const completedTasks = await Task.countDocuments({ assignedTo: userId, status: 'completed' });

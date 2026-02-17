@@ -41,8 +41,7 @@ const taskSchema = new mongoose.Schema({
         default: 'other'
     },
     dueDate: {
-        type: Date,
-        required: true
+        type: Date
     },
     completedAt: Date,
     isRecurring: {

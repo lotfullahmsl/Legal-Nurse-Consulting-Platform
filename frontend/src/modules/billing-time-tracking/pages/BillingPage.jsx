@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import billingService from '../../../services/billing.service';
+import caseService from '../../../services/case.service';
 import ManualTimeEntryModal from '../components/ManualTimeEntryModal';
 
 const BillingPage = () => {
@@ -35,18 +36,15 @@ const BillingPage = () => {
 
     const fetchCases = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/cases', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            setCases(data.cases || []);
-            if (data.cases && data.cases.length > 0 && !activeCase) {
-                setActiveCase(data.cases[0]._id);
+            const response = await caseService.getAllCases();
+            const casesData = response.data?.cases || response.cases || [];
+            setCases(casesData);
+            if (casesData.length > 0 && !activeCase) {
+                setActiveCase(casesData[0]._id);
             }
         } catch (error) {
             console.error('Failed to fetch cases:', error);
+            setCases([]);
         }
     };
 
@@ -107,15 +105,24 @@ const BillingPage = () => {
             }
 
             const timeParts = runningTime.split(':');
-            const hours = parseFloat(timeParts[0]) + parseFloat(timeParts[1]) / 60 + parseFloat(timeParts[2]) / 3600;
+            const hours = parseInt(timeParts[0]);
+            const minutes = parseInt(timeParts[1]);
+            const seconds = parseInt(timeParts[2]);
+
+            // Convert to decimal hours
+            const totalHours = hours + (minutes / 60) + (seconds / 3600);
+            const rate = 150;
 
             await billingService.createTimeEntry({
                 case: activeCase,
                 description: taskCategory,
-                hours: hours.toFixed(2),
-                rate: 150,
+                hours: Math.floor(totalHours),
+                minutes: Math.round((totalHours % 1) * 60),
+                billableRate: rate,
+                totalAmount: totalHours * rate,
                 isBillable: true,
-                date: new Date().toISOString()
+                date: new Date().toISOString(),
+                activityType: 'other'
             });
 
             setTimerRunning(false);
@@ -124,7 +131,16 @@ const BillingPage = () => {
             fetchData();
         } catch (error) {
             console.error('Failed to stop timer:', error);
-            alert('Failed to save time entry: ' + error.message);
+            console.error('Error details:', error.response?.data);
+
+            let errorMessage = 'Failed to save time entry: ';
+            if (error.response?.data?.errors) {
+                errorMessage += error.response.data.errors.map(e => `${e.field}: ${e.message}`).join(', ');
+            } else {
+                errorMessage += error.response?.data?.message || error.message;
+            }
+
+            alert(errorMessage);
         }
     };
 

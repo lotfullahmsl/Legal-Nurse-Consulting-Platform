@@ -19,6 +19,12 @@ const caseAnalysisService = {
         return response.data;
     },
 
+    // Create analysis (alias for upsert)
+    createAnalysis: async (analysisData) => {
+        const response = await api.post('/case-analysis', analysisData);
+        return response.data;
+    },
+
     // Get damages by case ID
     getDamagesByCase: async (caseId) => {
         const response = await api.get(`/case-analysis/case/${caseId}/damages`);

@@ -154,7 +154,14 @@ const ReportsPage = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-[#0891b2]/10">
-                            {recentReports.map((report) => (
+                            {recentReports.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-12 text-center text-slate-500">
+                                        <span className="material-icons text-4xl mb-2 opacity-30">description</span>
+                                        <p>No reports generated yet</p>
+                                    </td>
+                                </tr>
+                            ) : recentReports.map((report) => (
                                 <tr key={report._id} className="hover:bg-slate-50/50 dark:hover:bg-[#0891b2]/5 transition-colors">
                                     <td className="px-6 py-4">
                                         <div className="flex items-center gap-3">
@@ -211,42 +218,23 @@ const ReportsPage = () => {
                             ))}
                         </tbody>
                     </table>
-                    <div className="bg-slate-50 dark:bg-[#0891b2]/10 px-6 py-3 border-t border-slate-200 dark:border-[#0891b2]/10 flex items-center justify-between">
-                        <span className="text-xs text-slate-500 font-medium">Showing 3 of 124 reports</span>
-                        <div className="flex gap-2">
-                            <button className="px-3 py-1 text-xs border border-[#0891b2]/20 rounded hover:bg-[#0891b2]/10 transition-colors">
-                                Previous
-                            </button>
-                            <button className="px-3 py-1 text-xs border border-[#0891b2]/20 rounded hover:bg-[#0891b2]/10 transition-colors">
-                                Next
-                            </button>
+                    {recentReports.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-[#0891b2]/10 px-6 py-3 border-t border-slate-200 dark:border-[#0891b2]/10 flex items-center justify-between">
+                            <span className="text-xs text-slate-500 font-medium">Showing {recentReports.length} reports</span>
+                            <div className="flex gap-2">
+                                <button className="px-3 py-1 text-xs border border-[#0891b2]/20 rounded hover:bg-[#0891b2]/10 transition-colors">
+                                    Previous
+                                </button>
+                                <button className="px-3 py-1 text-xs border border-[#0891b2]/20 rounded hover:bg-[#0891b2]/10 transition-colors">
+                                    Next
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </section>
 
-            {/* HIPAA Compliance Footer */}
-            <footer className="mt-16 pt-8 border-t border-slate-200 dark:border-[#0891b2]/10 text-center">
-                <div className="inline-flex flex-col items-center gap-2 mb-6 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-                    <div className="flex items-center gap-4">
-                        <span className="material-icons text-3xl">verified</span>
-                        <span className="material-icons text-3xl">security</span>
-                        <span className="material-icons text-3xl">lock</span>
-                    </div>
-                    <p className="text-[10px] uppercase font-bold tracking-widest">
-                        End-to-end Encrypted • AES-256 Bit Encryption • SOC 2 Type II Certified
-                    </p>
-                </div>
-                <p className="text-xs text-slate-500">
-                    © 2023 MedLegal Solutions. All medical records processed are handled in accordance with HIPAA data protection
-                    standards.
-                </p>
-            </footer>
 
-            {/* Floating Help Button */}
-            <button className="fixed bottom-6 right-6 w-12 h-12 bg-white dark:bg-[#0891b2] text-[#0891b2] dark:text-white rounded-full shadow-xl border border-[#0891b2]/20 flex items-center justify-center hover:scale-110 transition-transform z-40">
-                <span className="material-icons">help_outline</span>
-            </button>
 
             {/* Custom Report Builder Modal */}
             <CustomReportBuilderModal

@@ -8,7 +8,10 @@ const caseAnalysisSchema = new mongoose.Schema({
         unique: true
     },
     standardsOfCare: [{
+        category: String,
         standard: String,
+        assessment: String,
+        evidence: String,
         description: String,
         source: String,
         met: {
@@ -21,8 +24,10 @@ const caseAnalysisSchema = new mongoose.Schema({
         description: String,
         severity: {
             type: String,
-            enum: ['minor', 'moderate', 'severe', 'critical']
+            enum: ['low', 'medium', 'high', 'minor', 'moderate', 'severe', 'critical']
         },
+        impact: String,
+        date: Date,
         evidence: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'MedicalRecord'

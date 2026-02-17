@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const CaseAnalysis = require('../../../models/CaseAnalysis.model');
 const Damages = require('../../../models/Damages.model');
 const AppError = require('../../../shared/errors/AppError');
@@ -6,7 +7,7 @@ const AppError = require('../../../shared/errors/AppError');
 exports.getAnalysis = async (req, res, next) => {
     try {
         let analysis = await CaseAnalysis.findOne({ case: req.params.caseId })
-            .populate('case', 'caseNumber caseName')
+            .populate('case', 'caseNumber caseName title')
             .populate('lastUpdatedBy', 'fullName')
             .populate('breaches.evidence')
             .populate('expertOpinions.document');
@@ -17,11 +18,16 @@ exports.getAnalysis = async (req, res, next) => {
                 case: req.params.caseId,
                 lastUpdatedBy: req.user._id
             });
+
+            // Populate after creation
+            analysis = await CaseAnalysis.findById(analysis._id)
+                .populate('case', 'caseNumber caseName title')
+                .populate('lastUpdatedBy', 'fullName');
         }
 
         res.status(200).json({
             success: true,
-            data: { analysis }
+            data: analysis
         });
     } catch (error) {
         next(error);
@@ -33,14 +39,16 @@ exports.upsertAnalysis = async (req, res, next) => {
     try {
         const analysisData = {
             ...req.body,
+            case: req.body.caseId || req.body.case,
             lastUpdatedBy: req.user._id
         };
 
         const analysis = await CaseAnalysis.findOneAndUpdate(
-            { case: req.body.case },
+            { case: analysisData.case },
             analysisData,
             { new: true, upsert: true, runValidators: true }
-        ).populate('case lastUpdatedBy');
+        ).populate('case', 'caseNumber caseName title')
+            .populate('lastUpdatedBy', 'fullName');
 
         res.status(200).json({
             success: true,
@@ -52,6 +60,9 @@ exports.upsertAnalysis = async (req, res, next) => {
     }
 };
 
+// Alias for create
+exports.createAnalysis = exports.upsertAnalysis;
+
 // Get damages for case
 exports.getDamages = async (req, res, next) => {
     try {
@@ -61,7 +72,7 @@ exports.getDamages = async (req, res, next) => {
             .sort({ createdAt: -1 });
 
         const summary = await Damages.aggregate([
-            { $match: { case: mongoose.Types.ObjectId(req.params.caseId) } },
+            { $match: { case: new mongoose.Types.ObjectId(req.params.caseId) } },
             {
                 $group: {
                     _id: '$category',

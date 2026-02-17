@@ -34,10 +34,11 @@ const CaseAnalysis = () => {
 
     const fetchCases = async () => {
         try {
-            const data = await caseService.getAllCases();
-            setCases(data.cases || []);
-            if (data.cases && data.cases.length > 0) {
-                setSelectedCase(data.cases[0]._id);
+            const response = await caseService.getAllCases();
+            const casesList = response.data?.cases || [];
+            setCases(casesList);
+            if (casesList.length > 0) {
+                setSelectedCase(casesList[0]._id);
             }
         } catch (error) {
             console.error('Failed to load cases:', error);
@@ -47,8 +48,9 @@ const CaseAnalysis = () => {
     const fetchAnalysis = async () => {
         try {
             setLoading(true);
-            const data = await caseAnalysisService.getAnalysisByCase(selectedCase);
-            setAnalysis(data);
+            const response = await caseAnalysisService.getAnalysisByCase(selectedCase);
+            // Backend returns { success: true, data: analysis }
+            setAnalysis(response.data || response);
         } catch (error) {
             console.error('Failed to load analysis:', error);
             setAnalysis(null);
@@ -327,6 +329,26 @@ const CaseAnalysis = () => {
                             </div>
                         </div>
                         <form onSubmit={handleSubmitFinding} className="p-6 space-y-5">
+                            {/* Case Selector */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Select Case *
+                                </label>
+                                <select
+                                    required
+                                    value={selectedCase}
+                                    onChange={(e) => setSelectedCase(e.target.value)}
+                                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                >
+                                    <option value="">Select a case</option>
+                                    {cases.map((caseItem) => (
+                                        <option key={caseItem._id} value={caseItem._id}>
+                                            {caseItem.caseNumber} - {caseItem.caseName || caseItem.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             {/* Finding Type Selector */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">

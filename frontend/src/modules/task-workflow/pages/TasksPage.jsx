@@ -30,8 +30,11 @@ const TasksPage = () => {
                 params.status = 'pending,in-progress';
             }
 
-            const data = await taskService.getMyTasks(params);
-            setTasks(data || []);
+            // Fetch all tasks instead of just my tasks so we can see all created tasks
+            const response = await taskService.getAllTasks(params);
+            console.log('Fetched tasks:', response);
+            // Backend returns { tasks, totalPages, currentPage, total }
+            setTasks(response.tasks || []);
         } catch (error) {
             console.error('Failed to load tasks:', error);
         } finally {

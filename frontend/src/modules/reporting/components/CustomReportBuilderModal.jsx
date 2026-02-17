@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import caseService from '../../../services/case.service';
 import reportService from '../../../services/report.service';
 
 const CustomReportBuilderModal = ({ isOpen, onClose, onReportGenerated }) => {
@@ -38,15 +39,11 @@ const CustomReportBuilderModal = ({ isOpen, onClose, onReportGenerated }) => {
 
     const fetchCases = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/cases', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            setCases(data.cases || []);
+            const response = await caseService.getAllCases();
+            setCases(response.data?.cases || response.cases || []);
         } catch (error) {
             console.error('Failed to fetch cases:', error);
+            setCases([]);
         }
     };
 

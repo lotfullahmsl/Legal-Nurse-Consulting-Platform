@@ -23,7 +23,7 @@ const NotesPage = () => {
 
     const fetchCases = async () => {
         try {
-            const response = await caseService.getAll();
+            const response = await caseService.getAllCases();
             setCases(response.data.cases || []);
             if (response.data.cases?.length > 0) {
                 setSelectedCase(response.data.cases[0]._id);
