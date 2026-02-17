@@ -214,7 +214,7 @@ const UsersManagement = () => {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{user.email}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${getRoleBadgeColor(user.role)}`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getRoleBadgeColor(user.role)}`}>
                                             {user.role}
                                         </span>
                                     </td>

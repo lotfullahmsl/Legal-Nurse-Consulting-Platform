@@ -24,6 +24,8 @@ import TimelineBuilder from './modules/timeline-chronology/pages/TimelineBuilder
 import TimelineWork from './modules/timeline-chronology/pages/TimelineWork';
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import MedlineAccess from './pages/MedlineAccess';
+import PortalSettings from './pages/PortalSettings';
 import Register from './pages/Register';
 import Settings from './pages/Settings';
 import StaffDashboard from './pages/StaffDashboard';
@@ -61,7 +63,8 @@ function App() {
                 <Route path="/reports" element={<AdminLayout><ReportsPage /></AdminLayout>} />
                 <Route path="/billing" element={<AdminLayout><BillingPage /></AdminLayout>} />
                 <Route path="/tasks" element={<AdminLayout><TasksPage /></AdminLayout>} />
-                <Route path="/settings" element={<AdminLayout><Settings /></AdminLayout>} />
+                <Route path="/settings" element={<AdminLayout><PortalSettings /></AdminLayout>} />
+                <Route path="/medline" element={<AdminLayout><MedlineAccess /></AdminLayout>} />
                 {/* Staff Routes */}
                 <Route path="/staff-dashboard" element={<StaffLayout><StaffDashboard /></StaffLayout>} />
                 <Route path="/staff/cases" element={<StaffLayout><CasesList /></StaffLayout>} />
