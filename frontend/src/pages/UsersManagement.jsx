@@ -1,63 +1,126 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import userService from '../services/user.service';
 
 const UsersManagement = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [stats, setStats] = useState({ total: 0, active: 0, admins: 0, nurses: 0 });
+    const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0, limit: 10 });
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [formData, setFormData] = useState({
+        fullName: '',
+        email: '',
+        role: '',
+        password: '',
+        status: 'active'
+    });
+    const [submitting, setSubmitting] = useState(false);
 
-    const users = [
-        {
-            id: 1,
-            name: 'Sarah Jenkins',
-            email: 'sarah.jenkins@lnc.com',
-            role: 'Admin',
-            status: 'Active',
-            lastLogin: '2024-10-23 09:15 AM',
-            casesAssigned: 24,
-            avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAeFEs4MsZDwYKlGCffMO5mgq_LeJlPyqcvZCkHss-RgaraTQwLIAGp8QOSdO3fOGxL3gMmpUlmZZp-XF0kA9JlBXoJvRQC81yRx1qUDMJVswupgNE9qVYxTF4le-uklgq7zwWEVFG3BJT2OixOzKX0Y43hzV2G-v9zWUCqsiFL2gdChkO3t5dwLtQRGAkzKTx3APi9SK6WBLr7FLU1eB_htyJpiA2tm7bf64yQQD_UUPEHIx5llBVoqML8Z7pqiWdYOfjl2_IfRNw'
-        },
-        {
-            id: 2,
-            name: 'David Richardson',
-            email: 'david.r@lnc.com',
-            role: 'Attorney',
-            status: 'Active',
-            lastLogin: '2024-10-23 08:42 AM',
-            casesAssigned: 18,
-            avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBLx9zr3ATINz5h0BlFb-FZYMV40fUtf9q03fpCrkHi7GlCStAbqyljc6cug3rywj9qWCO6Tgdhw_U4GoTgtXGi68WbpvTSqBp1CFScu8uDCuKRkZ0IwUkddNdGK5gPmb9oDA3AubMvf5Hvk9L3M1lxYyk-T_bDUHeIekE8myXDCh5vCthSe2OQ1hLb6wIdSLYI1bvxCOvU19A80uhzAglqkl5xmBsD9rIW1fM5AmygpT8JGGu39JD-UDWHztDChACouf7jUPMY_RM'
-        },
-        {
-            id: 3,
-            name: 'Elena Rodriguez',
-            email: 'elena.rodriguez@lnc.com',
-            role: 'Legal Nurse',
-            status: 'Active',
-            lastLogin: '2024-10-22 04:30 PM',
-            casesAssigned: 32,
-            initials: 'ER'
-        },
-        {
-            id: 4,
-            name: 'Michael Chen',
-            email: 'michael.chen@lnc.com',
-            role: 'Legal Nurse',
-            status: 'Active',
-            lastLogin: '2024-10-23 07:15 AM',
-            casesAssigned: 28,
-            avatar: 'https://lh3.googleusercontent.com/aida-public/AB6AXuAMRX-dlto7H-IfNxGJODciYPd59IG6N1Qlv2Z9j09dkAmuEqw4QJelDB4Mk2rEn37QBLxUuwuGomYIbeDEaRsjHjUjj5JlzCrHCI7LOCJzTY-w-U0j0EZmjq5Vddu-_BC9mglpxmV_-8mZF5hGeZyshP4sDm7Oo2nMAQTSs0ffcafzTF50LzZzBuRpMY2wI1rXfd4a-hKcpoixGMuTRFINzJr0nyNgINZ_DchnywG-0Lu2fIgz_ETj3WJ1d0AwQssNdojHAwkYs2Y'
-        },
-        {
-            id: 5,
-            name: 'Robert Vance',
-            email: 'robert.vance@lnc.com',
-            role: 'Attorney',
-            status: 'Inactive',
-            lastLogin: '2024-10-15 02:20 PM',
-            casesAssigned: 12,
-            initials: 'RV'
+    useEffect(() => {
+        fetchUsers();
+    }, [pagination.page, roleFilter, statusFilter, searchQuery]);
+
+    const fetchUsers = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                page: pagination.page,
+                limit: pagination.limit,
+                role: roleFilter !== 'all' ? roleFilter : undefined,
+                status: statusFilter !== 'all' ? statusFilter : undefined,
+                search: searchQuery || undefined
+            };
+            const response = await userService.getAllUsers(params);
+            setUsers(response.data.users || []);
+            setPagination(response.data.pagination || { page: 1, pages: 1, total: 0, limit: 10 });
+
+            // Calculate stats
+            const total = response.data.pagination?.total || 0;
+            const active = response.data.users?.filter(u => u.status === 'active').length || 0;
+            const admins = response.data.users?.filter(u => u.role === 'admin').length || 0;
+            const nurses = response.data.users?.filter(u => u.role === 'legal-nurse').length || 0;
+            setStats({ total, active, admins, nurses });
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        } finally {
+            setLoading(false);
         }
-    ];
+    };
+
+    const handleAddUser = async (e) => {
+        e.preventDefault();
+        try {
+            setSubmitting(true);
+            await userService.createUser(formData);
+            setShowAddModal(false);
+            setFormData({ fullName: '', email: '', role: '', password: '', status: 'active' });
+            fetchUsers();
+        } catch (error) {
+            console.error('Error creating user:', error);
+            alert('Failed to create user');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEditUser = async (e) => {
+        e.preventDefault();
+        try {
+            setSubmitting(true);
+            await userService.updateUser(selectedUser._id, formData);
+            setShowEditModal(false);
+            setSelectedUser(null);
+            setFormData({ fullName: '', email: '', role: '', password: '', status: 'active' });
+            fetchUsers();
+        } catch (error) {
+            console.error('Error updating user:', error);
+            alert('Failed to update user');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        try {
+            setSubmitting(true);
+            await userService.deleteUser(selectedUser._id);
+            setShowDeleteModal(false);
+            setSelectedUser(null);
+            fetchUsers();
+        } catch (error) {
+            console.error('Error deleting user:', error);
+            alert('Failed to delete user');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const openEditModal = (user) => {
+        setSelectedUser(user);
+        setFormData({
+            fullName: user.fullName,
+            email: user.email,
+            role: user.role,
+            password: '',
+            status: user.status
+        });
+        setShowEditModal(true);
+    };
+
+    const openDeleteModal = (user) => {
+        setSelectedUser(user);
+        setShowDeleteModal(true);
+    };
+
+    const getInitials = (name) => {
+        return name?.split(' ').map(n => n[0]).join('').toUpperCase() || '??';
+    };
 
     const getRoleBadgeColor = (role) => {
         const colors = {
@@ -100,7 +163,7 @@ const UsersManagement = () => {
                             <span className="material-icons text-blue-600">people</span>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">42</p>
+                            <p className="text-2xl font-bold">{stats.total}</p>
                             <p className="text-xs text-slate-500 uppercase font-bold">Total Users</p>
                         </div>
                     </div>
@@ -111,7 +174,7 @@ const UsersManagement = () => {
                             <span className="material-icons text-green-600">check_circle</span>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">38</p>
+                            <p className="text-2xl font-bold">{stats.active}</p>
                             <p className="text-xs text-slate-500 uppercase font-bold">Active</p>
                         </div>
                     </div>
@@ -122,7 +185,7 @@ const UsersManagement = () => {
                             <span className="material-icons text-purple-600">admin_panel_settings</span>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">5</p>
+                            <p className="text-2xl font-bold">{stats.admins}</p>
                             <p className="text-xs text-slate-500 uppercase font-bold">Admins</p>
                         </div>
                     </div>
@@ -133,7 +196,7 @@ const UsersManagement = () => {
                             <span className="material-icons text-teal-600">medical_services</span>
                         </div>
                         <div>
-                            <p className="text-2xl font-bold">24</p>
+                            <p className="text-2xl font-bold">{stats.nurses}</p>
                             <p className="text-xs text-slate-500 uppercase font-bold">Legal Nurses</p>
                         </div>
                     </div>
@@ -192,71 +255,104 @@ const UsersManagement = () => {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {users.map((user) => (
-                                <tr key={user.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
-                                            {user.avatar ? (
-                                                <img
-                                                    src={user.avatar}
-                                                    alt={user.name}
-                                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-white dark:ring-slate-800"
-                                                />
-                                            ) : (
-                                                <div className="w-10 h-10 rounded-full bg-[#1f3b61]/10 flex items-center justify-center text-[#1f3b61] text-sm font-bold ring-2 ring-white dark:ring-slate-800">
-                                                    {user.initials}
-                                                </div>
-                                            )}
-                                            <div>
-                                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{user.name}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{user.email}</td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getRoleBadgeColor(user.role)}`}>
-                                            {user.role}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusColor(user.status)}`}>
-                                            {user.status}
-                                        </span>
-                                    </td>
-                                    <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{user.lastLogin}</td>
-                                    <td className="px-6 py-4">
-                                        <span className="text-sm font-semibold text-slate-900 dark:text-white">{user.casesAssigned}</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center justify-end gap-2">
-                                            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Edit">
-                                                <span className="material-icons text-slate-400 hover:text-[#0891b2]">edit</span>
-                                            </button>
-                                            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Delete">
-                                                <span className="material-icons text-slate-400 hover:text-red-500">delete</span>
-                                            </button>
-                                            <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="More">
-                                                <span className="material-icons text-slate-400 hover:text-[#0891b2]">more_vert</span>
-                                            </button>
-                                        </div>
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-12 text-center">
+                                        <span className="material-icons animate-spin text-4xl text-[#0891b2]">refresh</span>
+                                        <p className="mt-2 text-slate-500">Loading users...</p>
                                     </td>
                                 </tr>
-                            ))}
+                            ) : users.length === 0 ? (
+                                <tr>
+                                    <td colSpan="7" className="px-6 py-12 text-center text-slate-500">
+                                        No users found
+                                    </td>
+                                </tr>
+                            ) : (
+                                users.map((user) => (
+                                    <tr key={user._id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-full bg-[#1f3b61]/10 flex items-center justify-center text-[#1f3b61] text-sm font-bold ring-2 ring-white dark:ring-slate-800">
+                                                    {getInitials(user.fullName)}
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{user.fullName}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">{user.email}</td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold whitespace-nowrap ${getRoleBadgeColor(user.role)}`}>
+                                                {user.role === 'legal-nurse' ? 'Legal Nurse' : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${getStatusColor(user.status)}`}>
+                                                {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-slate-600 dark:text-slate-400">
+                                            {user.lastLogin ? new Date(user.lastLogin).toLocaleString() : 'Never'}
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white">{user.casesAssigned || 0}</span>
+                                        </td>
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => openEditModal(user)}
+                                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <span className="material-icons text-slate-400 hover:text-[#0891b2]">edit</span>
+                                                </button>
+                                                <button
+                                                    onClick={() => openDeleteModal(user)}
+                                                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <span className="material-icons text-slate-400 hover:text-red-500">delete</span>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
                         </tbody>
                     </table>
                 </div>
 
                 {/* Pagination */}
                 <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                    <p className="text-sm text-slate-500">Showing 1-5 of 42 users</p>
+                    <p className="text-sm text-slate-500">
+                        Showing {((pagination.page - 1) * pagination.limit) + 1}-{Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+                    </p>
                     <div className="flex gap-2">
-                        <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        <button
+                            onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                            disabled={pagination.page === 1}
+                            className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                             Previous
                         </button>
-                        <button className="px-3 py-1.5 bg-[#0891b2] text-white rounded-lg text-sm">1</button>
-                        <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">2</button>
-                        <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">3</button>
-                        <button className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                        {[...Array(pagination.pages)].map((_, i) => (
+                            <button
+                                key={i + 1}
+                                onClick={() => setPagination({ ...pagination, page: i + 1 })}
+                                className={`px-3 py-1.5 rounded-lg text-sm ${pagination.page === i + 1
+                                    ? 'bg-[#0891b2] text-white'
+                                    : 'border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    } transition-colors`}
+                            >
+                                {i + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                            disabled={pagination.page >= pagination.pages}
+                            className="px-3 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
                             Next
                         </button>
                     </div>
@@ -265,41 +361,189 @@ const UsersManagement = () => {
 
             {/* Add User Modal */}
             {showAddModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 max-w-lg w-full mx-4 shadow-2xl">
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 max-w-lg w-full shadow-2xl">
                         <div className="flex items-center justify-between mb-4">
                             <h3 className="text-lg font-bold">Add New User</h3>
                             <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
                                 <span className="material-icons">close</span>
                             </button>
                         </div>
-                        <div className="space-y-4">
+                        <form onSubmit={handleAddUser} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium mb-2">Full Name</label>
-                                <input type="text" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none" placeholder="Enter full name" />
+                                <label className="block text-sm font-medium mb-2">Full Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.fullName}
+                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                    placeholder="Enter full name"
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Email</label>
-                                <input type="email" className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none" placeholder="Enter email" />
+                                <label className="block text-sm font-medium mb-2">Email *</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                    placeholder="Enter email"
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Role</label>
-                                <select className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none">
-                                    <option>Select role</option>
-                                    <option>Admin</option>
-                                    <option>Attorney</option>
-                                    <option>Legal Nurse</option>
-                                    <option>Client</option>
+                                <label className="block text-sm font-medium mb-2">Password *</label>
+                                <input
+                                    type="password"
+                                    required
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                    placeholder="Enter password"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Role *</label>
+                                <select
+                                    required
+                                    value={formData.role}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                >
+                                    <option value="">Select role</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="attorney">Attorney</option>
+                                    <option value="legal-nurse">Legal Nurse</option>
+                                    <option value="client">Client</option>
                                 </select>
                             </div>
                             <div className="flex gap-3 pt-4">
-                                <button onClick={() => setShowAddModal(false)} className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAddModal(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                >
                                     Cancel
                                 </button>
-                                <button className="flex-1 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors">
-                                    Add User
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
+                                >
+                                    {submitting ? 'Adding...' : 'Add User'}
                                 </button>
                             </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit User Modal */}
+            {showEditModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 max-w-lg w-full shadow-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold">Edit User</h3>
+                            <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+                        <form onSubmit={handleEditUser} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Full Name *</label>
+                                <input
+                                    type="text"
+                                    required
+                                    value={formData.fullName}
+                                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Email *</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Role *</label>
+                                <select
+                                    required
+                                    value={formData.role}
+                                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                >
+                                    <option value="admin">Admin</option>
+                                    <option value="attorney">Attorney</option>
+                                    <option value="legal-nurse">Legal Nurse</option>
+                                    <option value="client">Client</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium mb-2">Status *</label>
+                                <select
+                                    required
+                                    value={formData.status}
+                                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#0891b2] outline-none"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                            </div>
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowEditModal(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={submitting}
+                                    className="flex-1 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors disabled:opacity-50"
+                                >
+                                    {submitting ? 'Updating...' : 'Update User'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && selectedUser && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl p-6 max-w-md w-full shadow-2xl">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="text-lg font-bold text-red-600">Delete User</h3>
+                            <button onClick={() => setShowDeleteModal(false)} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded">
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400 mb-6">
+                            Are you sure you want to delete <span className="font-bold">{selectedUser.fullName}</span>? This action cannot be undone.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteUser}
+                                disabled={submitting}
+                                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                            >
+                                {submitting ? 'Deleting...' : 'Delete'}
+                            </button>
                         </div>
                     </div>
                 </div>

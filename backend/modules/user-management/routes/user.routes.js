@@ -10,19 +10,19 @@ const createUserValidation = [
     body('fullName').trim().notEmpty().withMessage('Full name is required'),
     body('email').isEmail().withMessage('Please provide a valid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
-    body('role').isIn(['admin', 'attorney', 'consultant', 'client']).withMessage('Invalid role')
+    body('role').isIn(['admin', 'attorney', 'legal-nurse', 'staff', 'client']).withMessage('Invalid role')
 ];
 
 const updateUserValidation = [
     body('fullName').optional().trim().notEmpty().withMessage('Full name cannot be empty'),
     body('email').optional().isEmail().withMessage('Please provide a valid email'),
-    body('role').optional().isIn(['admin', 'attorney', 'consultant', 'client']).withMessage('Invalid role'),
+    body('role').optional().isIn(['admin', 'attorney', 'legal-nurse', 'staff', 'client']).withMessage('Invalid role'),
     body('status').optional().isIn(['active', 'inactive', 'suspended']).withMessage('Invalid status')
 ];
 
-// All routes require authentication and admin role
+// All routes require authentication and admin or attorney role
 router.use(protect);
-router.use(authorize('admin'));
+router.use(authorize('admin', 'attorney'));
 
 // Routes
 router.get('/stats', userController.getUserStats);

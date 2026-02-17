@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import clientService from '../../../services/client.service';
 
 const ClientsList = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
     const [referralFilter, setReferralFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('active');
@@ -10,6 +12,9 @@ const ClientsList = () => {
     const [stats, setStats] = useState({ total: 0 });
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [viewingClient, setViewingClient] = useState(null);
+    const [editingClient, setEditingClient] = useState(null);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -71,8 +76,13 @@ const ClientsList = () => {
         e.preventDefault();
         try {
             setSubmitting(true);
-            await clientService.createClient(formData);
+            if (editingClient) {
+                await clientService.updateClient(editingClient._id, formData);
+            } else {
+                await clientService.createClient(formData);
+            }
             setShowCreateModal(false);
+            setEditingClient(null);
             setFormData({
                 fullName: '',
                 email: '',
@@ -83,11 +93,54 @@ const ClientsList = () => {
             fetchClients();
             fetchStats();
         } catch (error) {
-            console.error('Error creating client:', error);
-            alert('Failed to create client. Please try again.');
+            console.error('Error saving client:', error);
+            alert('Failed to save client. Please try again.');
         } finally {
             setSubmitting(false);
         }
+    };
+
+    const handleViewClient = (client) => {
+        setViewingClient(client);
+        setShowViewModal(true);
+    };
+
+    const handleEditClient = (client) => {
+        setEditingClient(client);
+        setFormData({
+            fullName: client.fullName,
+            email: client.email,
+            phone: client.phone || '',
+            address: client.address || '',
+            status: client.status
+        });
+        setShowCreateModal(true);
+    };
+
+    const handleExportCSV = () => {
+        // Create CSV content
+        const headers = ['Name', 'Email', 'Phone', 'Law Firm', 'Status'];
+        const rows = clients.map(client => [
+            client.fullName,
+            client.email,
+            client.phone || '',
+            client.lawFirm?.firmName || 'N/A',
+            client.status
+        ]);
+
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+        ].join('\n');
+
+        // Download CSV
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `clients-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
     };
 
     return (
@@ -102,12 +155,25 @@ const ClientsList = () => {
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm font-medium">
+                        <button
+                            onClick={handleExportCSV}
+                            className="flex items-center px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm font-medium"
+                        >
                             <span className="material-icons text-sm mr-2">file_download</span>
                             Export CSV
                         </button>
                         <button
-                            onClick={() => setShowCreateModal(true)}
+                            onClick={() => {
+                                setEditingClient(null);
+                                setFormData({
+                                    fullName: '',
+                                    email: '',
+                                    phone: '',
+                                    address: '',
+                                    status: 'active'
+                                });
+                                setShowCreateModal(true);
+                            }}
                             className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg shadow-[#0891b2]/20 transition-all text-sm font-semibold"
                         >
                             <span className="material-icons text-sm mr-2">person_add</span>
@@ -186,7 +252,12 @@ const ClientsList = () => {
                                                     {getInitials(client.fullName)}
                                                 </div>
                                                 <div className="ml-4">
-                                                    <div className="text-sm font-semibold text-slate-900 dark:text-white">{client.fullName}</div>
+                                                    <button
+                                                        onClick={() => handleViewClient(client)}
+                                                        className="text-sm font-semibold text-slate-900 dark:text-white hover:text-[#0891b2] dark:hover:text-[#0891b2] transition-colors text-left"
+                                                    >
+                                                        {client.fullName}
+                                                    </button>
                                                     <div className="text-xs text-slate-500 dark:text-slate-400">{client.lawFirm?.firmName || 'N/A'}</div>
                                                 </div>
                                             </div>
@@ -205,10 +276,18 @@ const ClientsList = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end space-x-2">
-                                                <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <button
+                                                    onClick={() => handleViewClient(client)}
+                                                    className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors"
+                                                    title="View Client"
+                                                >
                                                     <span className="material-icons text-lg">visibility</span>
                                                 </button>
-                                                <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <button
+                                                    onClick={() => handleEditClient(client)}
+                                                    className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors"
+                                                    title="Edit Client"
+                                                >
                                                     <span className="material-icons text-lg">edit</span>
                                                 </button>
                                             </div>
@@ -284,9 +363,14 @@ const ClientsList = () => {
                     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                         <div className="p-6 border-b border-slate-200 dark:border-slate-700">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Create New Client</h2>
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                    {editingClient ? 'Edit Client' : 'Create New Client'}
+                                </h2>
                                 <button
-                                    onClick={() => setShowCreateModal(false)}
+                                    onClick={() => {
+                                        setShowCreateModal(false);
+                                        setEditingClient(null);
+                                    }}
                                     className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                                 >
                                     <span className="material-icons">close</span>
@@ -360,7 +444,10 @@ const ClientsList = () => {
                             <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
-                                    onClick={() => setShowCreateModal(false)}
+                                    onClick={() => {
+                                        setShowCreateModal(false);
+                                        setEditingClient(null);
+                                    }}
                                     className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     Cancel
@@ -370,10 +457,144 @@ const ClientsList = () => {
                                     disabled={submitting}
                                     className="flex-1 px-4 py-2 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
-                                    {submitting ? 'Creating...' : 'Create Client'}
+                                    {submitting ? (editingClient ? 'Updating...' : 'Creating...') : (editingClient ? 'Update Client' : 'Create Client')}
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* View Client Modal */}
+            {showViewModal && viewingClient && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">Client Details</h2>
+                                <button
+                                    onClick={() => {
+                                        setShowViewModal(false);
+                                        setViewingClient(null);
+                                    }}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="p-6 space-y-6">
+                            {/* Client Avatar and Name */}
+                            <div className="flex items-center space-x-4 pb-6 border-b border-slate-200 dark:border-slate-700">
+                                <div className="w-16 h-16 rounded-full bg-[#0891b2]/20 text-[#0891b2] flex items-center justify-center font-bold text-xl">
+                                    {getInitials(viewingClient.fullName)}
+                                </div>
+                                <div>
+                                    <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{viewingClient.fullName}</h3>
+                                    <div className="flex items-center mt-1">
+                                        <span className={`w-2 h-2 rounded-full mr-2 ${viewingClient.status === 'active' ? 'bg-green-500' : 'bg-slate-400'}`}></span>
+                                        <span className="text-sm text-slate-600 dark:text-slate-400 capitalize">{viewingClient.status}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Contact Information */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Contact Information</h4>
+                                <div className="space-y-3">
+                                    <div className="flex items-center">
+                                        <span className="material-icons text-[#0891b2] text-lg mr-3">email</span>
+                                        <div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">Email</p>
+                                            <p className="text-sm font-medium text-slate-900 dark:text-white">{viewingClient.email}</p>
+                                        </div>
+                                    </div>
+                                    {viewingClient.phone && (
+                                        <div className="flex items-center">
+                                            <span className="material-icons text-[#0891b2] text-lg mr-3">phone</span>
+                                            <div>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Phone</p>
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">{viewingClient.phone}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {viewingClient.address && (
+                                        <div className="flex items-start">
+                                            <span className="material-icons text-[#0891b2] text-lg mr-3">location_on</span>
+                                            <div>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400">Address</p>
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                                    {typeof viewingClient.address === 'string'
+                                                        ? viewingClient.address
+                                                        : `${viewingClient.address.street || ''} ${viewingClient.address.city || ''}, ${viewingClient.address.state || ''} ${viewingClient.address.zipCode || ''}`.trim()
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Law Firm Information */}
+                            {viewingClient.lawFirm && (
+                                <div>
+                                    <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Law Firm</h4>
+                                    <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4">
+                                        <div className="flex items-center">
+                                            <span className="material-icons text-[#0891b2] text-lg mr-3">business</span>
+                                            <div>
+                                                <p className="text-sm font-medium text-slate-900 dark:text-white">{viewingClient.lawFirm.firmName}</p>
+                                                {viewingClient.lawFirm.contactPerson && (
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400">Contact: {viewingClient.lawFirm.contactPerson}</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Timestamps */}
+                            <div>
+                                <h4 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Record Information</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Created</p>
+                                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                            {new Date(viewingClient.createdAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">Last Updated</p>
+                                        <p className="text-sm font-medium text-slate-900 dark:text-white">
+                                            {new Date(viewingClient.updatedAt).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                                <button
+                                    onClick={() => {
+                                        setShowViewModal(false);
+                                        handleEditClient(viewingClient);
+                                    }}
+                                    className="flex-1 px-4 py-2 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <span className="material-icons text-sm">edit</span>
+                                    Edit Client
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowViewModal(false);
+                                        setViewingClient(null);
+                                    }}
+                                    className="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
