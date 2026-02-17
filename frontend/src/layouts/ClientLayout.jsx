@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ClientNavbar from '../shared/components/ClientNavbar';
 import ClientSidebar from '../shared/components/ClientSidebar';
+import DashboardSwitcher from '../shared/components/DashboardSwitcher';
 
 const ClientLayout = ({ children }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -14,6 +15,7 @@ const ClientLayout = ({ children }) => {
                     {children}
                 </main>
             </div>
+            <DashboardSwitcher />
         </div>
     );
 };

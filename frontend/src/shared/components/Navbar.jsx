@@ -170,8 +170,8 @@ const Navbar = ({ sidebarOpen, setSidebarOpen }) => {
                 <div className="hidden sm:flex items-center gap-1.5 bg-green-500/20 px-2 md:px-3 py-1 rounded-full border border-green-500/30">
                     <span className="material-icons text-green-400 text-xs">shield</span>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-green-400">
-                        <span className="hidden md:inline">HIPAA Compliant Session</span>
-                        <span className="md:hidden">HIPAA</span>
+                        <span className="hidden md:inline">Secured Session</span>
+                        <span className="md:hidden">Secure</span>
                     </span>
                 </div>
 

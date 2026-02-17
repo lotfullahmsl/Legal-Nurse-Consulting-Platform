@@ -137,7 +137,7 @@ const ClientNavbar = ({ sidebarOpen, setSidebarOpen }) => {
                 <div className="hidden sm:flex items-center gap-1.5 bg-green-100 dark:bg-green-900/20 px-2 md:px-3 py-1 rounded-full">
                     <span className="material-icons text-green-600 dark:text-green-400 text-xs">shield</span>
                     <span className="text-[10px] font-semibold uppercase tracking-wider text-green-600 dark:text-green-400">
-                        <span className="hidden md:inline">Secure Connection</span>
+                        <span className="hidden md:inline">Secured Session</span>
                         <span className="md:hidden">Secure</span>
                     </span>
                 </div>

@@ -70,15 +70,32 @@ exports.getClientDashboard = async (clientId) => {
  * Get client's cases
  */
 exports.getClientCases = async (clientId, filters = {}) => {
-    const query = { client: clientId };
+    // For client users, find their client record by email
+    const User = require('../../../models/User.model');
+    const user = await User.findById(clientId);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Find client record by email
+    const Client = require('../../../models/Client.model');
+    const client = await Client.findOne({ email: user.email });
+
+    if (!client) {
+        throw new Error('Client profile not found');
+    }
+
+    const query = { client: client._id };
 
     if (filters.status) {
         query.status = filters.status;
     }
 
     const cases = await Case.find(query)
-        .select('caseNumber title status priority createdAt updatedAt assignedTo')
-        .populate('assignedTo', 'firstName lastName email')
+        .select('caseNumber caseName caseType status priority incidentDate description createdAt updatedAt')
+        .populate('assignedConsultant', 'fullName email')
+        .populate('lawFirm', 'firmName contactPerson')
         .sort({ updatedAt: -1 });
 
     return cases;
@@ -88,10 +105,26 @@ exports.getClientCases = async (clientId, filters = {}) => {
  * Get single case details for client
  */
 exports.getClientCaseById = async (caseId, clientId) => {
-    const caseData = await Case.findOne({ _id: caseId, client: clientId })
-        .populate('client', 'firstName lastName email phone')
-        .populate('assignedTo', 'firstName lastName email')
-        .populate('lawFirm', 'name contactPerson');
+    // For client users, find their client record by email
+    const User = require('../../../models/User.model');
+    const user = await User.findById(clientId);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Find client record by email
+    const Client = require('../../../models/Client.model');
+    const client = await Client.findOne({ email: user.email });
+
+    if (!client) {
+        throw new Error('Client profile not found');
+    }
+
+    const caseData = await Case.findOne({ _id: caseId, client: client._id })
+        .populate('client', 'fullName email phone')
+        .populate('assignedConsultant', 'fullName email')
+        .populate('lawFirm', 'firmName contactPerson');
 
     if (!caseData) {
         throw new Error('Case not found or access denied');
@@ -116,7 +149,7 @@ exports.getClientCaseById = async (caseId, clientId) => {
     let messages = [];
     if (conversation) {
         messages = await Message.find({ conversation: conversation._id })
-            .populate('sender', 'firstName lastName')
+            .populate('sender', 'fullName')
             .sort({ createdAt: -1 })
             .limit(20);
     }
@@ -273,15 +306,40 @@ exports.getClientReports = async (clientId) => {
  * Get client's timeline
  */
 exports.getClientTimeline = async (clientId, caseId) => {
-    const caseData = await Case.findOne({ _id: caseId, client: clientId });
+    // For client users, find their client record by email
+    const User = require('../../../models/User.model');
+    const user = await User.findById(clientId);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Find client record by email
+    const Client = require('../../../models/Client.model');
+    const client = await Client.findOne({ email: user.email });
+
+    if (!client) {
+        throw new Error('Client profile not found');
+    }
+
+    const caseData = await Case.findOne({ _id: caseId, client: client._id })
+        .populate('client', 'fullName email phone')
+        .populate('assignedConsultant', 'fullName email')
+        .populate('lawFirm', 'firmName contactPerson');
 
     if (!caseData) {
         throw new Error('Case not found or access denied');
     }
 
-    const timeline = await Timeline.findOne({ case: caseId })
-        .populate('case', 'caseNumber title')
-        .populate('createdBy', 'firstName lastName');
+    const timelines = await Timeline.find({ case: caseId })
+        .populate('case', 'caseNumber caseName')
+        .populate('assignedTo', 'fullName email')
+        .populate('createdBy', 'fullName')
+        .populate('events.citations.document', 'fileName')
+        .sort({ createdAt: -1 });
 
-    return timeline;
+    return {
+        timelines,
+        case: caseData
+    };
 };

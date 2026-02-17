@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import DashboardSwitcher from '../shared/components/DashboardSwitcher';
 import Navbar from '../shared/components/Navbar';
 import StaffSidebar from '../shared/components/StaffSidebar';
 
@@ -14,6 +15,7 @@ const StaffLayout = ({ children }) => {
                     {children}
                 </main>
             </div>
+            <DashboardSwitcher />
         </div>
     );
 };
