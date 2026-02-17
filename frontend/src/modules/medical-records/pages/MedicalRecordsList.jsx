@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import caseService from '../../../services/case.service';
 import medicalRecordService from '../../../services/medicalRecord.service';
 
 const MedicalRecordsList = () => {
@@ -9,9 +10,12 @@ const MedicalRecordsList = () => {
     const [stats, setStats] = useState({ total: 0, ocrPending: 0 });
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [showUploadModal, setShowUploadModal] = useState(false);
+    const [cases, setCases] = useState([]);
+    const [loadingCases, setLoadingCases] = useState(false);
     const [uploadData, setUploadData] = useState({
         file: null,
         fileName: '',
+        case: '',
         documentType: 'medical-record',
         provider: '',
         recordDate: '',
@@ -23,6 +27,12 @@ const MedicalRecordsList = () => {
         fetchRecords();
         fetchStats();
     }, [filterType, searchQuery, pagination.page]);
+
+    useEffect(() => {
+        if (showUploadModal) {
+            fetchCases();
+        }
+    }, [showUploadModal]);
 
     const fetchRecords = async () => {
         try {
@@ -49,6 +59,18 @@ const MedicalRecordsList = () => {
             setStats(response.data || { total: 0, ocrPending: 0 });
         } catch (error) {
             console.error('Error fetching stats:', error);
+        }
+    };
+
+    const fetchCases = async () => {
+        try {
+            setLoadingCases(true);
+            const response = await caseService.getAllCases({ limit: 100 });
+            setCases(response.data.cases || []);
+        } catch (error) {
+            console.error('Error fetching cases:', error);
+        } finally {
+            setLoadingCases(false);
         }
     };
 
@@ -91,21 +113,37 @@ const MedicalRecordsList = () => {
             alert('Please select a file to upload');
             return;
         }
+        if (!uploadData.case) {
+            alert('Please select a case');
+            return;
+        }
 
         try {
             setUploading(true);
-            const formData = new FormData();
-            formData.append('file', uploadData.file);
-            formData.append('documentType', uploadData.documentType);
-            if (uploadData.provider) formData.append('provider', uploadData.provider);
-            if (uploadData.recordDate) formData.append('recordDate', uploadData.recordDate);
-            if (uploadData.notes) formData.append('notes', uploadData.notes);
 
-            await medicalRecordService.uploadRecord(formData);
+            // For now, we'll send JSON data instead of FormData
+            // In production, you'd upload the file to cloud storage first and get the URL
+            const recordData = {
+                case: uploadData.case,
+                fileName: uploadData.file.name,
+                fileType: uploadData.file.type.includes('pdf') ? 'pdf' :
+                    uploadData.file.type.includes('image') ? 'image' :
+                        uploadData.file.type.includes('doc') ? 'doc' : 'other',
+                fileSize: uploadData.file.size,
+                fileUrl: `/uploads/${uploadData.file.name}`, // Mock URL - in production, upload to S3/cloud storage
+                documentType: uploadData.documentType,
+                provider: uploadData.provider ? { name: uploadData.provider } : undefined,
+                recordDate: uploadData.recordDate || undefined,
+                notes: uploadData.notes || undefined,
+                pageCount: 1
+            };
+
+            await medicalRecordService.uploadRecord(recordData);
             setShowUploadModal(false);
             setUploadData({
                 file: null,
                 fileName: '',
+                case: '',
                 documentType: 'medical-record',
                 provider: '',
                 recordDate: '',
@@ -337,6 +375,29 @@ const MedicalRecordsList = () => {
                             </div>
                         </div>
                         <form onSubmit={handleUpload} className="p-6 space-y-5">
+                            {/* Case Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                    Select Case *
+                                </label>
+                                <select
+                                    required
+                                    value={uploadData.case}
+                                    onChange={(e) => setUploadData({ ...uploadData, case: e.target.value })}
+                                    className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                    disabled={loadingCases}
+                                >
+                                    <option value="">
+                                        {loadingCases ? 'Loading cases...' : 'Select a case'}
+                                    </option>
+                                    {cases.map((caseItem) => (
+                                        <option key={caseItem._id} value={caseItem._id}>
+                                            {caseItem.caseNumber} - {caseItem.caseName}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             {/* File Upload Area */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -455,7 +516,7 @@ const MedicalRecordsList = () => {
                                 </button>
                                 <button
                                     type="submit"
-                                    disabled={uploading || !uploadData.file}
+                                    disabled={uploading || !uploadData.file || !uploadData.case}
                                     className="flex-1 px-4 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2"
                                 >
                                     {uploading ? (
