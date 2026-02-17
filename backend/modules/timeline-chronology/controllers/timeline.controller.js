@@ -5,7 +5,14 @@ const AppError = require('../../../shared/errors/AppError');
 exports.getTimelinesByCase = async (req, res, next) => {
     try {
         const timelines = await Timeline.find({ case: req.params.caseId })
-            .populate('case', 'caseNumber caseName')
+            .populate({
+                path: 'case',
+                select: 'caseNumber caseName caseType client lawFirm',
+                populate: [
+                    { path: 'client', select: 'firstName lastName fullName' },
+                    { path: 'lawFirm', select: 'name' }
+                ]
+            })
             .populate('assignedTo', 'fullName email')
             .populate('createdBy', 'fullName')
             .populate('events.citations.document', 'fileName')
@@ -193,20 +200,32 @@ exports.deleteEvent = async (req, res, next) => {
     }
 };
 
-// Get work queue (timelines assigned to user)
+// Get work queue (timelines assigned to user or all timelines)
 exports.getWorkQueue = async (req, res, next) => {
     try {
         const { status } = req.query;
 
-        const query = {
-            assignedTo: req.user._id
-        };
+        const query = {};
+
+        // Only filter by assignedTo if it's explicitly requested
+        // This allows showing all timelines in the work queue
+        if (req.query.assignedToMe === 'true') {
+            query.assignedTo = req.user._id;
+        }
 
         if (status) query.status = status;
 
         const timelines = await Timeline.find(query)
-            .populate('case', 'caseNumber caseName')
+            .populate({
+                path: 'case',
+                select: 'caseNumber caseName caseType client lawFirm',
+                populate: [
+                    { path: 'client', select: 'firstName lastName fullName' },
+                    { path: 'lawFirm', select: 'name' }
+                ]
+            })
             .populate('createdBy', 'fullName')
+            .populate('assignedTo', 'fullName')
             .sort({ createdAt: -1 });
 
         res.status(200).json({

@@ -261,25 +261,28 @@ exports.addComment = async (req, res, next) => {
 // Get task statistics
 exports.getTaskStats = async (req, res, next) => {
     try {
-        const userId = req.query.userId || req.user._id;
+        const userId = req.query.userId;
 
-        const totalTasks = await Task.countDocuments({ assignedTo: userId });
-        const completedTasks = await Task.countDocuments({ assignedTo: userId, status: 'completed' });
-        const pendingTasks = await Task.countDocuments({ assignedTo: userId, status: 'pending' });
-        const inProgressTasks = await Task.countDocuments({ assignedTo: userId, status: 'in-progress' });
+        // If userId is provided, filter by that user, otherwise show all tasks
+        const filter = userId ? { assignedTo: userId } : {};
+
+        const totalTasks = await Task.countDocuments(filter);
+        const completedTasks = await Task.countDocuments({ ...filter, status: 'completed' });
+        const pendingTasks = await Task.countDocuments({ ...filter, status: 'pending' });
+        const inProgressTasks = await Task.countDocuments({ ...filter, status: 'in-progress' });
         const overdueTasks = await Task.countDocuments({
-            assignedTo: userId,
+            ...filter,
             status: { $nin: ['completed', 'cancelled'] },
             dueDate: { $lt: new Date() }
         });
 
         const tasksByPriority = await Task.aggregate([
-            { $match: { assignedTo: userId } },
+            { $match: filter },
             { $group: { _id: '$priority', count: { $sum: 1 } } }
         ]);
 
         const tasksByType = await Task.aggregate([
-            { $match: { assignedTo: userId } },
+            { $match: filter },
             { $group: { _id: '$type', count: { $sum: 1 } } }
         ]);
 

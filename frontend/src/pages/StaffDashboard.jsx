@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import analyticsService from '../services/analytics.service';
+import caseService from '../services/case.service';
 import deadlineService from '../services/deadline.service';
 import taskService from '../services/task.service';
 
 const StaffDashboard = () => {
     const [tasks, setTasks] = useState([]);
     const [deadlines, setDeadlines] = useState([]);
+    const [cases, setCases] = useState([]);
     const [workloadAnalytics, setWorkloadAnalytics] = useState(null);
     const [stats, setStats] = useState({
         totalTasks: 0,
@@ -23,16 +25,18 @@ const StaffDashboard = () => {
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const [tasksData, statsData, deadlinesData, workloadData] = await Promise.all([
+            const [tasksData, statsData, deadlinesData, workloadData, casesData] = await Promise.all([
                 taskService.getMyTasks({ limit: 5 }),
                 taskService.getTaskStats(),
                 deadlineService.getUpcomingDeadlines(7),
-                analyticsService.getWorkloadAnalytics({})
+                analyticsService.getWorkloadAnalytics({}),
+                caseService.getAllCases()
             ]);
             setTasks(tasksData || []);
             setStats(statsData || {});
             setDeadlines(deadlinesData || []);
             setWorkloadAnalytics(workloadData.data || null);
+            setCases(casesData.data?.cases || casesData.cases || []);
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
         } finally {
@@ -86,110 +90,73 @@ const StaffDashboard = () => {
 
                     {/* Case Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Case Card 1 */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <span className="inline-block px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-[10px] font-bold uppercase mb-2">
-                                        Case #2024-8812
-                                    </span>
-                                    <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#1152d4] transition-colors">
-                                        Harrison vs. City Hospital
-                                    </h3>
-                                </div>
-                                <span className="material-icons text-slate-300 group-hover:text-[#1152d4] transition-colors cursor-pointer">
-                                    more_horiz
-                                </span>
-                            </div>
-                            <div className="space-y-3 mb-4">
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">gavel</span>
-                                    <span>Lead: Miller & Associates</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">event</span>
-                                    <span>Hearing: Oct 15, 2024</span>
-                                </div>
-                            </div>
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                    <span className="text-xs font-medium text-slate-500">Medical Review In-Progress</span>
-                                </div>
-                            </div>
-                        </div>
+                        {loading ? (
+                            <div className="col-span-2 text-center py-8 text-slate-500">Loading cases...</div>
+                        ) : cases.length > 0 ? (
+                            cases.slice(0, 3).map((caseItem) => {
+                                const getStatusColor = (status) => {
+                                    switch (status) {
+                                        case 'active': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400';
+                                        case 'closed': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400';
+                                        case 'pending': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400';
+                                        default: return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400';
+                                    }
+                                };
 
-                        {/* Case Card 2 */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <span className="inline-block px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase mb-2">
-                                        Case #2024-7431
-                                    </span>
-                                    <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#1152d4] transition-colors">
-                                        Martinez Post-Op Review
-                                    </h3>
-                                </div>
-                                <span className="material-icons text-slate-300 group-hover:text-[#1152d4] transition-colors cursor-pointer">
-                                    more_horiz
-                                </span>
-                            </div>
-                            <div className="space-y-3 mb-4">
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">gavel</span>
-                                    <span>Lead: Smith Legal Group</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">event</span>
-                                    <span>Deadline: Sept 30, 2024</span>
-                                </div>
-                            </div>
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                                    <span className="text-xs font-medium text-slate-500">Chronology Building</span>
-                                </div>
-                            </div>
-                        </div>
+                                const getStatusDot = (status) => {
+                                    switch (status) {
+                                        case 'active': return 'bg-blue-500';
+                                        case 'closed': return 'bg-emerald-500';
+                                        case 'pending': return 'bg-amber-500';
+                                        default: return 'bg-slate-300';
+                                    }
+                                };
 
-                        {/* Case Card 3 */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <span className="inline-block px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 text-[10px] font-bold uppercase mb-2">
-                                        Case #2024-9002
-                                    </span>
-                                    <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#1152d4] transition-colors">
-                                        Davis Dialysis Center Inc.
-                                    </h3>
-                                </div>
-                                <span className="material-icons text-slate-300 group-hover:text-[#1152d4] transition-colors cursor-pointer">
-                                    more_horiz
-                                </span>
-                            </div>
-                            <div className="space-y-3 mb-4">
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">gavel</span>
-                                    <span>Lead: Roberts & Co.</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                                    <span className="material-icons text-xs">event</span>
-                                    <span>Trial: Jan 12, 2025</span>
-                                </div>
-                            </div>
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-slate-300"></span>
-                                    <span className="text-xs font-medium text-slate-500">Awaiting Records</span>
-                                </div>
-                            </div>
-                        </div>
+                                return (
+                                    <div key={caseItem._id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 hover:shadow-md transition-shadow group">
+                                        <div className="flex justify-between items-start mb-4">
+                                            <div>
+                                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-2 ${getStatusColor(caseItem.status)}`}>
+                                                    {caseItem.caseNumber}
+                                                </span>
+                                                <h3 className="font-bold text-slate-900 dark:text-white group-hover:text-[#1152d4] transition-colors">
+                                                    {caseItem.title}
+                                                </h3>
+                                            </div>
+                                            <span className="material-icons text-slate-300 group-hover:text-[#1152d4] transition-colors cursor-pointer">
+                                                more_horiz
+                                            </span>
+                                        </div>
+                                        <div className="space-y-3 mb-4">
+                                            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                                <span className="material-icons text-xs">gavel</span>
+                                                <span>{caseItem.lawFirm?.name || 'No law firm'}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                                <span className="material-icons text-xs">event</span>
+                                                <span>Opened: {new Date(caseItem.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`w-2 h-2 rounded-full ${getStatusDot(caseItem.status)}`}></span>
+                                                <span className="text-xs font-medium text-slate-500 capitalize">{caseItem.status}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="col-span-2 text-center py-8 text-slate-500">No cases assigned</div>
+                        )}
 
                         {/* Add New Case Placeholder */}
-                        <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-slate-400 hover:border-[#1152d4] hover:text-[#1152d4] transition-all cursor-pointer">
-                            <span className="material-icons text-3xl mb-2">add_circle_outline</span>
-                            <span className="text-sm font-semibold">New Assignment Request</span>
-                        </div>
+                        {!loading && (
+                            <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-slate-400 hover:border-[#1152d4] hover:text-[#1152d4] transition-all cursor-pointer">
+                                <span className="material-icons text-3xl mb-2">add_circle_outline</span>
+                                <span className="text-sm font-semibold">New Assignment Request</span>
+                            </div>
+                        )}
                     </div>
                 </section>
 

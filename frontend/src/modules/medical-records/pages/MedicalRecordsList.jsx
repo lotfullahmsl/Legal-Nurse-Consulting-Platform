@@ -80,10 +80,23 @@ const MedicalRecordsList = () => {
                 await medicalRecordService.deleteRecord(id);
                 alert('Record deleted successfully');
                 fetchRecords();
+                fetchStats();
             } catch (error) {
                 alert('Failed to delete record');
             }
         }
+    };
+
+    const handleView = (record) => {
+        // For now, show an alert with file information since files aren't actually uploaded yet
+        // In production, this would open the actual file from cloud storage
+        alert(`File Information:\n\nFilename: ${record.fileName}\nCase: ${record.case?.caseNumber || 'N/A'}\nProvider: ${record.provider?.name || 'N/A'}\nPages: ${record.pageCount}\nSize: ${formatFileSize(record.fileSize)}\n\nNote: File viewing requires actual file upload to cloud storage (AWS S3, etc.)`);
+    };
+
+    const handleDownload = async (record) => {
+        // For now, show an alert since files aren't actually uploaded yet
+        // In production, this would download from cloud storage
+        alert(`Download: ${record.fileName}\n\nNote: File download requires actual file upload to cloud storage (AWS S3, etc.)`);
     };
 
     const formatFileSize = (bytes) => {
@@ -311,15 +324,25 @@ const MedicalRecordsList = () => {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end space-x-2">
-                                                <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <button
+                                                    onClick={() => handleView(record)}
+                                                    className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors"
+                                                    title="View document"
+                                                >
                                                     <span className="material-icons text-lg">visibility</span>
                                                 </button>
-                                                <button className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors">
+                                                <button
+                                                    onClick={() => handleDownload(record)}
+                                                    className="p-2 text-slate-400 hover:text-[#0891b2] transition-colors"
+                                                    title="Download document"
+                                                >
                                                     <span className="material-icons text-lg">download</span>
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(record._id)}
-                                                    className="p-2 text-slate-400 hover:text-rose-500 transition-colors">
+                                                    className="p-2 text-slate-400 hover:text-rose-500 transition-colors"
+                                                    title="Delete document"
+                                                >
                                                     <span className="material-icons text-lg">delete</span>
                                                 </button>
                                             </div>

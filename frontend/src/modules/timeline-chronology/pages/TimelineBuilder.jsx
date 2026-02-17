@@ -5,6 +5,7 @@ import timelineService from '../../../services/timeline.service';
 const TimelineBuilder = () => {
     const { caseId } = useParams();
     const [timeline, setTimeline] = useState(null);
+    const [caseInfo, setCaseInfo] = useState(null);
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddEvent, setShowAddEvent] = useState(false);
@@ -19,13 +20,23 @@ const TimelineBuilder = () => {
         try {
             setLoading(true);
             const response = await timelineService.getTimelinesByCase(caseId);
-            if (response.data.timelines.length > 0) {
-                const tl = response.data.timelines[0];
+            const timelines = response.data?.timelines || response.timelines || [];
+            if (timelines.length > 0) {
+                const tl = timelines[0];
                 setTimeline(tl);
                 setEvents(tl.events || []);
+                setCaseInfo(tl.case);
+            } else {
+                // No timeline exists yet for this case
+                setTimeline(null);
+                setEvents([]);
+                setCaseInfo(null);
             }
         } catch (error) {
             console.error('Error fetching timeline:', error);
+            setTimeline(null);
+            setEvents([]);
+            setCaseInfo(null);
         } finally {
             setLoading(false);
         }
@@ -79,14 +90,14 @@ const TimelineBuilder = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-7xl mx-auto p-6">
             {/* Header */}
             <header className="mb-8">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Medical Timeline Builder</h1>
                         <p className="text-sm text-slate-500 mt-1">
-                            Create chronological medical events with citations
+                            {caseInfo ? `Case: ${caseInfo.caseNumber} - ${caseInfo.caseName || ''}` : 'Create chronological medical events with citations'}
                         </p>
                     </div>
                     <button
