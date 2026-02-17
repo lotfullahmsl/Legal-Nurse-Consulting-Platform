@@ -18,6 +18,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         { icon: 'dashboard', label: 'Dashboard', path: '/dashboard' },
         { icon: 'folder', label: 'Cases', path: '/cases' },
         { icon: 'people', label: 'Clients', path: '/clients' },
+        { icon: 'business', label: 'Law Firms', path: '/law-firms' },
         { icon: 'group', label: 'Users', path: '/users' },
         { icon: 'description', label: 'Medical Records', path: '/medical-records' },
         { icon: 'analytics', label: 'Case Analysis', path: '/case-analysis' },

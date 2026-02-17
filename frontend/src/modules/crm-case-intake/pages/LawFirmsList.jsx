@@ -6,6 +6,24 @@ const LawFirmsList = () => {
     const [firms, setFirms] = useState([]);
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [formData, setFormData] = useState({
+        firmName: '',
+        contactPerson: '',
+        email: '',
+        phone: '',
+        address: {
+            street: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'USA'
+        },
+        website: '',
+        specializations: [],
+        status: 'active',
+        notes: ''
+    });
 
     useEffect(() => {
         fetchFirms();
@@ -41,6 +59,35 @@ const LawFirmsList = () => {
         }
     };
 
+    const handleCreate = async (e) => {
+        e.preventDefault();
+        try {
+            await lawFirmService.createLawFirm(formData);
+            alert('Law firm created successfully!');
+            setShowCreateModal(false);
+            setFormData({
+                firmName: '',
+                contactPerson: '',
+                email: '',
+                phone: '',
+                address: {
+                    street: '',
+                    city: '',
+                    state: '',
+                    zipCode: '',
+                    country: 'USA'
+                },
+                website: '',
+                specializations: [],
+                status: 'active',
+                notes: ''
+            });
+            fetchFirms();
+        } catch (error) {
+            alert(error.response?.data?.message || 'Failed to create law firm');
+        }
+    };
+
     return (
         <div className="max-w-7xl mx-auto">
             <header className="mb-8">
@@ -51,7 +98,10 @@ const LawFirmsList = () => {
                             Manage {pagination.total} registered law firms
                         </p>
                     </div>
-                    <button className="flex items-center px-5 py-2.5 bg-[#1f3b61] text-white font-semibold rounded-lg hover:bg-[#1f3b61]/90 transition-colors shadow-sm">
+                    <button
+                        onClick={() => setShowCreateModal(true)}
+                        className="flex items-center px-5 py-2.5 bg-[#1f3b61] text-white font-semibold rounded-lg hover:bg-[#1f3b61]/90 transition-colors shadow-sm"
+                    >
                         <span className="material-icons text-[20px] mr-2">add</span>
                         Add Law Firm
                     </button>
@@ -153,6 +203,212 @@ const LawFirmsList = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Create Law Firm Modal */}
+            {showCreateModal && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-6 flex items-center justify-between">
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white">Add New Law Firm</h3>
+                            <button
+                                onClick={() => setShowCreateModal(false)}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            >
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleCreate} className="p-6 space-y-6">
+                            {/* Basic Information */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Basic Information</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Firm Name <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.firmName}
+                                            onChange={(e) => setFormData({ ...formData, firmName: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="Smith & Associates"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Contact Person <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={formData.contactPerson}
+                                            onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="John Smith"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Email <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="contact@lawfirm.com"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">
+                                            Phone <span className="text-red-500">*</span>
+                                        </label>
+                                        <input
+                                            type="tel"
+                                            required
+                                            value={formData.phone}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="(555) 123-4567"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium mb-2">Website</label>
+                                        <input
+                                            type="url"
+                                            value={formData.website}
+                                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="https://www.lawfirm.com"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Address */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Address</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="md:col-span-2">
+                                        <label className="block text-sm font-medium mb-2">Street Address</label>
+                                        <input
+                                            type="text"
+                                            value={formData.address.street}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                address: { ...formData.address, street: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="123 Main Street"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">City</label>
+                                        <input
+                                            type="text"
+                                            value={formData.address.city}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                address: { ...formData.address, city: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="New York"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">State</label>
+                                        <input
+                                            type="text"
+                                            value={formData.address.state}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                address: { ...formData.address, state: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="NY"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">ZIP Code</label>
+                                        <input
+                                            type="text"
+                                            value={formData.address.zipCode}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                address: { ...formData.address, zipCode: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="10001"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Country</label>
+                                        <input
+                                            type="text"
+                                            value={formData.address.country}
+                                            onChange={(e) => setFormData({
+                                                ...formData,
+                                                address: { ...formData.address, country: e.target.value }
+                                            })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="USA"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Additional Information */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Additional Information</h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Status</label>
+                                        <select
+                                            value={formData.status}
+                                            onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                        >
+                                            <option value="active">Active</option>
+                                            <option value="inactive">Inactive</option>
+                                            <option value="suspended">Suspended</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium mb-2">Notes</label>
+                                        <textarea
+                                            value={formData.notes}
+                                            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                                            rows="3"
+                                            className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] outline-none"
+                                            placeholder="Additional notes about this law firm..."
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowCreateModal(false)}
+                                    className="flex-1 px-6 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-2.5 bg-[#1f3b61] text-white rounded-lg hover:bg-[#1f3b61]/90 transition-colors font-semibold"
+                                >
+                                    Create Law Firm
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
