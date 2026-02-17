@@ -92,7 +92,7 @@ const ClientTimeline = () => {
 
     if (cases.length === 0) {
         return (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div>
                 <div className="text-center py-12">
                     <span className="material-icons text-6xl text-slate-300 mb-4">folder_open</span>
                     <p className="text-slate-500">No cases found</p>
@@ -102,7 +102,7 @@ const ClientTimeline = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div>
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Medical Timeline</h1>

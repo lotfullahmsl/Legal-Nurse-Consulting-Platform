@@ -118,7 +118,7 @@ const ClientNavbar = ({ sidebarOpen, setSidebarOpen }) => {
     };
 
     return (
-        <header className="fixed top-0 left-0 md:left-64 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 z-40">
+        <header className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 md:px-6 z-50">
             <div className="flex items-center gap-4">
                 {/* Mobile menu button */}
                 <button
@@ -127,10 +127,6 @@ const ClientNavbar = ({ sidebarOpen, setSidebarOpen }) => {
                 >
                     <span className="material-icons text-slate-600 dark:text-slate-400">menu</span>
                 </button>
-
-                <h1 className="text-lg md:text-xl font-bold text-slate-900 dark:text-white">
-                    Client Portal
-                </h1>
             </div>
 
             <div className="flex items-center gap-3 md:gap-6">

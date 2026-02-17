@@ -61,7 +61,7 @@ const ClientDashboard = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto">
+        <div>
             {/* Header */}
             <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>

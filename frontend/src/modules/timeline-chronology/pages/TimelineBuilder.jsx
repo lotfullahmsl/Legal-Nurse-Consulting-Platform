@@ -90,7 +90,7 @@ const TimelineBuilder = () => {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-6">
+        <div>
             {/* Header */}
             <header className="mb-8">
                 <div className="flex items-center justify-between">

@@ -52,7 +52,7 @@ const ClientBilling = () => {
 
     if (loading) {
         return (
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div>
                 <div className="text-center py-12">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0891b2] mx-auto"></div>
                     <p className="mt-4 text-slate-600 dark:text-slate-400">Loading billing information...</p>
@@ -62,7 +62,7 @@ const ClientBilling = () => {
     }
 
     return (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div>
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Billing & Invoices</h1>

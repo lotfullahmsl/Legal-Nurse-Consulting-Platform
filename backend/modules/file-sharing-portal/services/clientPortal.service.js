@@ -11,19 +11,57 @@ const AuditLog = require('../../../models/AuditLog.model');
  * Get client dashboard data
  */
 exports.getClientDashboard = async (clientId) => {
+    // For client users, find their client record by email
+    const User = require('../../../models/User.model');
+    const user = await User.findById(clientId);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Find client record by email
+    const Client = require('../../../models/Client.model');
+    const client = await Client.findOne({ email: user.email });
+
+    if (!client) {
+        // Return empty dashboard if client profile not found
+        return {
+            cases: [],
+            documents: [],
+            unreadMessages: 0,
+            pendingInvoices: [],
+            recentActivity: [],
+            stats: {
+                activeCases: 0,
+                totalDocuments: 0,
+                unreadMessages: 0,
+                pendingInvoices: 0
+            }
+        };
+    }
+
     // Get client's active cases
-    const cases = await Case.find({ client: clientId, status: { $ne: 'Closed' } })
-        .select('caseNumber title status priority createdAt assignedTo')
-        .populate('assignedTo', 'firstName lastName')
+    const cases = await Case.find({ client: client._id, status: { $nin: ['closed', 'archived'] } })
+        .select('caseNumber caseName caseType status priority createdAt assignedConsultant')
+        .populate('assignedConsultant', 'firstName lastName fullName')
         .sort({ createdAt: -1 })
-        .limit(10);
+        .limit(10)
+        .lean();
+
+    // Transform cases to match frontend expectations
+    const transformedCases = cases.map(c => ({
+        ...c,
+        title: c.caseName,
+        assignedTo: c.assignedConsultant
+    }));
 
     // Get recent documents
     const documents = await FileShare.find({ sharedWith: clientId })
         .select('fileName fileSize uploadedAt case')
-        .populate('case', 'caseNumber title')
+        .populate('case', 'caseNumber caseName')
         .sort({ uploadedAt: -1 })
-        .limit(5);
+        .limit(5)
+        .lean();
 
     // Get unread messages count
     const conversations = await Conversation.find({ participants: clientId });
@@ -37,7 +75,7 @@ exports.getClientDashboard = async (clientId) => {
     // Get pending invoices
     const pendingInvoices = await Invoice.find({
         case: { $in: cases.map(c => c._id) },
-        status: 'Pending'
+        status: 'pending'
     }).select('invoiceNumber amount dueDate');
 
     // Get recent activity
@@ -52,13 +90,13 @@ exports.getClientDashboard = async (clientId) => {
         .select('action resource timestamp details');
 
     return {
-        cases,
+        cases: transformedCases,
         documents,
         unreadMessages,
         pendingInvoices,
         recentActivity,
         stats: {
-            activeCases: cases.length,
+            activeCases: transformedCases.length,
             totalDocuments: documents.length,
             unreadMessages,
             pendingInvoices: pendingInvoices.length
