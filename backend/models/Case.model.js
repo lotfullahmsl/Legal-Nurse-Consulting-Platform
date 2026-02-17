@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const caseSchema = new mongoose.Schema({
     caseNumber: {
         type: String,
-        required: true,
-        unique: true
+        unique: true,
+        sparse: true
     },
     caseName: {
         type: String,
@@ -23,8 +23,7 @@ const caseSchema = new mongoose.Schema({
     },
     lawFirm: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'LawFirm',
-        required: [true, 'Law firm is required']
+        ref: 'LawFirm'
     },
     assignedConsultant: {
         type: mongoose.Schema.Types.ObjectId,

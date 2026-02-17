@@ -73,17 +73,20 @@ exports.createCase = async (req, res, next) => {
 
         const newCase = await Case.create(caseData);
 
-        await newCase.populate([
-            { path: 'client', select: 'fullName email' },
-            { path: 'lawFirm', select: 'firmName' }
-        ]);
+        // Populate only if references exist
+        const populatedCase = await Case.findById(newCase._id)
+            .populate('client', 'fullName email')
+            .populate('lawFirm', 'firmName')
+            .populate('assignedConsultant', 'fullName email')
+            .populate('createdBy', 'fullName');
 
         res.status(201).json({
             success: true,
             message: 'Case created successfully',
-            data: { case: newCase }
+            data: { case: populatedCase || newCase }
         });
     } catch (error) {
+        console.error('Create case error:', error);
         next(error);
     }
 };

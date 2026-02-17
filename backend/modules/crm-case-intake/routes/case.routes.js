@@ -11,7 +11,7 @@ const caseValidation = [
     body('caseType').isIn(['medical-malpractice', 'personal-injury', 'workers-compensation', 'product-liability', 'other'])
         .withMessage('Valid case type is required'),
     body('client').notEmpty().withMessage('Client is required'),
-    body('lawFirm').notEmpty().withMessage('Law firm is required')
+    body('lawFirm').optional()
 ];
 
 // Get all cases (requires authentication)
@@ -27,8 +27,7 @@ router.get('/:id', protect, caseController.getCaseById);
 router.post('/',
     protect,
     authorize('admin', 'attorney', 'consultant'),
-    caseValidation,
-    validate,
+    validate(caseValidation),
     caseController.createCase
 );
 
