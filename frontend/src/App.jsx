@@ -15,7 +15,6 @@ import ClientDashboard from './modules/file-sharing-portal/pages/ClientDashboard
 import ClientDocuments from './modules/file-sharing-portal/pages/ClientDocuments';
 import ClientReports from './modules/file-sharing-portal/pages/ClientReports';
 import ClientTimeline from './modules/file-sharing-portal/pages/ClientTimeline';
-import ClientUpdates from './modules/file-sharing-portal/pages/ClientUpdates';
 import MessagesPage from './modules/file-sharing-portal/pages/MessagesPage';
 import MedicalRecordsList from './modules/medical-records/pages/MedicalRecordsList';
 import SearchPage from './modules/ocr-search/pages/SearchPage';
@@ -89,7 +88,6 @@ function App() {
                 <Route path="/client/messages" element={<ClientLayout><MessagesPage /></ClientLayout>} />
                 <Route path="/client/billing" element={<ClientLayout><ClientBilling /></ClientLayout>} />
                 <Route path="/client/reports" element={<ClientLayout><ClientReports /></ClientLayout>} />
-                <Route path="/client/updates" element={<ClientLayout><ClientUpdates /></ClientLayout>} />
             </Routes>
         </Router>
     );

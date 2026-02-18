@@ -23,6 +23,12 @@ const medicalRecordSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    // For development: store small files as base64 in MongoDB
+    // WARNING: Not recommended for production - use cloud storage instead
+    fileData: {
+        type: String,
+        select: false // Don't include by default in queries for performance
+    },
     documentType: {
         type: String,
         enum: ['medical-record', 'lab-report', 'imaging', 'prescription', 'consultation', 'discharge-summary', 'other'],

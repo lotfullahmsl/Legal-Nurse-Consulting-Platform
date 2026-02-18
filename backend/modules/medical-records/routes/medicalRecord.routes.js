@@ -26,6 +26,9 @@ router.get('/case/:caseId', protect, medicalRecordController.getRecordsByCase);
 // Get record by ID
 router.get('/:id', protect, medicalRecordController.getRecordById);
 
+// Download record file
+router.get('/:id/download', protect, medicalRecordController.downloadRecord);
+
 // Upload record
 router.post('/upload',
     protect,

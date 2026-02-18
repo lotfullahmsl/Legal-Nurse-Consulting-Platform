@@ -7,25 +7,8 @@ const conversationSchema = new mongoose.Schema({
         index: true
     },
     participants: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: true
-        },
-        role: {
-            type: String,
-            enum: ['admin', 'member'],
-            default: 'member'
-        },
-        joinedAt: {
-            type: Date,
-            default: Date.now
-        },
-        leftAt: Date,
-        isActive: {
-            type: Boolean,
-            default: true
-        }
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
     }],
     type: {
         type: String,
@@ -65,7 +48,7 @@ const conversationSchema = new mongoose.Schema({
 });
 
 // Indexes for performance
-conversationSchema.index({ 'participants.user': 1, lastMessageAt: -1 });
+conversationSchema.index({ participants: 1, lastMessageAt: -1 });
 conversationSchema.index({ case: 1, type: 1 });
 conversationSchema.index({ type: 1, isArchived: 1, lastMessageAt: -1 });
 

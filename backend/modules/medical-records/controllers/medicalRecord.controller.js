@@ -95,6 +95,52 @@ exports.uploadRecord = async (req, res, next) => {
     }
 };
 
+// Download medical record file
+exports.downloadRecord = async (req, res, next) => {
+    try {
+        const record = await MedicalRecord.findById(req.params.id).select('+fileData');
+
+        if (!record) {
+            return res.status(404).json({
+                success: false,
+                message: 'Medical record not found'
+            });
+        }
+
+        // Log download action
+        record.chainOfCustody.push({
+            action: 'downloaded',
+            user: req.user._id,
+            ipAddress: req.ip
+        });
+        await record.save();
+
+        // If fileData exists (base64), send it
+        if (record.fileData) {
+            res.status(200).json({
+                success: true,
+                data: {
+                    fileName: record.fileName,
+                    fileType: record.fileType,
+                    fileData: record.fileData
+                }
+            });
+        } else {
+            // If no fileData, return the fileUrl for external download
+            res.status(200).json({
+                success: true,
+                data: {
+                    fileName: record.fileName,
+                    fileType: record.fileType,
+                    fileUrl: record.fileUrl
+                }
+            });
+        }
+    } catch (error) {
+        next(error);
+    }
+};
+
 // Update medical record
 exports.updateRecord = async (req, res, next) => {
     try {

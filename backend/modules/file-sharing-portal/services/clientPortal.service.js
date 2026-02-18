@@ -121,7 +121,8 @@ exports.getClientCases = async (clientId, filters = {}) => {
     const client = await Client.findOne({ email: user.email });
 
     if (!client) {
-        throw new Error('Client profile not found');
+        // Return empty array if client profile not found
+        return [];
     }
 
     const query = { client: client._id };
@@ -156,7 +157,7 @@ exports.getClientCaseById = async (caseId, clientId) => {
     const client = await Client.findOne({ email: user.email });
 
     if (!client) {
-        throw new Error('Client profile not found');
+        throw new Error('Client profile not found - please contact support');
     }
 
     const caseData = await Case.findOne({ _id: caseId, client: client._id })
@@ -204,7 +205,7 @@ exports.getClientCaseById = async (caseId, clientId) => {
  * Get client's documents
  */
 exports.getClientDocuments = async (clientId, filters = {}) => {
-    const query = { sharedWith: clientId };
+    const query = { sharedWith: clientId, isRevoked: false };
 
     if (filters.caseId) {
         query.case = filters.caseId;
@@ -214,10 +215,27 @@ exports.getClientDocuments = async (clientId, filters = {}) => {
         query.fileType = filters.fileType;
     }
 
-    const documents = await FileShare.find(query)
-        .populate('case', 'caseNumber title')
-        .populate('uploadedBy', 'firstName lastName')
-        .sort({ uploadedAt: -1 });
+    const fileShares = await FileShare.find(query)
+        .populate('case', 'caseNumber caseName')
+        .populate('sharedBy', 'firstName lastName fullName')
+        .populate({
+            path: 'file',
+            select: 'fileName fileSize fileType uploadDate'
+        })
+        .sort({ createdAt: -1 });
+
+    // Transform to include file details at top level
+    const documents = fileShares.map(share => ({
+        _id: share._id,
+        fileName: share.file?.fileName || 'Unknown',
+        fileSize: share.file?.fileSize,
+        fileType: share.file?.fileType,
+        case: share.case,
+        uploadedBy: share.sharedBy,
+        createdAt: share.createdAt,
+        accessLevel: share.accessLevel,
+        expiresAt: share.expiresAt
+    }));
 
     return documents;
 };
@@ -226,32 +244,60 @@ exports.getClientDocuments = async (clientId, filters = {}) => {
  * Get client's messages
  */
 exports.getClientMessages = async (clientId, caseId = null) => {
-    const query = { participants: clientId };
+    // For client users, find their client record by email
+    const User = require('../../../models/User.model');
+    const user = await User.findById(clientId);
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    // Find client record by email
+    const Client = require('../../../models/Client.model');
+    const client = await Client.findOne({ email: user.email });
+
+    if (!client) {
+        // Return empty if no client profile
+        return [];
+    }
+
+    // Get client's cases
+    const cases = await Case.find({ client: client._id }).select('_id');
+    const caseIds = cases.map(c => c._id);
+
+    // Build query for conversations
+    const query = {
+        participants: clientId,
+        case: { $in: caseIds }
+    };
 
     if (caseId) {
         query.case = caseId;
     }
 
     const conversations = await Conversation.find(query)
-        .populate('case', 'caseNumber title')
-        .populate('participants', 'firstName lastName')
+        .populate('case', 'caseNumber caseName')
+        .populate('participants', 'fullName email role')
         .sort({ lastMessageAt: -1 });
 
-    const conversationsWithMessages = await Promise.all(
+    // Get unread counts for each conversation
+    const conversationsWithUnread = await Promise.all(
         conversations.map(async (conv) => {
-            const messages = await Message.find({ conversation: conv._id })
-                .populate('sender', 'firstName lastName')
-                .sort({ createdAt: -1 })
-                .limit(50);
+            const unreadCount = await Message.countDocuments({
+                conversation: conv._id,
+                sender: { $ne: clientId },
+                'readBy.user': { $ne: clientId },
+                isDeleted: false
+            });
 
             return {
-                conversation: conv,
-                messages
+                ...conv.toObject(),
+                unreadCount
             };
         })
     );
 
-    return conversationsWithMessages;
+    return conversationsWithUnread;
 };
 
 /**
@@ -275,10 +321,11 @@ exports.sendClientMessage = async (clientId, conversationId, messageData) => {
     });
 
     // Update conversation last message time
+    conversation.lastMessage = message._id;
     conversation.lastMessageAt = new Date();
     await conversation.save();
 
-    return message.populate('sender', 'firstName lastName');
+    return message.populate('sender', 'fullName email');
 };
 
 /**
@@ -357,7 +404,11 @@ exports.getClientTimeline = async (clientId, caseId) => {
     const client = await Client.findOne({ email: user.email });
 
     if (!client) {
-        throw new Error('Client profile not found');
+        // Return empty timeline if client profile not found
+        return {
+            timelines: [],
+            case: null
+        };
     }
 
     const caseData = await Case.findOne({ _id: caseId, client: client._id })

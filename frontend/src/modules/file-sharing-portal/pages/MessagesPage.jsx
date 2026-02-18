@@ -98,6 +98,7 @@ const MessagesPage = () => {
     };
 
     const currentUser = getCurrentUser();
+    const currentUserId = currentUser?._id || currentUser?.id;
 
     return (
         <div className="flex h-[calc(100vh-8rem)] bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden">
@@ -182,13 +183,13 @@ const MessagesPage = () => {
                                 </div>
                             ) : (
                                 messages.map((msg) => {
-                                    const isOwn = msg.sender?._id === currentUser?.id;
+                                    const isOwn = msg.sender?._id === currentUserId;
                                     return (
                                         <div key={msg._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`max-w-lg ${isOwn ? 'order-2' : 'order-1'}`}>
                                                 {!isOwn && (
                                                     <p className="text-xs text-slate-500 mb-1 px-1">
-                                                        {msg.sender?.name || 'Unknown'}
+                                                        {msg.sender?.fullName || msg.sender?.name || 'Unknown'}
                                                     </p>
                                                 )}
                                                 <div className={`rounded-lg p-3 ${isOwn

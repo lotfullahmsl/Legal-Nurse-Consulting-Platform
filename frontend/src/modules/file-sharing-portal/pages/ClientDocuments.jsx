@@ -1,80 +1,181 @@
 import { useEffect, useState } from 'react';
+import apiClient from '../../../services/api.service';
+import clientPortalService from '../../../services/clientPortal.service';
+import medicalRecordService from '../../../services/medicalRecord.service';
 
 const ClientDocuments = () => {
     const [documents, setDocuments] = useState([]);
+    const [cases, setCases] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [selectedCase, setSelectedCase] = useState('all');
+    const [uploadCase, setUploadCase] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [showUploadModal, setShowUploadModal] = useState(false);
+
+    useEffect(() => {
+        fetchCases();
+    }, []);
 
     useEffect(() => {
         fetchDocuments();
     }, [selectedCase]);
 
-    const fetchDocuments = async () => {
-        // Mock data
-        setDocuments([
-            {
-                id: 1,
-                name: 'Hospital_Records_June_2024.pdf',
-                size: '12.4 MB',
-                uploadedDate: '2024-01-15',
-                caseNumber: 'ML-88291',
-                caseName: 'Miller vs. Sterling Medical',
-                type: 'Medical Record',
-                status: 'processed'
-            },
-            {
-                id: 2,
-                name: 'Lab_Results_Comprehensive.pdf',
-                size: '2.1 MB',
-                uploadedDate: '2024-01-20',
-                caseNumber: 'ML-88291',
-                caseName: 'Miller vs. Sterling Medical',
-                type: 'Lab Results',
-                status: 'processed'
-            },
-            {
-                id: 3,
-                name: 'Imaging_Reports_CT_MRI.zip',
-                size: '45.8 MB',
-                uploadedDate: '2024-02-01',
-                caseNumber: 'ML-88291',
-                caseName: 'Miller vs. Sterling Medical',
-                type: 'Imaging',
-                status: 'processing'
+    const fetchCases = async () => {
+        try {
+            const casesData = await clientPortalService.getClientCases();
+            setCases(casesData || []);
+            if (casesData && casesData.length > 0) {
+                setUploadCase(casesData[0]._id);
             }
-        ]);
-    };
-
-    const handleFileUpload = (event) => {
-        const files = event.target.files;
-        if (files.length > 0) {
-            setUploading(true);
-            // Simulate upload
-            setTimeout(() => {
-                setUploading(false);
-                fetchDocuments();
-            }, 2000);
+        } catch (error) {
+            console.error('Error fetching cases:', error);
+            setCases([]);
         }
     };
 
-    const getFileIcon = (type) => {
-        const icons = {
-            'Medical Record': 'description',
-            'Lab Results': 'science',
-            'Imaging': 'medical_services',
-            'default': 'insert_drive_file'
-        };
-        return icons[type] || icons.default;
+    const fetchDocuments = async () => {
+        try {
+            setLoading(true);
+            const filters = selectedCase !== 'all' ? { caseId: selectedCase } : {};
+            const docs = await clientPortalService.getClientDocuments(filters);
+            setDocuments(docs || []);
+        } catch (error) {
+            console.error('Error fetching documents:', error);
+            setDocuments([]);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const getStatusBadge = (status) => {
-        const badges = {
-            processed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400',
-            processing: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
-            failed: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-        };
-        return badges[status] || badges.processing;
+    const convertFileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
     };
+
+    const handleFileUpload = async (event) => {
+        const files = event.target.files;
+        if (files.length === 0) return;
+
+        if (!uploadCase && cases.length > 0) {
+            alert('Please select a case first');
+            return;
+        }
+
+        // If no cases available, show error
+        if (cases.length === 0) {
+            alert('No cases available. Please create a case first.');
+            return;
+        }
+
+        setUploading(true);
+
+        try {
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                // Check file size (max 15MB for MongoDB - production ready)
+                if (file.size > 15 * 1024 * 1024) {
+                    alert(`File ${file.name} is too large. Maximum size is 15MB.`);
+                    continue;
+                }
+
+                // Convert file to base64
+                const base64Data = await convertFileToBase64(file);
+
+                // Determine file type
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                let fileType = 'other';
+                if (fileExtension === 'pdf') fileType = 'pdf';
+                else if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) fileType = 'image';
+                else if (['doc', 'docx'].includes(fileExtension)) fileType = 'doc';
+
+                // Upload to backend
+                const recordData = {
+                    case: uploadCase,
+                    fileName: file.name,
+                    fileType: fileType,
+                    fileSize: file.size,
+                    fileUrl: `/uploads/${file.name}`, // Placeholder
+                    fileData: base64Data, // Base64 encoded file
+                    documentType: 'medical-record'
+                };
+
+                await medicalRecordService.uploadRecord(recordData);
+            }
+
+            alert('Files uploaded successfully!');
+            fetchDocuments();
+        } catch (error) {
+            console.error('Upload error:', error);
+            alert('Failed to upload files: ' + (error.response?.data?.message || error.message));
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDownload = async (doc) => {
+        try {
+            // Get the file reference from the document
+            const fileId = doc._id;
+
+            // Call download endpoint
+            const response = await apiClient.get(`/medical-records/${fileId}/download`);
+
+            if (response.data.success && response.data.data.fileData) {
+                // Create a download link from base64 data
+                const link = document.createElement('a');
+                link.href = response.data.data.fileData;
+                link.download = response.data.data.fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } else {
+                alert('File data not available for download');
+            }
+        } catch (error) {
+            console.error('Download error:', error);
+            alert('Failed to download file: ' + (error.response?.data?.message || error.message));
+        }
+    };
+
+    const handleDelete = async (docId) => {
+        if (window.confirm('Are you sure you want to delete this document?')) {
+            // TODO: Implement delete functionality
+            alert('Delete functionality requires backend implementation');
+        }
+    };
+
+    const getFileIcon = (fileType) => {
+        const icons = {
+            'pdf': 'picture_as_pdf',
+            'doc': 'description',
+            'docx': 'description',
+            'jpg': 'image',
+            'jpeg': 'image',
+            'png': 'image',
+            'default': 'insert_drive_file'
+        };
+        const ext = fileType?.toLowerCase() || 'default';
+        return icons[ext] || icons.default;
+    };
+
+    const formatFileSize = (bytes) => {
+        if (!bytes) return 'N/A';
+        const mb = bytes / (1024 * 1024);
+        return mb >= 1 ? `${mb.toFixed(1)} MB` : `${(bytes / 1024).toFixed(1)} KB`;
+    };
+
+    if (loading && documents.length === 0) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <span className="material-icons animate-spin text-4xl text-[#0891b2]">refresh</span>
+            </div>
+        );
+    }
 
     return (
         <div>
@@ -86,16 +187,33 @@ const ClientDocuments = () => {
 
             {/* Upload Section */}
             <div className="bg-gradient-to-br from-[#0891b2] to-[#0891b2]/80 rounded-xl p-8 mb-8 text-white">
-                <div className="flex items-center justify-between">
-                    <div>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="flex-1">
                         <h2 className="text-2xl font-bold mb-2">Upload Medical Records</h2>
                         <p className="text-white/80 mb-4">Securely upload your medical documents for review</p>
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm mb-4">
                             <span className="material-icons text-lg">check_circle</span>
                             <span>256-bit AES Encryption</span>
                             <span className="mx-2">•</span>
                             <span className="material-icons text-lg">check_circle</span>
                             <span>HIPAA Compliant</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            {cases.length > 0 ? (
+                                <select
+                                    value={uploadCase}
+                                    onChange={(e) => setUploadCase(e.target.value)}
+                                    className="px-4 py-2 border border-white/20 rounded-lg bg-white/10 text-white focus:ring-2 focus:ring-white/50 focus:border-transparent"
+                                >
+                                    {cases.map((caseItem) => (
+                                        <option key={caseItem._id} value={caseItem._id} className="text-slate-900">
+                                            {caseItem.caseNumber} - {caseItem.caseName || caseItem.title}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <p className="text-sm text-white/80">Loading cases...</p>
+                            )}
                         </div>
                     </div>
                     <label className="cursor-pointer">
@@ -105,13 +223,22 @@ const ClientDocuments = () => {
                             onChange={handleFileUpload}
                             className="hidden"
                             accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            disabled={uploading}
                         />
-                        <div className="bg-white text-[#0891b2] px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-lg">
-                            <span className="material-icons">cloud_upload</span>
+                        <div className={`bg-white text-[#0891b2] px-6 py-3 rounded-lg font-bold flex items-center gap-2 hover:bg-slate-50 transition-colors shadow-lg ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                            <span className="material-icons">{uploading ? 'hourglass_empty' : 'cloud_upload'}</span>
                             {uploading ? 'Uploading...' : 'Select Files'}
                         </div>
                     </label>
                 </div>
+                {uploading && (
+                    <div className="mt-4">
+                        <div className="bg-white/20 rounded-full h-2 overflow-hidden">
+                            <div className="bg-white h-full animate-pulse" style={{ width: '60%' }}></div>
+                        </div>
+                        <p className="text-sm text-white/80 mt-2">Uploading files... Please wait.</p>
+                    </div>
+                )}
             </div>
 
             {/* Filters */}
@@ -123,8 +250,11 @@ const ClientDocuments = () => {
                         className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-[#0891b2] focus:border-transparent"
                     >
                         <option value="all">All Cases</option>
-                        <option value="ML-88291">ML-88291 - Miller vs. Sterling</option>
-                        <option value="ML-88292">ML-88292 - Estate of J. Doe</option>
+                        {cases.map((caseItem) => (
+                            <option key={caseItem._id} value={caseItem._id}>
+                                {caseItem.caseNumber} - {caseItem.caseName || caseItem.title}
+                            </option>
+                        ))}
                     </select>
                 </div>
                 <div className="flex items-center gap-2">
@@ -135,49 +265,66 @@ const ClientDocuments = () => {
             </div>
 
             {/* Documents Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {documents.map((doc) => (
-                    <div key={doc.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg transition-all group">
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="w-12 h-12 bg-[#0891b2]/10 rounded-lg flex items-center justify-center group-hover:bg-[#0891b2] group-hover:text-white transition-colors">
-                                <span className="material-icons text-[#0891b2] group-hover:text-white">{getFileIcon(doc.type)}</span>
+            {documents.length === 0 ? (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+                    <span className="material-icons text-6xl text-slate-300 mb-4">folder_open</span>
+                    <p className="text-slate-500">No documents available</p>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {documents.map((doc) => (
+                        <div key={doc._id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg transition-all group">
+                            <div className="flex items-start justify-between mb-4">
+                                <div className="w-12 h-12 bg-[#0891b2]/10 rounded-lg flex items-center justify-center group-hover:bg-[#0891b2] group-hover:text-white transition-colors">
+                                    <span className="material-icons text-[#0891b2] group-hover:text-white">{getFileIcon(doc.fileType)}</span>
+                                </div>
+                                <span className="px-2 py-1 rounded text-xs font-bold uppercase bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                    Shared
+                                </span>
                             </div>
-                            <span className={`px-2 py-1 rounded text-xs font-bold uppercase ${getStatusBadge(doc.status)}`}>
-                                {doc.status}
-                            </span>
-                        </div>
 
-                        <h3 className="font-bold text-slate-900 dark:text-white mb-2 truncate" title={doc.name}>
-                            {doc.name}
-                        </h3>
+                            <h3 className="font-bold text-slate-900 dark:text-white mb-2 truncate" title={doc.fileName}>
+                                {doc.fileName}
+                            </h3>
 
-                        <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <span className="material-icons text-sm">folder</span>
-                                <span>{doc.caseNumber}</span>
+                            <div className="space-y-2 mb-4">
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <span className="material-icons text-sm">folder</span>
+                                    <span>{doc.case?.caseNumber || 'N/A'}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <span className="material-icons text-sm">person</span>
+                                    <span>Shared by: {doc.uploadedBy?.firstName} {doc.uploadedBy?.lastName}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <span className="material-icons text-sm">calendar_today</span>
+                                    <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <span className="material-icons text-sm">storage</span>
+                                    <span>{formatFileSize(doc.fileSize)}</span>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <span className="material-icons text-sm">calendar_today</span>
-                                <span>{new Date(doc.uploadedDate).toLocaleDateString()}</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-slate-500">
-                                <span className="material-icons text-sm">storage</span>
-                                <span>{doc.size}</span>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleDownload(doc)}
+                                    className="flex-1 bg-[#0891b2]/10 text-[#0891b2] px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#0891b2]/20 transition-colors flex items-center justify-center gap-1"
+                                >
+                                    <span className="material-icons text-sm">download</span>
+                                    Download
+                                </button>
+                                <button
+                                    onClick={() => handleDelete(doc._id)}
+                                    className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                >
+                                    <span className="material-icons text-sm">delete</span>
+                                </button>
                             </div>
                         </div>
-
-                        <div className="flex gap-2">
-                            <button className="flex-1 bg-[#0891b2]/10 text-[#0891b2] px-3 py-2 rounded-lg text-sm font-medium hover:bg-[#0891b2]/20 transition-colors flex items-center justify-center gap-1">
-                                <span className="material-icons text-sm">download</span>
-                                Download
-                            </button>
-                            <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors">
-                                <span className="material-icons text-sm">delete</span>
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            )}
 
             {/* Upload Guidelines */}
             <div className="mt-8 bg-slate-50 dark:bg-slate-800/50 rounded-xl p-6 border border-slate-200 dark:border-slate-700">

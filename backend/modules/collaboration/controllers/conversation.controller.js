@@ -7,19 +7,18 @@ exports.getAllConversations = async (req, res, next) => {
         const { type, case: caseId, isArchived, page = 1, limit = 20 } = req.query;
 
         const filter = {
-            'participants.user': req.user.id,
-            'participants.isActive': true
+            participants: req.user._id,
+            isArchived: isArchived === 'true'
         };
 
         if (type) filter.type = type;
         if (caseId) filter.case = caseId;
-        if (isArchived !== undefined) filter.isArchived = isArchived === 'true';
 
         const conversations = await Conversation.find(filter)
-            .populate('participants.user', 'name email avatar')
+            .populate('participants', 'fullName email role')
             .populate('lastMessage')
-            .populate('case', 'title caseNumber')
-            .populate('createdBy', 'name email')
+            .populate('case', 'caseName caseNumber')
+            .populate('createdBy', 'fullName email')
             .sort({ lastMessageAt: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit);
@@ -31,8 +30,8 @@ exports.getAllConversations = async (req, res, next) => {
             conversations.map(async (conv) => {
                 const unreadCount = await Message.countDocuments({
                     conversation: conv._id,
-                    sender: { $ne: req.user.id },
-                    'readBy.user': { $ne: req.user.id },
+                    sender: { $ne: req.user._id },
+                    'readBy.user': { $ne: req.user._id },
                     isDeleted: false
                 });
                 return {
@@ -56,10 +55,10 @@ exports.getAllConversations = async (req, res, next) => {
 exports.getConversationById = async (req, res, next) => {
     try {
         const conversation = await Conversation.findById(req.params.id)
-            .populate('participants.user', 'name email avatar')
+            .populate('participants', 'fullName email role')
             .populate('lastMessage')
-            .populate('case', 'title caseNumber')
-            .populate('createdBy', 'name email');
+            .populate('case', 'caseName caseNumber')
+            .populate('createdBy', 'fullName email');
 
         if (!conversation) {
             return res.status(404).json({ message: 'Conversation not found' });
@@ -67,7 +66,7 @@ exports.getConversationById = async (req, res, next) => {
 
         // Check if user is participant
         const isParticipant = conversation.participants.some(
-            p => p.user._id.toString() === req.user.id && p.isActive
+            p => p._id.toString() === req.user._id.toString()
         );
 
         if (!isParticipant) {
@@ -86,27 +85,16 @@ exports.createConversation = async (req, res, next) => {
 
         // For direct conversations, check if one already exists
         if (type === 'direct' && participants.length === 1) {
-            const existing = await conversationService.findDirectConversation(
-                req.user.id,
-                participants[0]
-            );
+            const existing = await Conversation.findOne({
+                type: 'direct',
+                participants: { $all: [req.user._id, participants[0]] }
+            });
             if (existing) {
                 return res.json(existing);
             }
         }
 
-        const participantsList = [
-            {
-                user: req.user.id,
-                role: 'admin',
-                isActive: true
-            },
-            ...participants.map(userId => ({
-                user: userId,
-                role: 'member',
-                isActive: true
-            }))
-        ];
+        const participantsList = [req.user._id, ...participants];
 
         const conversation = new Conversation({
             type,
@@ -114,12 +102,12 @@ exports.createConversation = async (req, res, next) => {
             description,
             participants: participantsList,
             case: caseId || null,
-            createdBy: req.user.id
+            createdBy: req.user._id
         });
 
         await conversation.save();
-        await conversation.populate('participants.user', 'name email avatar');
-        await conversation.populate('case', 'title caseNumber');
+        await conversation.populate('participants', 'fullName email role');
+        await conversation.populate('case', 'caseName caseNumber');
 
         res.status(201).json(conversation);
     } catch (error) {

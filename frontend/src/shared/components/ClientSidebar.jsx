@@ -51,12 +51,6 @@ const ClientSidebar = ({ sidebarOpen, setSidebarOpen }) => {
             label: 'Reports',
             path: '/client/reports',
             description: 'Generated Reports'
-        },
-        {
-            icon: 'notifications',
-            label: 'Updates',
-            path: '/client/updates',
-            description: 'Case Activity'
         }
     ];
 
