@@ -9,6 +9,7 @@ import taskService from '../services/task.service';
 const Dashboard = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
+    const [userName, setUserName] = useState('User');
     const [stats, setStats] = useState([
         { icon: 'cases', label: 'Active Cases', value: '...', change: '', color: 'primary', positive: true },
         { icon: 'pending_actions', label: 'Pending Tasks', value: '...', badge: '', color: 'orange' },
@@ -19,6 +20,12 @@ const Dashboard = () => {
     const [deadlines, setDeadlines] = useState([]);
 
     useEffect(() => {
+        // Get user name from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.name) {
+            setUserName(user.name);
+        }
+
         fetchDashboardData();
     }, []);
 
@@ -177,7 +184,7 @@ const Dashboard = () => {
             {/* Welcome Section */}
             <div className="flex justify-between items-end mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good morning, Sarah</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good morning, {userName}</h1>
                     <p className="text-slate-500 mt-1">Today is {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}.</p>
                 </div>
                 <button

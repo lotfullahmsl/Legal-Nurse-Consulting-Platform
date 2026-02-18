@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import analyticsService from '../services/analytics.service';
 import caseService from '../services/case.service';
 import deadlineService from '../services/deadline.service';
 import taskService from '../services/task.service';
 
 const StaffDashboard = () => {
+    const [userName, setUserName] = useState('User');
     const [tasks, setTasks] = useState([]);
     const [deadlines, setDeadlines] = useState([]);
     const [cases, setCases] = useState([]);
-    const [workloadAnalytics, setWorkloadAnalytics] = useState(null);
+    const [showAssignmentModal, setShowAssignmentModal] = useState(false);
     const [stats, setStats] = useState({
         totalTasks: 0,
         completedTasks: 0,
@@ -19,23 +19,27 @@ const StaffDashboard = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        // Get user name from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.name) {
+            setUserName(user.name);
+        }
+
         fetchDashboardData();
     }, []);
 
     const fetchDashboardData = async () => {
         try {
             setLoading(true);
-            const [tasksData, statsData, deadlinesData, workloadData, casesData] = await Promise.all([
+            const [tasksData, statsData, deadlinesData, casesData] = await Promise.all([
                 taskService.getMyTasks({ limit: 5 }),
                 taskService.getTaskStats(),
                 deadlineService.getUpcomingDeadlines(7),
-                analyticsService.getWorkloadAnalytics({}),
                 caseService.getAllCases()
             ]);
             setTasks(tasksData || []);
             setStats(statsData || {});
             setDeadlines(deadlinesData || []);
-            setWorkloadAnalytics(workloadData.data || null);
             setCases(casesData.data?.cases || casesData.cases || []);
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
@@ -53,27 +57,17 @@ const StaffDashboard = () => {
         }
     };
 
+    const handleAssignmentRequest = () => {
+        setShowAssignmentModal(true);
+    };
+
     return (
         <div className="max-w-[1600px] mx-auto">
             {/* Welcome Header & Stats */}
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good Morning, Sarah</h1>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Good Morning, {userName}</h1>
                     <p className="text-slate-500 mt-1">You have {stats.pendingTasks || 0} tasks pending for this week.</p>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800 flex items-center gap-6 shadow-sm">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                            <span className="material-icons text-emerald-600">timer</span>
-                        </div>
-                        <div>
-                            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Time Tracked Today</p>
-                            <p className="text-xl font-mono font-bold text-slate-900 dark:text-white">05:42:15</p>
-                        </div>
-                    </div>
-                    <button className="bg-[#1152d4]/10 hover:bg-[#1152d4]/20 text-[#1152d4] p-2 rounded-lg transition-colors">
-                        <span className="material-icons">pause_circle</span>
-                    </button>
                 </div>
             </header>
 
@@ -152,7 +146,10 @@ const StaffDashboard = () => {
 
                         {/* Add New Case Placeholder */}
                         {!loading && (
-                            <div className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-slate-400 hover:border-[#1152d4] hover:text-[#1152d4] transition-all cursor-pointer">
+                            <div
+                                onClick={handleAssignmentRequest}
+                                className="border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col items-center justify-center text-slate-400 hover:border-[#1152d4] hover:text-[#1152d4] transition-all cursor-pointer"
+                            >
                                 <span className="material-icons text-3xl mb-2">add_circle_outline</span>
                                 <span className="text-sm font-semibold">New Assignment Request</span>
                             </div>
@@ -257,6 +254,68 @@ const StaffDashboard = () => {
                     </div>
                 </aside>
             </div>
+
+            {/* Assignment Request Modal */}
+            {showAssignmentModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl max-w-md w-full p-6 shadow-xl">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Request Case Assignment</h3>
+                            <button
+                                onClick={() => setShowAssignmentModal(false)}
+                                className="text-slate-400 hover:text-slate-600"
+                            >
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            // Handle form submission
+                            alert('Assignment request submitted! This feature will be connected to the backend.');
+                            setShowAssignmentModal(false);
+                        }}>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        Request Type
+                                    </label>
+                                    <select className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1152d4] dark:bg-slate-800">
+                                        <option>New Case Assignment</option>
+                                        <option>Additional Case Support</option>
+                                        <option>Case Transfer</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                        Message to Admin
+                                    </label>
+                                    <textarea
+                                        className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-[#1152d4] dark:bg-slate-800"
+                                        rows="4"
+                                        placeholder="Describe your request or availability..."
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex gap-3 mt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowAssignmentModal(false)}
+                                    className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-2 bg-[#1152d4] text-white rounded-lg hover:bg-[#0d3fa0] transition-colors"
+                                >
+                                    Submit Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

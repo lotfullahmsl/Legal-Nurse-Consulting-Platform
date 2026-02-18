@@ -1,7 +1,15 @@
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import authService from '../../services/auth.service';
 
 const ClientSidebar = ({ sidebarOpen, setSidebarOpen }) => {
     const location = useLocation();
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const currentUser = authService.getCurrentUser();
+        setUser(currentUser);
+    }, []);
 
     const handleLinkClick = () => {
         if (window.innerWidth < 768) {
@@ -127,8 +135,10 @@ const ClientSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                             <span className="material-icons text-[#0891b2]">account_circle</span>
                         </div>
                         <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-900 dark:text-white">David Harrison</p>
-                            <p className="text-xs text-slate-500">Harrison & Associates</p>
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
+                                {user?.fullName || (user?.firstName && user?.lastName ? `${user.firstName} ${user.lastName}` : 'Client User')}
+                            </p>
+                            <p className="text-xs text-slate-500">{user?.email || 'Client'}</p>
                         </div>
                         <button className="p-1 text-slate-400 hover:text-[#0891b2] transition-colors">
                             <span className="material-icons text-lg">settings</span>
