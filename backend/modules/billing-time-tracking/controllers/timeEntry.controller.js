@@ -62,15 +62,20 @@ exports.createTimeEntry = async (req, res, next) => {
             return res.status(404).json({ message: 'Case not found' });
         }
 
+        // Calculate total amount
+        const totalHours = (hours || 0) + ((minutes || 0) / 60);
+        const totalAmount = totalHours * (billableRate || 0);
+
         const entry = new TimeEntry({
             case: caseId,
             user: req.user._id,
             task,
             description,
             date: date || new Date(),
-            hours,
+            hours: hours || 0,
             minutes: minutes || 0,
             billableRate,
+            totalAmount,
             isBillable: isBillable !== undefined ? isBillable : true,
             activityType,
             notes

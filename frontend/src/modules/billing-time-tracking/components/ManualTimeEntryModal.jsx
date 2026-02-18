@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import billingService from '../../../services/billing.service';
+import caseService from '../../../services/case.service';
 
 const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
     const [loading, setLoading] = useState(false);
@@ -12,7 +13,7 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
         minutes: '0',
         billableRate: '150',
         isBillable: true,
-        activityType: 'review',
+        activityType: 'Medical Record Review',
         notes: ''
     });
 
@@ -24,15 +25,11 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
 
     const fetchCases = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/cases', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const data = await response.json();
-            setCases(data.cases || []);
+            const response = await caseService.getAllCases();
+            setCases(response.data?.cases || response.cases || []);
         } catch (error) {
             console.error('Failed to fetch cases:', error);
+            setCases([]);
         }
     };
 
@@ -49,18 +46,30 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
         setLoading(true);
 
         try {
+            // Ensure case is selected
+            if (!formData.case) {
+                alert('Please select a case');
+                setLoading(false);
+                return;
+            }
+
             const entryData = {
                 case: formData.case,
-                description: formData.description,
+                description: formData.description.trim(),
                 date: formData.date,
                 hours: parseFloat(formData.hours) || 0,
                 minutes: parseInt(formData.minutes) || 0,
-                billableRate: parseFloat(formData.billableRate),
+                billableRate: parseFloat(formData.billableRate) || 0,
                 isBillable: formData.isBillable,
-                activityType: formData.activityType,
-                notes: formData.notes
+                activityType: formData.activityType
             };
 
+            // Only add notes if provided
+            if (formData.notes && formData.notes.trim()) {
+                entryData.notes = formData.notes.trim();
+            }
+
+            console.log('Sending time entry data:', entryData);
             await billingService.createTimeEntry(entryData);
 
             // Reset form
@@ -72,7 +81,7 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
                 minutes: '0',
                 billableRate: '150',
                 isBillable: true,
-                activityType: 'review',
+                activityType: 'Medical Record Review',
                 notes: ''
             });
 
@@ -81,7 +90,8 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
             onClose();
         } catch (error) {
             console.error('Failed to create time entry:', error);
-            alert('Failed to create time entry: ' + (error.response?.data?.message || error.message));
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || error.message || 'Unknown error occurred';
+            alert('Failed to create time entry: ' + errorMessage);
         } finally {
             setLoading(false);
         }
@@ -149,16 +159,15 @@ const ManualTimeEntryModal = ({ isOpen, onClose, onEntryCreated }) => {
                             required
                             className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-[#1f3b61] focus:border-[#1f3b61] outline-none"
                         >
-                            <option value="research">Research</option>
-                            <option value="review">Medical Record Review</option>
-                            <option value="analysis">Case Analysis</option>
-                            <option value="communication">Client Communication</option>
-                            <option value="documentation">Documentation</option>
-                            <option value="meeting">Meeting</option>
-                            <option value="court">Court Appearance</option>
-                            <option value="travel">Travel</option>
-                            <option value="administrative">Administrative</option>
-                            <option value="other">Other</option>
+                            <option value="Medical Record Review">Medical Record Review</option>
+                            <option value="Timeline Creation">Timeline Creation</option>
+                            <option value="Report Writing">Report Writing</option>
+                            <option value="Client Communication">Client Communication</option>
+                            <option value="Research">Research</option>
+                            <option value="Expert Consultation">Expert Consultation</option>
+                            <option value="Court Preparation">Court Preparation</option>
+                            <option value="Administrative">Administrative</option>
+                            <option value="Other">Other</option>
                         </select>
                     </div>
 

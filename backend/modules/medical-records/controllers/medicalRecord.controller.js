@@ -56,9 +56,15 @@ exports.getRecordById = async (req, res, next) => {
         });
         await record.save();
 
+        // Include OCR text in response
+        const recordData = record.toObject();
+        if (record.ocrText) {
+            recordData.ocrText = record.ocrText;
+        }
+
         res.status(200).json({
             success: true,
-            data: { record }
+            data: { record: recordData }
         });
     } catch (error) {
         next(error);
@@ -71,6 +77,7 @@ exports.uploadRecord = async (req, res, next) => {
         const recordData = {
             ...req.body,
             uploadedBy: req.user._id,
+            ocrStatus: 'pending',
             chainOfCustody: [{
                 action: 'uploaded',
                 user: req.user._id,
@@ -85,15 +92,69 @@ exports.uploadRecord = async (req, res, next) => {
             { path: 'uploadedBy', select: 'fullName email' }
         ]);
 
+        // Trigger OCR processing asynchronously
+        processOCR(record._id).catch(err => {
+            console.error('OCR processing error:', err);
+        });
+
         res.status(201).json({
             success: true,
-            message: 'Medical record uploaded successfully',
+            message: 'Medical record uploaded successfully. OCR processing initiated.',
             data: { record }
         });
     } catch (error) {
         next(error);
     }
 };
+
+// OCR Processing Function
+async function processOCR(recordId) {
+    try {
+        const record = await MedicalRecord.findById(recordId).select('+fileData');
+        if (!record) return;
+
+        record.ocrStatus = 'processing';
+        await record.save();
+
+        // Simulate OCR processing
+        // In production, integrate with Tesseract.js, AWS Textract, Google Vision API, etc.
+        let extractedText = '';
+
+        if (record.fileData) {
+            // For demo purposes, extract basic metadata
+            extractedText = `Document: ${record.fileName}\n`;
+            extractedText += `Type: ${record.documentType}\n`;
+            extractedText += `Provider: ${record.provider?.name || 'N/A'}\n`;
+            extractedText += `Date: ${record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}\n`;
+            extractedText += `\n[OCR Text Extraction]\n`;
+            extractedText += `This is a placeholder for OCR-extracted text from the medical record.\n`;
+            extractedText += `In production, this would contain the actual text extracted from the document using OCR technology.\n`;
+            extractedText += `\nFile Size: ${record.fileSize} bytes\n`;
+            extractedText += `Pages: ${record.pageCount}\n`;
+
+            // Simulate processing delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+        }
+
+        record.ocrText = extractedText;
+        record.ocrStatus = 'completed';
+        record.ocrProcessedAt = new Date();
+        await record.save();
+
+        console.log(`OCR completed for record ${recordId}`);
+    } catch (error) {
+        console.error(`OCR failed for record ${recordId}:`, error);
+        try {
+            const record = await MedicalRecord.findById(recordId);
+            if (record) {
+                record.ocrStatus = 'failed';
+                await record.save();
+            }
+        } catch (updateError) {
+            console.error('Failed to update OCR status:', updateError);
+        }
+    }
+}
 
 // Download medical record file
 exports.downloadRecord = async (req, res, next) => {

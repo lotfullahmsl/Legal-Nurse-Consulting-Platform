@@ -100,13 +100,61 @@ const TimelineBuilder = () => {
                             {caseInfo ? `Case: ${caseInfo.caseNumber} - ${caseInfo.caseName || ''}` : 'Create chronological medical events with citations'}
                         </p>
                     </div>
-                    <button
-                        onClick={() => setShowAddEvent(true)}
-                        className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg transition-all text-sm font-semibold"
-                    >
-                        <span className="material-icons text-sm mr-2">add</span>
-                        Add Event
-                    </button>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={async () => {
+                                if (!timeline) {
+                                    alert('Please add events first to generate a timeline');
+                                    return;
+                                }
+                                try {
+                                    await timelineService.generateTimeline(timeline._id);
+                                    alert('Timeline generated successfully!');
+                                    fetchTimeline();
+                                } catch (error) {
+                                    alert('Failed to generate timeline: ' + error.message);
+                                }
+                            }}
+                            disabled={!timeline || events.length === 0}
+                            className="flex items-center px-4 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span className="material-icons text-sm mr-2">auto_awesome</span>
+                            Generate Timeline
+                        </button>
+                        <button
+                            onClick={async () => {
+                                if (!timeline) {
+                                    alert('No timeline to export');
+                                    return;
+                                }
+                                try {
+                                    const response = await timelineService.exportTimeline(timeline._id, 'pdf');
+                                    // Create download link
+                                    const url = window.URL.createObjectURL(new Blob([response]));
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.setAttribute('download', `timeline-${caseInfo?.caseNumber || 'report'}.pdf`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    link.remove();
+                                } catch (error) {
+                                    alert('Failed to export report: ' + error.message);
+                                }
+                            }}
+                            disabled={!timeline || events.length === 0}
+                            className="flex items-center px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <span className="material-icons text-sm mr-2">download</span>
+                            Export Report
+                        </button>
+                        <button
+                            onClick={() => setShowAddEvent(true)}
+                            className="flex items-center px-5 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg shadow-lg transition-all text-sm font-semibold"
+                        >
+                            <span className="material-icons text-sm mr-2">add</span>
+                            Add Event
+                        </button>
+                    </div>
                 </div>
             </header>
 

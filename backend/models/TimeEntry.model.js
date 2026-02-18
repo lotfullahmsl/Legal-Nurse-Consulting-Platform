@@ -65,8 +65,8 @@ const timeEntrySchema = new mongoose.Schema({
     },
     activityType: {
         type: String,
-        enum: ['research', 'review', 'analysis', 'communication', 'documentation', 'meeting', 'court', 'travel', 'administrative', 'other'],
-        default: 'other'
+        enum: ['Medical Record Review', 'Timeline Creation', 'Report Writing', 'Client Communication', 'Research', 'Expert Consultation', 'Court Preparation', 'Administrative', 'Other'],
+        default: 'Other'
     },
     notes: {
         type: String,

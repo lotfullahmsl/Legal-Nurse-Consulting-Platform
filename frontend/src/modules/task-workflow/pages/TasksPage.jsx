@@ -323,12 +323,6 @@ const TasksPage = () => {
                 </div>
             </div>
 
-            {/* HIPAA Compliance Footer Badge */}
-            <div className="fixed bottom-4 left-6 bg-slate-900 text-[10px] text-emerald-400 px-3 py-1.5 rounded-full flex items-center gap-2 border border-emerald-500/30 backdrop-blur-md shadow-xl z-50">
-                <span className="material-icons text-[12px]">security</span>
-                HIPAA COMPLIANT ENVIRONMENT
-            </div>
-
             {/* Create Task Modal */}
             <CreateTaskModal
                 isOpen={isCreateModalOpen}

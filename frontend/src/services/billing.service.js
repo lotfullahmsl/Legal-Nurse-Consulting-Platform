@@ -96,6 +96,15 @@ const billingService = {
     getBillingStats: async () => {
         const response = await apiClient.get('/invoices/stats');
         return response.data;
+    },
+
+    // Export
+    exportTimeEntries: async (params = {}) => {
+        const response = await apiClient.get('/time-entries/export', {
+            params,
+            responseType: 'blob'
+        });
+        return response.data;
     }
 };
 

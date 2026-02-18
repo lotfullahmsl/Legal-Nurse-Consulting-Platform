@@ -26,6 +26,32 @@ router.get('/case/:caseId', protect, medicalRecordController.getRecordsByCase);
 // Get record by ID
 router.get('/:id', protect, medicalRecordController.getRecordById);
 
+// Get OCR text for a record
+router.get('/:id/ocr-text', protect, async (req, res, next) => {
+    try {
+        const MedicalRecord = require('../../../models/MedicalRecord.model');
+        const record = await MedicalRecord.findById(req.params.id);
+
+        if (!record || record.isDeleted) {
+            return res.status(404).json({
+                success: false,
+                message: 'Medical record not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ocrText: record.ocrText || 'No OCR text available',
+                ocrStatus: record.ocrStatus,
+                ocrProcessedAt: record.ocrProcessedAt
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Download record file
 router.get('/:id/download', protect, medicalRecordController.downloadRecord);
 
