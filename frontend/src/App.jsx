@@ -9,6 +9,7 @@ import CreateCase from './modules/crm-case-intake/pages/CreateCase';
 import LawFirmsList from './modules/crm-case-intake/pages/LawFirmsList';
 import DamagesTracking from './modules/damages-tracking/pages/DamagesTracking';
 import ClientBilling from './modules/file-sharing-portal/pages/ClientBilling';
+import ClientCases from './modules/file-sharing-portal/pages/ClientCases';
 import ClientCaseView from './modules/file-sharing-portal/pages/ClientCaseView';
 import ClientDashboard from './modules/file-sharing-portal/pages/ClientDashboard';
 import ClientDocuments from './modules/file-sharing-portal/pages/ClientDocuments';
@@ -81,7 +82,7 @@ function App() {
 
                 {/* Client Portal Routes */}
                 <Route path="/client/dashboard" element={<ClientLayout><ClientDashboard /></ClientLayout>} />
-                <Route path="/client/cases" element={<ClientLayout><ClientDashboard /></ClientLayout>} />
+                <Route path="/client/cases" element={<ClientLayout><ClientCases /></ClientLayout>} />
                 <Route path="/client/case/:id" element={<ClientLayout><ClientCaseView /></ClientLayout>} />
                 <Route path="/client/timeline" element={<ClientLayout><ClientTimeline /></ClientLayout>} />
                 <Route path="/client/documents" element={<ClientLayout><ClientDocuments /></ClientLayout>} />
