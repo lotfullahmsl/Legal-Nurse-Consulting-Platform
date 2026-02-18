@@ -20,7 +20,8 @@ const auditLogSchema = new mongoose.Schema({
             'generate_compliance_report', 'view_audit_statistics',
             'view_notifications', 'mark_notification_read', 'delete_notification',
             'view_conversations', 'view_unread_count', 'send_message',
-            'view_messages', 'create_conversation', 'delete_conversation'
+            'view_messages', 'create_conversation', 'delete_conversation',
+            'view_upcoming_deadlines'
         ]
     },
     resource: {

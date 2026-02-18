@@ -21,7 +21,7 @@ const medicalRecordSchema = new mongoose.Schema({
     },
     fileUrl: {
         type: String,
-        required: true
+        required: false // Optional when using fileData (base64 storage)
     },
     // For development: store small files as base64 in MongoDB
     // WARNING: Not recommended for production - use cloud storage instead

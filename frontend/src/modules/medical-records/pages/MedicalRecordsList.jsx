@@ -87,16 +87,56 @@ const MedicalRecordsList = () => {
         }
     };
 
-    const handleView = (record) => {
-        // For now, show an alert with file information since files aren't actually uploaded yet
-        // In production, this would open the actual file from cloud storage
-        alert(`File Information:\n\nFilename: ${record.fileName}\nCase: ${record.case?.caseNumber || 'N/A'}\nProvider: ${record.provider?.name || 'N/A'}\nPages: ${record.pageCount}\nSize: ${formatFileSize(record.fileSize)}\n\nNote: File viewing requires actual file upload to cloud storage (AWS S3, etc.)`);
+    const handleView = async (record) => {
+        try {
+            const response = await medicalRecordService.downloadRecord(record._id);
+            if (response.data.fileData) {
+                // Open base64 file in new tab
+                const byteCharacters = atob(response.data.fileData);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: response.data.mimeType || 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            } else {
+                alert('File data not available');
+            }
+        } catch (error) {
+            console.error('Error viewing file:', error);
+            alert('Failed to view file');
+        }
     };
 
     const handleDownload = async (record) => {
-        // For now, show an alert since files aren't actually uploaded yet
-        // In production, this would download from cloud storage
-        alert(`Download: ${record.fileName}\n\nNote: File download requires actual file upload to cloud storage (AWS S3, etc.)`);
+        try {
+            const response = await medicalRecordService.downloadRecord(record._id);
+            if (response.data.fileData) {
+                // Convert base64 to blob and download
+                const byteCharacters = atob(response.data.fileData);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: response.data.mimeType || 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = record.fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } else {
+                alert('File data not available');
+            }
+        } catch (error) {
+            console.error('Error downloading file:', error);
+            alert('Failed to download file');
+        }
     };
 
     const formatFileSize = (bytes) => {
@@ -131,44 +171,68 @@ const MedicalRecordsList = () => {
             return;
         }
 
+        // Check file size (15MB limit)
+        if (uploadData.file.size > 15 * 1024 * 1024) {
+            alert('File size exceeds 15MB limit');
+            return;
+        }
+
         try {
             setUploading(true);
 
-            // For now, we'll send JSON data instead of FormData
-            // In production, you'd upload the file to cloud storage first and get the URL
-            const recordData = {
-                case: uploadData.case,
-                fileName: uploadData.file.name,
-                fileType: uploadData.file.type.includes('pdf') ? 'pdf' :
-                    uploadData.file.type.includes('image') ? 'image' :
-                        uploadData.file.type.includes('doc') ? 'doc' : 'other',
-                fileSize: uploadData.file.size,
-                fileUrl: `/uploads/${uploadData.file.name}`, // Mock URL - in production, upload to S3/cloud storage
-                documentType: uploadData.documentType,
-                provider: uploadData.provider ? { name: uploadData.provider } : undefined,
-                recordDate: uploadData.recordDate || undefined,
-                notes: uploadData.notes || undefined,
-                pageCount: 1
+            // Convert file to base64
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64Data = event.target.result.split(',')[1]; // Remove data:mime;base64, prefix
+
+                const recordData = {
+                    case: uploadData.case,
+                    fileName: uploadData.file.name,
+                    fileType: uploadData.file.type.includes('pdf') ? 'pdf' :
+                        uploadData.file.type.includes('image') ? 'image' :
+                            uploadData.file.type.includes('doc') ? 'doc' : 'other',
+                    fileSize: uploadData.file.size,
+                    documentType: uploadData.documentType,
+                    provider: uploadData.provider ? { name: uploadData.provider } : undefined,
+                    recordDate: uploadData.recordDate || undefined,
+                    notes: uploadData.notes || undefined,
+                    pageCount: 1,
+                    fileData: base64Data,
+                    mimeType: uploadData.file.type
+                };
+
+                try {
+                    await medicalRecordService.uploadRecord(recordData);
+                    setShowUploadModal(false);
+                    setUploadData({
+                        file: null,
+                        fileName: '',
+                        case: '',
+                        documentType: 'medical-record',
+                        provider: '',
+                        recordDate: '',
+                        notes: ''
+                    });
+                    fetchRecords();
+                    fetchStats();
+                    alert('Record uploaded successfully');
+                } catch (error) {
+                    console.error('Error uploading record:', error);
+                    alert('Failed to upload record. Please try again.');
+                } finally {
+                    setUploading(false);
+                }
             };
 
-            await medicalRecordService.uploadRecord(recordData);
-            setShowUploadModal(false);
-            setUploadData({
-                file: null,
-                fileName: '',
-                case: '',
-                documentType: 'medical-record',
-                provider: '',
-                recordDate: '',
-                notes: ''
-            });
-            fetchRecords();
-            fetchStats();
-            alert('Record uploaded successfully');
+            reader.onerror = () => {
+                alert('Failed to read file');
+                setUploading(false);
+            };
+
+            reader.readAsDataURL(uploadData.file);
         } catch (error) {
-            console.error('Error uploading record:', error);
-            alert('Failed to upload record. Please try again.');
-        } finally {
+            console.error('Error processing file:', error);
+            alert('Failed to process file. Please try again.');
             setUploading(false);
         }
     };

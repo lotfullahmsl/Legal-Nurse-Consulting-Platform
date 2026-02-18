@@ -47,6 +47,12 @@ const medicalRecordService = {
     getStats: async () => {
         const response = await api.get('/medical-records/stats');
         return response.data;
+    },
+
+    // Download record file
+    downloadRecord: async (id) => {
+        const response = await api.get(`/medical-records/${id}/download`);
+        return response.data;
     }
 };
 

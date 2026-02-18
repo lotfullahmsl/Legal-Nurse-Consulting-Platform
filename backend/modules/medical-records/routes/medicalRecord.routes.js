@@ -10,8 +10,8 @@ const uploadValidation = [
     body('case').notEmpty().withMessage('Case ID is required'),
     body('fileName').notEmpty().withMessage('File name is required'),
     body('fileType').isIn(['pdf', 'image', 'doc', 'other']).withMessage('Valid file type is required'),
-    body('fileUrl').notEmpty().withMessage('File URL is required'),
     body('fileSize').isNumeric().withMessage('File size must be a number')
+    // fileUrl is optional when using fileData (base64 storage)
 ];
 
 // Get all records
