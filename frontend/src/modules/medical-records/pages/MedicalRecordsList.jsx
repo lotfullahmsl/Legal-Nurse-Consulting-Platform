@@ -22,6 +22,9 @@ const MedicalRecordsList = () => {
         notes: ''
     });
     const [uploading, setUploading] = useState(false);
+    const [viewOCRModal, setViewOCRModal] = useState(false);
+    const [selectedRecord, setSelectedRecord] = useState(null);
+    const [ocrText, setOcrText] = useState('');
 
     useEffect(() => {
         fetchRecords();
@@ -89,24 +92,14 @@ const MedicalRecordsList = () => {
 
     const handleView = async (record) => {
         try {
-            const response = await medicalRecordService.downloadRecord(record._id);
-            if (response.data.fileData) {
-                // Open base64 file in new tab
-                const byteCharacters = atob(response.data.fileData);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: response.data.mimeType || 'application/pdf' });
-                const url = window.URL.createObjectURL(blob);
-                window.open(url, '_blank');
-            } else {
-                alert('File data not available');
-            }
+            // Fetch the full record with OCR text
+            const response = await medicalRecordService.getRecordById(record._id);
+            setSelectedRecord(response.data.record);
+            setOcrText(response.data.record.ocrText || 'No OCR text available');
+            setViewOCRModal(true);
         } catch (error) {
-            console.error('Error viewing file:', error);
-            alert('Failed to view file');
+            console.error('Error viewing record:', error);
+            alert('Failed to view record');
         }
     };
 
@@ -189,7 +182,7 @@ const MedicalRecordsList = () => {
                     case: uploadData.case,
                     fileName: uploadData.file.name,
                     fileType: uploadData.file.type.includes('pdf') ? 'pdf' :
-                        uploadData.file.type.includes('image') ? 'image' :
+                        (uploadData.file.type.includes('image') || uploadData.file.type.includes('jpeg') || uploadData.file.type.includes('png')) ? 'image' :
                             uploadData.file.type.includes('doc') ? 'doc' : 'other',
                     fileSize: uploadData.file.size,
                     documentType: uploadData.documentType,
@@ -494,7 +487,7 @@ const MedicalRecordsList = () => {
                                     <input
                                         type="file"
                                         id="file-upload"
-                                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                        accept=".pdf,.jpg,.jpeg,.png,image/jpeg,image/png,application/pdf"
                                         onChange={handleFileChange}
                                         className="hidden"
                                         required
@@ -510,7 +503,7 @@ const MedicalRecordsList = () => {
                                             ) : (
                                                 <div>
                                                     <p className="text-sm font-medium text-slate-900 dark:text-white">Click to upload or drag and drop</p>
-                                                    <p className="text-xs text-slate-500 mt-1">PDF, DOC, DOCX, JPG, PNG (Max 50MB)</p>
+                                                    <p className="text-xs text-slate-500 mt-1">PDF, JPG, JPEG, PNG (Max 15MB)</p>
                                                 </div>
                                             )}
                                         </div>
@@ -620,6 +613,79 @@ const MedicalRecordsList = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* View OCR Modal */}
+            {viewOCRModal && selectedRecord && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                        {/* Modal Header */}
+                        <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                                    OCR Extracted Text
+                                </h2>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                    {selectedRecord.fileName}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setViewOCRModal(false);
+                                    setSelectedRecord(null);
+                                    setOcrText('');
+                                }}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            >
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+                                <div className="flex items-center gap-2 mb-3">
+                                    <span className={`px-2 py-1 rounded text-xs font-medium ${selectedRecord.ocrStatus === 'completed' ? 'bg-green-100 text-green-700' :
+                                            selectedRecord.ocrStatus === 'processing' ? 'bg-blue-100 text-blue-700' :
+                                                selectedRecord.ocrStatus === 'failed' ? 'bg-red-100 text-red-700' :
+                                                    'bg-yellow-100 text-yellow-700'
+                                        }`}>
+                                        {selectedRecord.ocrStatus?.toUpperCase() || 'PENDING'}
+                                    </span>
+                                    {selectedRecord.ocrProcessedAt && (
+                                        <span className="text-xs text-slate-500">
+                                            Processed: {formatDate(selectedRecord.ocrProcessedAt)}
+                                        </span>
+                                    )}
+                                </div>
+                                <pre className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300 font-mono">
+                                    {ocrText}
+                                </pre>
+                            </div>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex gap-3">
+                            <button
+                                onClick={() => handleDownload(selectedRecord)}
+                                className="flex-1 px-4 py-2.5 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+                            >
+                                <span className="material-icons text-sm">download</span>
+                                Download Original File
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setViewOCRModal(false);
+                                    setSelectedRecord(null);
+                                    setOcrText('');
+                                }}
+                                className="px-4 py-2.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 rounded-lg transition-colors font-semibold"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

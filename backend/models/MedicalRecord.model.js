@@ -29,6 +29,10 @@ const medicalRecordSchema = new mongoose.Schema({
         type: String,
         select: false // Don't include by default in queries for performance
     },
+    mimeType: {
+        type: String,
+        required: false // MIME type of the file (e.g., 'image/jpeg', 'application/pdf')
+    },
     documentType: {
         type: String,
         enum: ['medical-record', 'lab-report', 'imaging', 'prescription', 'consultation', 'discharge-summary', 'other'],

@@ -53,6 +53,12 @@ const medicalRecordService = {
     downloadRecord: async (id) => {
         const response = await api.get(`/medical-records/${id}/download`);
         return response.data;
+    },
+
+    // Get OCR text
+    getOCRText: async (id) => {
+        const response = await api.get(`/medical-records/${id}/ocr-text`);
+        return response.data;
     }
 };
 

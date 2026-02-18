@@ -1,5 +1,6 @@
 const MedicalRecord = require('../../../models/MedicalRecord.model');
 const AppError = require('../../../shared/errors/AppError');
+const { processOCRWithAPI } = require('../services/ocr.service');
 
 // Get all medical records
 exports.getAllRecords = async (req, res, next) => {
@@ -116,38 +117,77 @@ async function processOCR(recordId) {
         record.ocrStatus = 'processing';
         await record.save();
 
-        // Simulate OCR processing
-        // In production, integrate with Tesseract.js, AWS Textract, Google Vision API, etc.
         let extractedText = '';
 
         if (record.fileData) {
-            // For demo purposes, extract basic metadata
-            extractedText = `Document: ${record.fileName}\n`;
-            extractedText += `Type: ${record.documentType}\n`;
-            extractedText += `Provider: ${record.provider?.name || 'N/A'}\n`;
-            extractedText += `Date: ${record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}\n`;
-            extractedText += `\n[OCR Text Extraction]\n`;
-            extractedText += `This is a placeholder for OCR-extracted text from the medical record.\n`;
-            extractedText += `In production, this would contain the actual text extracted from the document using OCR technology.\n`;
-            extractedText += `\nFile Size: ${record.fileSize} bytes\n`;
-            extractedText += `Pages: ${record.pageCount}\n`;
+            try {
+                // Determine mimeType from fileData or fileName
+                let mimeType = record.mimeType;
+                if (!mimeType && record.fileData) {
+                    // Try to detect from base64 data URI
+                    if (record.fileData.startsWith('data:')) {
+                        mimeType = record.fileData.split(';')[0].split(':')[1];
+                    } else if (record.fileName) {
+                        // Fallback: detect from file extension
+                        const ext = record.fileName.toLowerCase().split('.').pop();
+                        const mimeMap = {
+                            'pdf': 'application/pdf',
+                            'jpg': 'image/jpeg',
+                            'jpeg': 'image/jpeg',
+                            'png': 'image/png',
+                            'gif': 'image/gif',
+                            'bmp': 'image/bmp'
+                        };
+                        mimeType = mimeMap[ext] || 'application/octet-stream';
+                    }
+                }
 
-            // Simulate processing delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log(`Processing OCR for ${record.fileName} with mimeType: ${mimeType}`);
+
+                // Use Tesseract/pdf-parse to extract text
+                const ocrText = await processOCRWithAPI(record.fileData, mimeType);
+
+                // Build full text with metadata
+                extractedText = `Document: ${record.fileName}\n`;
+                extractedText += `Type: ${record.documentType}\n`;
+                extractedText += `Provider: ${record.provider?.name || 'N/A'}\n`;
+                extractedText += `Date: ${record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}\n`;
+                extractedText += `File Size: ${record.fileSize} bytes\n`;
+                extractedText += `Pages: ${record.pageCount}\n`;
+                extractedText += `\n${'='.repeat(80)}\n`;
+                extractedText += `[OCR EXTRACTED TEXT]\n`;
+                extractedText += `${'='.repeat(80)}\n\n`;
+                extractedText += ocrText;
+
+            } catch (ocrError) {
+                console.error('OCR API error:', ocrError.message);
+                // Store error information
+                extractedText = `Document: ${record.fileName}\n`;
+                extractedText += `Type: ${record.documentType}\n`;
+                extractedText += `Provider: ${record.provider?.name || 'N/A'}\n`;
+                extractedText += `Date: ${record.recordDate ? new Date(record.recordDate).toLocaleDateString() : 'N/A'}\n`;
+                extractedText += `\n[OCR Processing Failed]\n`;
+                extractedText += `Error: ${ocrError.message}\n`;
+
+                record.ocrStatus = 'failed';
+            }
         }
 
         record.ocrText = extractedText;
-        record.ocrStatus = 'completed';
+        if (record.ocrStatus !== 'failed') {
+            record.ocrStatus = 'completed';
+        }
         record.ocrProcessedAt = new Date();
         await record.save();
 
-        console.log(`OCR completed for record ${recordId}`);
+        console.log(`OCR ${record.ocrStatus} for record ${recordId}`);
     } catch (error) {
         console.error(`OCR failed for record ${recordId}:`, error);
         try {
             const record = await MedicalRecord.findById(recordId);
             if (record) {
                 record.ocrStatus = 'failed';
+                record.ocrText = `OCR processing failed: ${error.message}`;
                 await record.save();
             }
         } catch (updateError) {
