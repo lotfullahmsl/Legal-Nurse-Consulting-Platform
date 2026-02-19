@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import taskService from '../../../services/task.service';
 import CreateTaskModal from '../components/CreateTaskModal';
 
 const TasksPage = () => {
+    const location = useLocation();
     const [filter, setFilter] = useState('all');
     const [tasks, setTasks] = useState([]);
     const [stats, setStats] = useState({
@@ -15,6 +17,9 @@ const TasksPage = () => {
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+    // Check if we're on the staff route
+    const isStaffRoute = location.pathname.startsWith('/staff');
 
     useEffect(() => {
         fetchTasks();
@@ -224,13 +229,15 @@ const TasksPage = () => {
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Due Date</th>
                                 <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Status</th>
-                                <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                {!isStaffRoute && (
+                                    <th className="py-4 px-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                )}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                             {loading ? (
                                 <tr>
-                                    <td colSpan="7" className="py-12 text-center text-slate-500">
+                                    <td colSpan={isStaffRoute ? "6" : "7"} className="py-12 text-center text-slate-500">
                                         <div className="flex items-center justify-center">
                                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0891b2]"></div>
                                             <span className="ml-3">Loading tasks...</span>
@@ -288,19 +295,21 @@ const TasksPage = () => {
                                             </span>
                                         </td>
                                         <td className="py-5 px-4 text-right">
-                                            <button
-                                                onClick={() => handleDeleteTask(task._id)}
-                                                className="p-1.5 text-slate-400 hover:text-red-500"
-                                                title="Delete task"
-                                            >
-                                                <span className="material-icons text-lg">delete</span>
-                                            </button>
+                                            {!isStaffRoute && (
+                                                <button
+                                                    onClick={() => handleDeleteTask(task._id)}
+                                                    className="p-1.5 text-slate-400 hover:text-red-500"
+                                                    title="Delete task"
+                                                >
+                                                    <span className="material-icons text-lg">delete</span>
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" className="py-12 text-center text-slate-500">
+                                    <td colSpan={isStaffRoute ? "6" : "7"} className="py-12 text-center text-slate-500">
                                         No tasks found
                                     </td>
                                 </tr>

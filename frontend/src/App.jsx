@@ -59,7 +59,7 @@ function App() {
                 <Route path="/notes" element={<AdminLayout><NotesPage /></AdminLayout>} />
                 <Route path="/law-firms" element={<AdminLayout><LawFirmsList /></AdminLayout>} />
                 <Route path="/search" element={<AdminLayout><SearchPage /></AdminLayout>} />
-                <Route path="/timeline" element={<AdminLayout><TimelineBuilder /></AdminLayout>} />
+                <Route path="/timeline/:caseId" element={<AdminLayout><TimelineBuilder /></AdminLayout>} />
                 <Route path="/reports" element={<AdminLayout><ReportsPage /></AdminLayout>} />
                 <Route path="/billing" element={<AdminLayout><BillingPage /></AdminLayout>} />
                 <Route path="/tasks" element={<AdminLayout><TasksPage /></AdminLayout>} />
@@ -77,6 +77,7 @@ function App() {
                 <Route path="/staff/billing" element={<StaffLayout><BillingPage /></StaffLayout>} />
                 <Route path="/staff/search" element={<StaffLayout><SearchPage /></StaffLayout>} />
                 <Route path="/staff/settings" element={<StaffLayout><Settings /></StaffLayout>} />
+                <Route path="/staff/timeline/:caseId" element={<StaffLayout><TimelineBuilder /></StaffLayout>} />
                 <Route path="/timeline-work" element={<StaffLayout><TimelineWork /></StaffLayout>} />
 
                 {/* Client Portal Routes */}

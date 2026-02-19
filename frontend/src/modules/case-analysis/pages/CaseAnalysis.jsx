@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import caseService from '../../../services/case.service';
 import caseAnalysisService from '../../../services/caseAnalysis.service';
+import medicalRecordService from '../../../services/medicalRecord.service';
 
 const CaseAnalysis = () => {
     const [selectedCase, setSelectedCase] = useState('');
@@ -21,6 +22,9 @@ const CaseAnalysis = () => {
         date: new Date().toISOString().split('T')[0]
     });
     const [submitting, setSubmitting] = useState(false);
+    const [showDocumentPicker, setShowDocumentPicker] = useState(false);
+    const [documents, setDocuments] = useState([]);
+    const [selectedDocuments, setSelectedDocuments] = useState([]);
 
     useEffect(() => {
         fetchCases();
@@ -29,8 +33,35 @@ const CaseAnalysis = () => {
     useEffect(() => {
         if (selectedCase) {
             fetchAnalysis();
+            fetchDocuments();
         }
     }, [selectedCase]);
+
+    const fetchDocuments = async () => {
+        if (!selectedCase) return;
+        try {
+            const response = await medicalRecordService.getRecordsByCase(selectedCase);
+            setDocuments(response.data?.records || response.records || []);
+        } catch (error) {
+            console.error('Failed to load documents:', error);
+            setDocuments([]);
+        }
+    };
+
+    const handleDocumentSelect = (doc) => {
+        const isSelected = selectedDocuments.some(d => d._id === doc._id);
+        if (isSelected) {
+            setSelectedDocuments(selectedDocuments.filter(d => d._id !== doc._id));
+        } else {
+            setSelectedDocuments([...selectedDocuments, doc]);
+        }
+    };
+
+    const handleAttachDocuments = () => {
+        const docNames = selectedDocuments.map(d => d.fileName).join(', ');
+        setFormData({ ...formData, evidence: docNames });
+        setShowDocumentPicker(false);
+    };
 
     const fetchCases = async () => {
         try {
@@ -150,7 +181,9 @@ const CaseAnalysis = () => {
                         onChange={(e) => setSelectedCase(e.target.value)}
                     >
                         {cases.map(c => (
-                            <option key={c._id} value={c._id}>{c.title} ({c.caseNumber})</option>
+                            <option key={c._id} value={c._id}>
+                                {c.caseNumber} - {c.caseName || c.title || 'Unnamed Case'}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -428,13 +461,41 @@ const CaseAnalysis = () => {
                                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                             Evidence
                                         </label>
-                                        <input
-                                            type="text"
-                                            value={formData.evidence}
-                                            onChange={(e) => setFormData({ ...formData, evidence: e.target.value })}
-                                            className="w-full px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
-                                            placeholder="Reference to supporting documentation..."
-                                        />
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={formData.evidence}
+                                                onChange={(e) => setFormData({ ...formData, evidence: e.target.value })}
+                                                className="flex-1 px-4 py-2.5 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-[#0891b2] focus:border-[#0891b2] outline-none dark:bg-slate-700 dark:text-white"
+                                                placeholder="Reference to supporting documentation..."
+                                                readOnly
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowDocumentPicker(true)}
+                                                className="px-4 py-2.5 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center gap-2"
+                                            >
+                                                <span className="material-icons text-sm">attach_file</span>
+                                                Select Documents
+                                            </button>
+                                        </div>
+                                        {selectedDocuments.length > 0 && (
+                                            <div className="mt-2 flex flex-wrap gap-2">
+                                                {selectedDocuments.map(doc => (
+                                                    <span key={doc._id} className="inline-flex items-center gap-1 px-2 py-1 bg-[#0891b2]/10 text-[#0891b2] rounded text-xs">
+                                                        <span className="material-icons text-xs">description</span>
+                                                        {doc.fileName}
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleDocumentSelect(doc)}
+                                                            className="ml-1 hover:text-red-500"
+                                                        >
+                                                            <span className="material-icons text-xs">close</span>
+                                                        </button>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </>
                             )}
@@ -528,6 +589,106 @@ const CaseAnalysis = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Document Picker Modal */}
+            {showDocumentPicker && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+                        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900 dark:text-white">Select Medical Documents</h2>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                                        Choose documents to attach as evidence ({selectedDocuments.length} selected)
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowDocumentPicker(false)}
+                                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                >
+                                    <span className="material-icons">close</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-6">
+                            {documents.length === 0 ? (
+                                <div className="text-center py-12 text-slate-500">
+                                    <span className="material-icons text-6xl text-slate-300 mb-4">folder_open</span>
+                                    <p>No medical documents found for this case</p>
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {documents.map((doc) => {
+                                        const isSelected = selectedDocuments.some(d => d._id === doc._id);
+                                        return (
+                                            <div
+                                                key={doc._id}
+                                                onClick={() => handleDocumentSelect(doc)}
+                                                className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                                                    ? 'border-[#0891b2] bg-[#0891b2]/10'
+                                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${isSelected ? 'bg-[#0891b2] text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'
+                                                        }`}>
+                                                        {isSelected ? (
+                                                            <span className="material-icons text-sm">check</span>
+                                                        ) : (
+                                                            <span className="material-icons text-sm">description</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="font-semibold text-slate-900 dark:text-white truncate">
+                                                            {doc.fileName}
+                                                        </p>
+                                                        <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                                                            <span>{doc.documentType || 'Medical Record'}</span>
+                                                            {doc.uploadDate && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span>{new Date(doc.uploadDate).toLocaleDateString()}</span>
+                                                                </>
+                                                            )}
+                                                            {doc.fileSize && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span>{(doc.fileSize / 1024).toFixed(0)} KB</span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+                        </div>
+                        <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex items-center justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedDocuments([]);
+                                    setShowDocumentPicker(false);
+                                }}
+                                className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleAttachDocuments}
+                                disabled={selectedDocuments.length === 0}
+                                className="px-6 py-2 bg-[#0891b2] hover:bg-teal-700 text-white rounded-lg font-medium flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <span className="material-icons text-sm">attach_file</span>
+                                Attach {selectedDocuments.length > 0 ? `(${selectedDocuments.length})` : 'Documents'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

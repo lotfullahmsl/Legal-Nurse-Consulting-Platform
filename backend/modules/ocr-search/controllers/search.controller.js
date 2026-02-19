@@ -8,9 +8,17 @@ exports.searchRecords = async (req, res, next) => {
 
         const searchQuery = { isDeleted: false };
 
+        // Search in OCR text, file name, and metadata
         if (query) {
-            searchQuery.$text = { $search: query };
+            searchQuery.$or = [
+                { ocrText: { $regex: query, $options: 'i' } },
+                { fileName: { $regex: query, $options: 'i' } },
+                { 'metadata.diagnosis': { $regex: query, $options: 'i' } },
+                { 'metadata.provider': { $regex: query, $options: 'i' } },
+                { tags: { $regex: query, $options: 'i' } }
+            ];
         }
+
         if (caseId) searchQuery.case = caseId;
         if (documentType) searchQuery.documentType = documentType;
         if (dateFrom || dateTo) {
@@ -22,19 +30,35 @@ exports.searchRecords = async (req, res, next) => {
         const records = await MedicalRecord.find(searchQuery)
             .populate('case', 'caseNumber caseName')
             .populate('uploadedBy', 'fullName')
-            .sort({ score: { $meta: 'textScore' } })
+            .sort({ uploadDate: -1 })
             .limit(limit * 1)
             .skip((page - 1) * limit);
 
         const total = await MedicalRecord.countDocuments(searchQuery);
 
-        // Save search history
-        await SearchHistory.create({
-            user: req.user._id,
-            query: query || '',
-            filters: { caseId, documentType, dateRange: { start: dateFrom, end: dateTo } },
-            resultsCount: total
-        });
+        // Save search history (don't let this fail the search)
+        if (query && req.user && req.user._id) {
+            try {
+                const filters = {};
+                if (caseId && caseId.trim()) filters.caseId = caseId;
+                if (documentType) filters.documentType = documentType;
+                if (dateFrom || dateTo) {
+                    filters.dateRange = {};
+                    if (dateFrom) filters.dateRange.start = dateFrom;
+                    if (dateTo) filters.dateRange.end = dateTo;
+                }
+
+                await SearchHistory.create({
+                    user: req.user._id,
+                    query: query,
+                    filters: filters,
+                    resultsCount: total
+                });
+            } catch (historyError) {
+                console.error('Failed to save search history:', historyError);
+                // Continue without failing the search
+            }
+        }
 
         res.status(200).json({
             success: true,

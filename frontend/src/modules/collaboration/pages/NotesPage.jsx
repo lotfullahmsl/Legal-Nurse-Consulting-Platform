@@ -31,9 +31,15 @@ const NotesPage = () => {
     const fetchCases = async () => {
         try {
             const response = await caseService.getAllCases();
-            setCases(response.data.cases || []);
-            if (response.data.cases?.length > 0) {
-                setSelectedCase(response.data.cases[0]._id);
+            console.log('Cases API response:', response);
+
+            // Handle different response structures
+            const casesData = response.data?.cases || response.cases || response.data || [];
+            console.log('Extracted cases:', casesData);
+
+            setCases(casesData);
+            if (casesData.length > 0) {
+                setSelectedCase(casesData[0]._id);
             }
         } catch (error) {
             console.error('Error fetching cases:', error);
@@ -128,11 +134,15 @@ const NotesPage = () => {
                         value={selectedCase}
                         onChange={(e) => setSelectedCase(e.target.value)}
                     >
-                        {cases.map(c => (
-                            <option key={c._id} value={c._id}>
-                                {c.title} (#{c.caseNumber})
-                            </option>
-                        ))}
+                        {cases.length === 0 ? (
+                            <option value="">No cases available</option>
+                        ) : (
+                            cases.map(c => (
+                                <option key={c._id} value={c._id}>
+                                    {c.caseName || c.title || 'Unnamed Case'}
+                                </option>
+                            ))
+                        )}
                     </select>
                 </div>
             </div>

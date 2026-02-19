@@ -130,26 +130,6 @@ const TimelineBuilder = () => {
                         <button
                             onClick={async () => {
                                 if (!timeline) {
-                                    alert('Please add events first to generate a timeline');
-                                    return;
-                                }
-                                try {
-                                    await timelineService.generateTimeline(timeline._id);
-                                    alert('Timeline generated successfully!');
-                                    fetchTimeline();
-                                } catch (error) {
-                                    alert('Failed to generate timeline: ' + error.message);
-                                }
-                            }}
-                            disabled={!timeline || events.length === 0}
-                            className="flex items-center px-4 py-2.5 bg-slate-700 hover:bg-slate-800 text-white rounded-lg transition-all text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            <span className="material-icons text-sm mr-2">auto_awesome</span>
-                            Generate Timeline
-                        </button>
-                        <button
-                            onClick={async () => {
-                                if (!timeline) {
                                     alert('No timeline to export');
                                     return;
                                 }

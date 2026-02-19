@@ -76,7 +76,11 @@ const TimelineWork = () => {
     };
 
     const handleOpenTimeline = (caseId) => {
-        navigate(`/timeline-builder/${caseId}`);
+        if (!caseId) {
+            alert('Case ID is missing');
+            return;
+        }
+        navigate(`/staff/timeline/${caseId}`);
     };
 
     const stats = [
@@ -114,10 +118,6 @@ const TimelineWork = () => {
                 <header className="h-16 flex items-center justify-between px-8 bg-white/5 dark:bg-background-dark/50 border-b border-slate-200 dark:border-border-dark backdrop-blur-sm">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold tracking-tight">Timeline Work Queue</h1>
-                        <span className="text-xs bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-1 rounded flex items-center gap-1">
-                            <span className="material-icons text-[14px]">lock</span>
-                            HIPAA Compliant Session
-                        </span>
                     </div>
                     <div className="flex items-center gap-6">
                         <div className="relative">

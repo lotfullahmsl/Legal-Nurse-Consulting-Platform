@@ -1,10 +1,14 @@
 import { useState } from 'react';
+import api from '../../../services/api.service';
 import searchService from '../../../services/search.service';
 
 const SearchPage = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [results, setResults] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [showOcrModal, setShowOcrModal] = useState(false);
+    const [selectedOcrText, setSelectedOcrText] = useState('');
+    const [selectedFileName, setSelectedFileName] = useState('');
     const [filters, setFilters] = useState({
         caseId: '',
         documentType: '',
@@ -38,6 +42,21 @@ const SearchPage = () => {
             part.toLowerCase() === query.toLowerCase() ?
                 <mark key={i} className="bg-yellow-200">{part}</mark> : part
         );
+    };
+
+    const handleViewOcrText = async (recordId, fileName) => {
+        try {
+            const response = await api.get(`/medical-records/${recordId}/ocr-text`);
+
+            if (response.data.success) {
+                setSelectedOcrText(response.data.data.ocrText || 'No OCR text available');
+                setSelectedFileName(fileName);
+                setShowOcrModal(true);
+            }
+        } catch (error) {
+            console.error('Error loading OCR text:', error);
+            alert('Failed to load OCR text. Please try again.');
+        }
     };
 
     return (
@@ -131,8 +150,11 @@ const SearchPage = () => {
                                             </p>
                                         </div>
                                     </div>
-                                    <button className="text-[#0891b2] hover:underline text-sm font-medium">
-                                        View Document
+                                    <button
+                                        onClick={() => handleViewOcrText(result._id, result.fileName)}
+                                        className="text-[#0891b2] hover:underline text-sm font-medium"
+                                    >
+                                        View OCR Text
                                     </button>
                                 </div>
                                 {result.ocrText && (
@@ -141,17 +163,62 @@ const SearchPage = () => {
                                     </p>
                                 )}
                                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
-                                    <span>Provider: {result.provider?.name || 'N/A'}</span>
+                                    <span>Pages: {result.pageCount || 'N/A'}</span>
                                     <span>•</span>
-                                    <span>Pages: {result.pageCount}</span>
-                                    <span>•</span>
-                                    <span>Date: {new Date(result.recordDate).toLocaleDateString()}</span>
+                                    <span>Date: {result.recordDate ? new Date(result.recordDate).toLocaleDateString() : 'N/A'}</span>
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
             </div>
+
+            {/* OCR Text Modal */}
+            {showOcrModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl max-w-4xl w-full max-h-[80vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+                            <div>
+                                <h3 className="text-lg font-bold text-slate-900 dark:text-white">OCR Extracted Text</h3>
+                                <p className="text-sm text-slate-500 mt-1">{selectedFileName}</p>
+                            </div>
+                            <button
+                                onClick={() => setShowOcrModal(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                            >
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        {/* Modal Content */}
+                        <div className="flex-1 overflow-y-auto p-6">
+                            <pre className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap font-mono bg-slate-50 dark:bg-slate-900 p-4 rounded-lg">
+                                {selectedOcrText}
+                            </pre>
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="flex justify-end gap-3 p-6 border-t border-slate-200 dark:border-slate-700">
+                            <button
+                                onClick={() => {
+                                    navigator.clipboard.writeText(selectedOcrText);
+                                    alert('OCR text copied to clipboard!');
+                                }}
+                                className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600"
+                            >
+                                Copy Text
+                            </button>
+                            <button
+                                onClick={() => setShowOcrModal(false)}
+                                className="px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

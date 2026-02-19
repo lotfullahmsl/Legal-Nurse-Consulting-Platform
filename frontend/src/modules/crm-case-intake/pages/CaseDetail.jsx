@@ -324,38 +324,122 @@ const CaseDetail = () => {
                     </div>
                 )}
                 {activeTab === 'records' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Medical Records content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Medical Records</h3>
+                            <button
+                                onClick={() => alert('Upload Medical Record functionality - Navigate to Medical Records page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">upload_file</span>
+                                Upload Record
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Medical Records content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'timeline' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Timeline content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Timeline</h3>
+                            <button
+                                onClick={() => alert('Create Timeline functionality - Navigate to Timeline Builder')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Create Timeline
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Timeline content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'analysis' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Case Analysis content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Case Analysis</h3>
+                            <button
+                                onClick={() => alert('Add Finding functionality - Navigate to Case Analysis page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Add Finding
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Case Analysis content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'damages' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Damages tracking content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Damages Tracking</h3>
+                            <button
+                                onClick={() => alert('Add Damage Entry functionality - Navigate to Damages Tracking page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Add Damage
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Damages tracking content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'tasks' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Tasks content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Tasks</h3>
+                            <button
+                                onClick={() => alert('Create Task functionality - Navigate to Tasks page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Create Task
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Tasks content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'billing' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Billing content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Billing</h3>
+                            <button
+                                onClick={() => alert('Create Invoice functionality - Navigate to Billing page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Create Invoice
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Billing content will be displayed here
+                        </div>
                     </div>
                 )}
                 {activeTab === 'notes' && (
-                    <div className="text-center py-12 text-slate-500">
-                        Notes content will be displayed here
+                    <div>
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Notes</h3>
+                            <button
+                                onClick={() => alert('Add Note functionality - Navigate to Notes page')}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#0891b2] text-white rounded-lg hover:bg-teal-700 transition-colors"
+                            >
+                                <span className="material-icons text-sm">add</span>
+                                Add Note
+                            </button>
+                        </div>
+                        <div className="text-center py-12 text-slate-500">
+                            Notes content will be displayed here
+                        </div>
                     </div>
                 )}
             </div>

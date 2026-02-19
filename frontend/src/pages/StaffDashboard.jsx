@@ -242,16 +242,6 @@ const StaffDashboard = () => {
                         </div>
                     </section>
 
-                    {/* HIPAA Notice */}
-                    <div className="bg-[#1152d4]/5 rounded-xl p-4 border border-[#1152d4]/10">
-                        <div className="flex items-center gap-3">
-                            <span className="material-icons text-[#1152d4]">security</span>
-                            <div className="text-[10px]">
-                                <p className="font-bold text-slate-800 dark:text-slate-200">HIPAA Protected Environment</p>
-                                <p className="text-slate-500">All data is encrypted at rest and in transit.</p>
-                            </div>
-                        </div>
-                    </div>
                 </aside>
             </div>
 
