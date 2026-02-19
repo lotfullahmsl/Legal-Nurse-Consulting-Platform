@@ -82,4 +82,17 @@ router.delete('/:timelineId/events/:eventId',
     timelineController.deleteEvent
 );
 
+// Generate timeline
+router.post('/:id/generate',
+    protect,
+    authorize('admin', 'attorney', 'consultant'),
+    timelineController.generateTimeline
+);
+
+// Export timeline
+router.get('/:id/export',
+    protect,
+    timelineController.exportTimeline
+);
+
 module.exports = router;

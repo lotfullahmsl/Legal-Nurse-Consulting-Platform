@@ -1,6 +1,15 @@
 const MedicalRecord = require('../../../models/MedicalRecord.model');
 const AppError = require('../../../shared/errors/AppError');
-const { processOCRWithAPI } = require('../services/ocr.service');
+
+// Lazy load OCR service to avoid serverless issues
+let processOCRWithAPI;
+try {
+    const ocrService = require('../services/ocr.service');
+    processOCRWithAPI = ocrService.processOCRWithAPI;
+} catch (error) {
+    console.warn('OCR service not available:', error.message);
+    processOCRWithAPI = null;
+}
 
 // Get all medical records
 exports.getAllRecords = async (req, res, next) => {
@@ -108,27 +117,36 @@ exports.uploadRecord = async (req, res, next) => {
     }
 };
 
-// OCR Processing Function
+// OCR Processing Function with timeout
 async function processOCR(recordId) {
+    const startTime = Date.now();
+    console.log(`[OCR] Starting OCR for record ${recordId}`);
+
     try {
         const record = await MedicalRecord.findById(recordId).select('+fileData');
-        if (!record) return;
+        if (!record) {
+            console.log(`[OCR] Record ${recordId} not found`);
+            return;
+        }
 
         record.ocrStatus = 'processing';
         await record.save();
+        console.log(`[OCR] Status set to processing for ${record.fileName}`);
 
         let extractedText = '';
 
+        if (!processOCRWithAPI) {
+            throw new Error('OCR service not available');
+        }
+
         if (record.fileData) {
             try {
-                // Determine mimeType from fileData or fileName
+                // Determine mimeType
                 let mimeType = record.mimeType;
                 if (!mimeType && record.fileData) {
-                    // Try to detect from base64 data URI
                     if (record.fileData.startsWith('data:')) {
                         mimeType = record.fileData.split(';')[0].split(':')[1];
                     } else if (record.fileName) {
-                        // Fallback: detect from file extension
                         const ext = record.fileName.toLowerCase().split('.').pop();
                         const mimeMap = {
                             'pdf': 'application/pdf',
@@ -142,10 +160,15 @@ async function processOCR(recordId) {
                     }
                 }
 
-                console.log(`Processing OCR for ${record.fileName} with mimeType: ${mimeType}`);
+                console.log(`[OCR] Processing ${record.fileName} (${mimeType}), size: ${record.fileSize} bytes`);
 
-                // Use Tesseract/pdf-parse to extract text
-                const ocrText = await processOCRWithAPI(record.fileData, mimeType);
+                // Add timeout wrapper (30 seconds max)
+                const ocrPromise = processOCRWithAPI(record.fileData, mimeType);
+                const timeoutPromise = new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('OCR timeout after 30 seconds')), 30000)
+                );
+
+                const ocrText = await Promise.race([ocrPromise, timeoutPromise]);
 
                 // Build full text with metadata
                 extractedText = `Document: ${record.fileName}\n`;
@@ -159,9 +182,10 @@ async function processOCR(recordId) {
                 extractedText += `${'='.repeat(80)}\n\n`;
                 extractedText += ocrText;
 
+                console.log(`[OCR] Successfully extracted ${ocrText.length} characters`);
+
             } catch (ocrError) {
-                console.error('OCR API error:', ocrError.message);
-                // Store error information
+                console.error(`[OCR] Error processing ${record.fileName}:`, ocrError.message);
                 extractedText = `Document: ${record.fileName}\n`;
                 extractedText += `Type: ${record.documentType}\n`;
                 extractedText += `Provider: ${record.provider?.name || 'N/A'}\n`;
@@ -180,9 +204,10 @@ async function processOCR(recordId) {
         record.ocrProcessedAt = new Date();
         await record.save();
 
-        console.log(`OCR ${record.ocrStatus} for record ${recordId}`);
+        const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+        console.log(`[OCR] Finished ${record.ocrStatus} for ${record.fileName} in ${duration}s`);
     } catch (error) {
-        console.error(`OCR failed for record ${recordId}:`, error);
+        console.error(`[OCR] Fatal error for record ${recordId}:`, error);
         try {
             const record = await MedicalRecord.findById(recordId);
             if (record) {
@@ -191,7 +216,7 @@ async function processOCR(recordId) {
                 await record.save();
             }
         } catch (updateError) {
-            console.error('Failed to update OCR status:', updateError);
+            console.error('[OCR] Failed to update status:', updateError);
         }
     }
 }

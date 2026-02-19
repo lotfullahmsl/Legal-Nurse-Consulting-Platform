@@ -9,6 +9,8 @@ const TimelineBuilder = () => {
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showAddEvent, setShowAddEvent] = useState(false);
+    const [editingEvent, setEditingEvent] = useState(null);
+    const [showEditEvent, setShowEditEvent] = useState(false);
 
     useEffect(() => {
         if (caseId) {
@@ -64,6 +66,30 @@ const TimelineBuilder = () => {
             alert('Event added successfully');
         } catch (error) {
             alert('Failed to add event');
+        }
+    };
+
+    const handleEditEvent = async (eventData) => {
+        try {
+            await timelineService.updateEvent(timeline._id, editingEvent._id, eventData);
+            fetchTimeline();
+            setShowEditEvent(false);
+            setEditingEvent(null);
+            alert('Event updated successfully');
+        } catch (error) {
+            alert('Failed to update event');
+        }
+    };
+
+    const handleDeleteEvent = async (eventId) => {
+        if (!window.confirm('Are you sure you want to delete this event?')) return;
+
+        try {
+            await timelineService.deleteEvent(timeline._id, eventId);
+            fetchTimeline();
+            alert('Event deleted successfully');
+        } catch (error) {
+            alert('Failed to delete event');
         }
     };
 
@@ -128,15 +154,16 @@ const TimelineBuilder = () => {
                                     return;
                                 }
                                 try {
-                                    const response = await timelineService.exportTimeline(timeline._id, 'pdf');
+                                    const blob = await timelineService.exportTimeline(timeline._id, 'txt');
                                     // Create download link
-                                    const url = window.URL.createObjectURL(new Blob([response]));
+                                    const url = window.URL.createObjectURL(blob);
                                     const link = document.createElement('a');
                                     link.href = url;
-                                    link.setAttribute('download', `timeline-${caseInfo?.caseNumber || 'report'}.pdf`);
+                                    link.setAttribute('download', `timeline-${caseInfo?.caseNumber || 'report'}.txt`);
                                     document.body.appendChild(link);
                                     link.click();
                                     link.remove();
+                                    window.URL.revokeObjectURL(url);
                                 } catch (error) {
                                     alert('Failed to export report: ' + error.message);
                                 }
@@ -225,10 +252,19 @@ const TimelineBuilder = () => {
                                                 )}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                                <button className="p-1 text-slate-400 hover:text-[#0891b2]">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingEvent(event);
+                                                        setShowEditEvent(true);
+                                                    }}
+                                                    className="p-1 text-slate-400 hover:text-[#0891b2]"
+                                                >
                                                     <span className="material-icons text-sm">edit</span>
                                                 </button>
-                                                <button className="p-1 text-slate-400 hover:text-rose-500">
+                                                <button
+                                                    onClick={() => handleDeleteEvent(event._id)}
+                                                    className="p-1 text-slate-400 hover:text-rose-500"
+                                                >
                                                     <span className="material-icons text-sm">delete</span>
                                                 </button>
                                             </div>
@@ -297,6 +333,103 @@ const TimelineBuilder = () => {
                             <div className="flex gap-3">
                                 <button type="submit" className="flex-1 bg-[#0891b2] text-white py-2 rounded-lg font-semibold">Add Event</button>
                                 <button type="button" onClick={() => setShowAddEvent(false)} className="px-6 py-2 border rounded-lg">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Event Modal */}
+            {showEditEvent && editingEvent && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-2xl w-full mx-4">
+                        <h2 className="text-xl font-bold mb-4">Edit Timeline Event</h2>
+                        <form onSubmit={(e) => {
+                            e.preventDefault();
+                            const formData = new FormData(e.target);
+                            handleEditEvent({
+                                date: formData.get('date'),
+                                time: formData.get('time'),
+                                category: formData.get('category'),
+                                title: formData.get('title'),
+                                description: formData.get('description'),
+                                provider: {
+                                    name: formData.get('providerName'),
+                                    facility: formData.get('facility')
+                                }
+                            });
+                        }}>
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <input
+                                    type="date"
+                                    name="date"
+                                    required
+                                    defaultValue={editingEvent.date ? new Date(editingEvent.date).toISOString().split('T')[0] : ''}
+                                    className="px-3 py-2 border rounded-lg"
+                                />
+                                <input
+                                    type="time"
+                                    name="time"
+                                    defaultValue={editingEvent.time || ''}
+                                    className="px-3 py-2 border rounded-lg"
+                                />
+                            </div>
+                            <select
+                                name="category"
+                                required
+                                defaultValue={editingEvent.category}
+                                className="w-full px-3 py-2 border rounded-lg mb-4"
+                            >
+                                <option value="">Select Category</option>
+                                <option value="treatment">Treatment</option>
+                                <option value="medication">Medication</option>
+                                <option value="lab">Lab</option>
+                                <option value="imaging">Imaging</option>
+                                <option value="consultation">Consultation</option>
+                                <option value="procedure">Procedure</option>
+                                <option value="symptom">Symptom</option>
+                            </select>
+                            <input
+                                type="text"
+                                name="title"
+                                required
+                                placeholder="Event Title"
+                                defaultValue={editingEvent.title}
+                                className="w-full px-3 py-2 border rounded-lg mb-4"
+                            />
+                            <textarea
+                                name="description"
+                                placeholder="Description"
+                                defaultValue={editingEvent.description || ''}
+                                className="w-full px-3 py-2 border rounded-lg mb-4"
+                                rows="3"
+                            ></textarea>
+                            <input
+                                type="text"
+                                name="providerName"
+                                placeholder="Provider Name"
+                                defaultValue={editingEvent.provider?.name || ''}
+                                className="w-full px-3 py-2 border rounded-lg mb-4"
+                            />
+                            <input
+                                type="text"
+                                name="facility"
+                                placeholder="Facility"
+                                defaultValue={editingEvent.provider?.facility || ''}
+                                className="w-full px-3 py-2 border rounded-lg mb-4"
+                            />
+                            <div className="flex gap-3">
+                                <button type="submit" className="flex-1 bg-[#0891b2] text-white py-2 rounded-lg font-semibold">Update Event</button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowEditEvent(false);
+                                        setEditingEvent(null);
+                                    }}
+                                    className="px-6 py-2 border rounded-lg"
+                                >
+                                    Cancel
+                                </button>
                             </div>
                         </form>
                     </div>

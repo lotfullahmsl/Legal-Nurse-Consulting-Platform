@@ -269,3 +269,119 @@ exports.updateStatus = async (req, res, next) => {
         next(error);
     }
 };
+
+// Generate timeline (mark as completed and ready for export)
+exports.generateTimeline = async (req, res, next) => {
+    try {
+        const timeline = await Timeline.findById(req.params.id)
+            .populate('case', 'caseNumber caseName')
+            .populate('events.citations.document', 'fileName');
+
+        if (!timeline) {
+            throw new AppError('Timeline not found', 404);
+        }
+
+        // Sort events by date
+        timeline.events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Update status to completed
+        timeline.status = 'completed';
+        timeline.completedAt = new Date();
+        await timeline.save();
+
+        res.status(200).json({
+            success: true,
+            message: 'Timeline generated successfully',
+            data: { timeline }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Export timeline as text report
+exports.exportTimeline = async (req, res, next) => {
+    try {
+        const { format = 'txt' } = req.query;
+        const timeline = await Timeline.findById(req.params.id)
+            .populate({
+                path: 'case',
+                select: 'caseNumber caseName client lawFirm',
+                populate: [
+                    { path: 'client', select: 'fullName' },
+                    { path: 'lawFirm', select: 'name' }
+                ]
+            })
+            .populate('events.citations.document', 'fileName')
+            .populate('createdBy', 'fullName');
+
+        if (!timeline) {
+            throw new AppError('Timeline not found', 404);
+        }
+
+        // Sort events by date
+        timeline.events.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        // Generate text report
+        let report = '';
+        report += '='.repeat(80) + '\n';
+        report += 'MEDICAL CHRONOLOGY TIMELINE REPORT\n';
+        report += '='.repeat(80) + '\n\n';
+
+        report += `Case Number: ${timeline.case?.caseNumber || 'N/A'}\n`;
+        report += `Case Name: ${timeline.case?.caseName || 'N/A'}\n`;
+        report += `Client: ${timeline.case?.client?.fullName || 'N/A'}\n`;
+        report += `Law Firm: ${timeline.case?.lawFirm?.name || 'N/A'}\n`;
+        report += `Timeline Title: ${timeline.title}\n`;
+        report += `Status: ${timeline.status.toUpperCase()}\n`;
+        report += `Total Events: ${timeline.events.length}\n`;
+        report += `Created By: ${timeline.createdBy?.fullName || 'N/A'}\n`;
+        report += `Generated: ${new Date().toLocaleString()}\n`;
+        report += '\n' + '='.repeat(80) + '\n\n';
+
+        // Add events
+        report += 'CHRONOLOGICAL EVENTS\n';
+        report += '='.repeat(80) + '\n\n';
+
+        timeline.events.forEach((event, index) => {
+            report += `${index + 1}. ${new Date(event.date).toLocaleDateString()}`;
+            if (event.time) report += ` at ${event.time}`;
+            report += '\n';
+            report += `   Category: ${event.category.toUpperCase()}\n`;
+            report += `   Title: ${event.title}\n`;
+
+            if (event.description) {
+                report += `   Description: ${event.description}\n`;
+            }
+
+            if (event.provider?.name) {
+                report += `   Provider: ${event.provider.name}`;
+                if (event.provider.facility) report += ` - ${event.provider.facility}`;
+                report += '\n';
+            }
+
+            if (event.citations && event.citations.length > 0) {
+                report += `   Citations:\n`;
+                event.citations.forEach((citation, idx) => {
+                    report += `     ${idx + 1}. ${citation.document?.fileName || 'Document'} - Page ${citation.pageNumber}\n`;
+                    if (citation.excerpt) {
+                        report += `        "${citation.excerpt}"\n`;
+                    }
+                });
+            }
+
+            report += '\n';
+        });
+
+        report += '='.repeat(80) + '\n';
+        report += 'END OF REPORT\n';
+        report += '='.repeat(80) + '\n';
+
+        // Set headers for download
+        res.setHeader('Content-Type', 'text/plain');
+        res.setHeader('Content-Disposition', `attachment; filename="timeline-${timeline.case?.caseNumber || 'report'}.txt"`);
+        res.send(report);
+    } catch (error) {
+        next(error);
+    }
+};

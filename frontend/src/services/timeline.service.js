@@ -59,6 +59,21 @@ const timelineService = {
     getWorkQueue: async (params = {}) => {
         const response = await api.get('/timelines/work-queue', { params });
         return response.data;
+    },
+
+    // Generate timeline
+    generateTimeline: async (id) => {
+        const response = await api.post(`/timelines/${id}/generate`);
+        return response.data;
+    },
+
+    // Export timeline
+    exportTimeline: async (id, format = 'txt') => {
+        const response = await api.get(`/timelines/${id}/export`, {
+            params: { format },
+            responseType: 'blob'
+        });
+        return response.data;
     }
 };
 
