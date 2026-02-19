@@ -7,6 +7,8 @@ const LawFirmsList = () => {
     const [loading, setLoading] = useState(true);
     const [pagination, setPagination] = useState({ page: 1, pages: 1, total: 0 });
     const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showViewModal, setShowViewModal] = useState(false);
+    const [selectedFirm, setSelectedFirm] = useState(null);
     const [formData, setFormData] = useState({
         firmName: '',
         contactPerson: '',
@@ -45,6 +47,11 @@ const LawFirmsList = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleView = async (firm) => {
+        setSelectedFirm(firm);
+        setShowViewModal(true);
     };
 
     const handleDelete = async (id) => {
@@ -166,7 +173,9 @@ const LawFirmsList = () => {
                                         </div>
                                     </div>
                                     <div className="flex gap-2 mt-4">
-                                        <button className="flex-1 py-2 bg-slate-50 text-slate-700 font-semibold rounded-lg hover:bg-[#1f3b61] hover:text-white transition-all text-sm">
+                                        <button
+                                            onClick={() => handleView(firm)}
+                                            className="flex-1 py-2 bg-slate-50 text-slate-700 font-semibold rounded-lg hover:bg-[#1f3b61] hover:text-white transition-all text-sm">
                                             View
                                         </button>
                                         <button
@@ -203,6 +212,168 @@ const LawFirmsList = () => {
                     </div>
                 </div>
             </main>
+
+            {/* View Law Firm Modal */}
+            {showViewModal && selectedFirm && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-6 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 bg-[#1f3b61]/10 rounded-lg flex items-center justify-center">
+                                    <span className="material-icons text-[#1f3b61]">business</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">{selectedFirm.firmName}</h3>
+                                    <span className={`inline-block px-2 py-0.5 text-xs font-bold uppercase rounded-full mt-1 ${selectedFirm.status === 'active' ? 'bg-green-100 text-green-700' :
+                                            selectedFirm.status === 'inactive' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-red-100 text-red-700'
+                                        }`}>
+                                        {selectedFirm.status}
+                                    </span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowViewModal(false)}
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            >
+                                <span className="material-icons">close</span>
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-6">
+                            {/* Contact Information */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-icons text-[#1f3b61]">contact_phone</span>
+                                    Contact Information
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Contact Person</label>
+                                        <p className="text-slate-900 dark:text-white font-medium">{selectedFirm.contactPerson || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Email</label>
+                                        <p className="text-slate-900 dark:text-white font-medium">{selectedFirm.email || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Phone</label>
+                                        <p className="text-slate-900 dark:text-white font-medium">{selectedFirm.phone || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Website</label>
+                                        {selectedFirm.website ? (
+                                            <a
+                                                href={selectedFirm.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[#1f3b61] hover:underline font-medium"
+                                            >
+                                                {selectedFirm.website}
+                                            </a>
+                                        ) : (
+                                            <p className="text-slate-900 dark:text-white font-medium">N/A</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Address */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-icons text-[#1f3b61]">location_on</span>
+                                    Address
+                                </h4>
+                                <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                                    {selectedFirm.address ? (
+                                        <div className="space-y-2">
+                                            {selectedFirm.address.street && (
+                                                <p className="text-slate-900 dark:text-white">{selectedFirm.address.street}</p>
+                                            )}
+                                            <p className="text-slate-900 dark:text-white">
+                                                {[
+                                                    selectedFirm.address.city,
+                                                    selectedFirm.address.state,
+                                                    selectedFirm.address.zipCode
+                                                ].filter(Boolean).join(', ')}
+                                            </p>
+                                            {selectedFirm.address.country && (
+                                                <p className="text-slate-900 dark:text-white">{selectedFirm.address.country}</p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-slate-500">No address provided</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Specializations */}
+                            {selectedFirm.specializations && selectedFirm.specializations.length > 0 && (
+                                <div>
+                                    <h4 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <span className="material-icons text-[#1f3b61]">gavel</span>
+                                        Specializations
+                                    </h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedFirm.specializations.map((spec, index) => (
+                                            <span
+                                                key={index}
+                                                className="px-3 py-1.5 bg-[#1f3b61]/10 text-[#1f3b61] rounded-full text-sm font-medium"
+                                            >
+                                                {spec}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Notes */}
+                            {selectedFirm.notes && (
+                                <div>
+                                    <h4 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                        <span className="material-icons text-[#1f3b61]">notes</span>
+                                        Notes
+                                    </h4>
+                                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                                        <p className="text-slate-900 dark:text-white whitespace-pre-wrap">{selectedFirm.notes}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Metadata */}
+                            <div>
+                                <h4 className="font-semibold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                                    <span className="material-icons text-[#1f3b61]">info</span>
+                                    Additional Information
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 dark:bg-slate-800 p-4 rounded-lg">
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Created</label>
+                                        <p className="text-slate-900 dark:text-white font-medium">
+                                            {selectedFirm.createdAt ? new Date(selectedFirm.createdAt).toLocaleDateString() : 'N/A'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-semibold text-slate-500 uppercase mb-1">Last Updated</label>
+                                        <p className="text-slate-900 dark:text-white font-medium">
+                                            {selectedFirm.updatedAt ? new Date(selectedFirm.updatedAt).toLocaleDateString() : 'N/A'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 p-6">
+                            <button
+                                onClick={() => setShowViewModal(false)}
+                                className="w-full px-6 py-2.5 bg-[#1f3b61] text-white rounded-lg hover:bg-[#1f3b61]/90 transition-colors font-semibold"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Create Law Firm Modal */}
             {showCreateModal && (

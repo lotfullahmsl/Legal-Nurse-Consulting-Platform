@@ -8,11 +8,18 @@ const NotesPage = () => {
     const [notes, setNotes] = useState([]);
     const [noteContent, setNoteContent] = useState('');
     const [noteTitle, setNoteTitle] = useState('');
+    const [selectedTags, setSelectedTags] = useState([]);
     const [loading, setLoading] = useState(false);
     const [stats, setStats] = useState(null);
+    const [userName, setUserName] = useState('User');
 
     useEffect(() => {
         fetchCases();
+        // Get logged-in user's name from localStorage
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        if (user.name) {
+            setUserName(user.name);
+        }
     }, []);
 
     useEffect(() => {
@@ -54,15 +61,25 @@ const NotesPage = () => {
                 case: selectedCase,
                 title: noteTitle,
                 content: noteContent,
+                tags: selectedTags,
                 type: 'general',
                 priority: 'medium'
             });
             setNoteTitle('');
             setNoteContent('');
+            setSelectedTags([]);
             fetchNotes();
         } catch (error) {
             console.error('Error creating note:', error);
         }
+    };
+
+    const toggleTag = (tag) => {
+        setSelectedTags(prev =>
+            prev.includes(tag)
+                ? prev.filter(t => t !== tag)
+                : [...prev, tag]
+        );
     };
 
     const handlePinNote = async (noteId) => {
@@ -138,15 +155,17 @@ const NotesPage = () => {
                             value={noteContent}
                             onChange={(e) => setNoteContent(e.target.value)}
                         />
-                        <div className="flex items-center justify-between mt-4">
-                            <div className="flex gap-2">
-                                <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Attach File">
-                                    <span className="material-icons text-slate-400">attach_file</span>
-                                </button>
-                                <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors" title="Add Tag">
-                                    <span className="material-icons text-slate-400">label</span>
-                                </button>
+                        {selectedTags.length > 0 && (
+                            <div className="flex items-center gap-2 flex-wrap mt-3">
+                                {selectedTags.map((tag, index) => (
+                                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium flex items-center gap-1">
+                                        {tag}
+                                        <button onClick={() => toggleTag(tag)} className="hover:text-blue-900">×</button>
+                                    </span>
+                                ))}
                             </div>
+                        )}
+                        <div className="flex items-center justify-end mt-4">
                             <button
                                 onClick={handleCreateNote}
                                 disabled={!noteTitle.trim() || !noteContent.trim()}
@@ -168,65 +187,113 @@ const NotesPage = () => {
                             <p className="text-slate-500">No notes yet. Create your first note above.</p>
                         </div>
                     ) : (
-                        notes.map((note) => (
-                            <div key={note._id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-[#1f3b61]/10 flex items-center justify-center text-[#1f3b61] text-sm font-bold ring-2 ring-white dark:ring-slate-800">
-                                        {note.createdBy?.name?.charAt(0) || 'U'}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div>
-                                                <h4 className="font-semibold text-slate-900 dark:text-white">{note.createdBy?.name || 'Unknown'}</h4>
-                                                <p className="text-xs text-slate-500">{formatDate(note.createdAt)}</p>
-                                            </div>
-                                            <div className="flex gap-1">
-                                                <button
-                                                    onClick={() => handlePinNote(note._id)}
-                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                                                    title={note.isPinned ? 'Unpin' : 'Pin'}
-                                                >
-                                                    <span className={`material-icons text-sm ${note.isPinned ? 'text-[#0891b2]' : 'text-slate-400'}`}>
-                                                        push_pin
-                                                    </span>
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteNote(note._id)}
-                                                    className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
-                                                >
-                                                    <span className="material-icons text-sm text-slate-400">delete</span>
-                                                </button>
-                                            </div>
+                        notes.map((note) => {
+                            // Use current user's name if createdBy is not populated
+                            const displayName = note.createdBy?.name || userName;
+                            const displayInitial = displayName.charAt(0).toUpperCase();
+
+                            return (
+                                <div key={note._id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-full bg-[#1f3b61]/10 flex items-center justify-center text-[#1f3b61] text-sm font-bold ring-2 ring-white dark:ring-slate-800">
+                                            {displayInitial}
                                         </div>
-                                        <h5 className="font-semibold text-slate-900 dark:text-white mb-2">{note.title}</h5>
-                                        <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">{note.content}</p>
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                            {note.tags?.map((tag, index) => (
-                                                <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                            {note.attachments?.length > 0 && (
-                                                <span className="flex items-center gap-1 text-xs text-slate-500">
-                                                    <span className="material-icons text-xs">attach_file</span>
-                                                    {note.attachments.length} attachment{note.attachments.length > 1 ? 's' : ''}
-                                                </span>
-                                            )}
-                                            {note.isPinned && (
-                                                <span className="flex items-center gap-1 text-xs text-[#0891b2]">
-                                                    <span className="material-icons text-xs">push_pin</span>
-                                                    Pinned
-                                                </span>
-                                            )}
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div>
+                                                    <h4 className="font-semibold text-slate-900 dark:text-white">{displayName}</h4>
+                                                    <p className="text-xs text-slate-500">{formatDate(note.createdAt)}</p>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => handlePinNote(note._id)}
+                                                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                                                        title={note.isPinned ? 'Unpin' : 'Pin'}
+                                                    >
+                                                        <span className={`material-icons text-sm ${note.isPinned ? 'text-[#0891b2]' : 'text-slate-400'}`}>
+                                                            push_pin
+                                                        </span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteNote(note._id)}
+                                                        className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+                                                    >
+                                                        <span className="material-icons text-sm text-slate-400">delete</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <h5 className="font-semibold text-slate-900 dark:text-white mb-2">{note.title}</h5>
+                                            <p className="text-sm text-slate-700 dark:text-slate-300 mb-3">{note.content}</p>
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {note.tags?.map((tag, index) => (
+                                                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                                {note.attachments?.length > 0 && (
+                                                    <span className="flex items-center gap-1 text-xs text-slate-500">
+                                                        <span className="material-icons text-xs">attach_file</span>
+                                                        {note.attachments.length} attachment{note.attachments.length > 1 ? 's' : ''}
+                                                    </span>
+                                                )}
+                                                {note.isPinned && (
+                                                    <span className="flex items-center gap-1 text-xs text-[#0891b2]">
+                                                        <span className="material-icons text-xs">push_pin</span>
+                                                        Pinned
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
+                            );
+                        })
                     )}
                 </div>
 
                 <div className="space-y-6">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
+                        <h3 className="font-bold text-lg mb-4">Quick Tags</h3>
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={() => toggleTag('Important')}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTags.includes('Important')
+                                    ? 'bg-red-200 text-red-800 dark:bg-red-800 dark:text-red-200'
+                                    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                                    }`}
+                            >
+                                Important
+                            </button>
+                            <button
+                                onClick={() => toggleTag('Completed')}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTags.includes('Completed')
+                                    ? 'bg-green-200 text-green-800 dark:bg-green-800 dark:text-green-200'
+                                    : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                                    }`}
+                            >
+                                Completed
+                            </button>
+                            <button
+                                onClick={() => toggleTag('Follow-up')}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTags.includes('Follow-up')
+                                    ? 'bg-yellow-200 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-200'
+                                    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 hover:bg-yellow-200 dark:hover:bg-yellow-900/50'
+                                    }`}
+                            >
+                                Follow-up
+                            </button>
+                            <button
+                                onClick={() => toggleTag('Meeting')}
+                                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${selectedTags.includes('Meeting')
+                                    ? 'bg-purple-200 text-purple-800 dark:bg-purple-800 dark:text-purple-200'
+                                    : 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
+                                    }`}
+                            >
+                                Meeting
+                            </button>
+                        </div>
+                    </div>
+
                     {stats && (
                         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
                             <h3 className="font-bold text-lg mb-4">Activity Summary</h3>
@@ -246,24 +313,6 @@ const NotesPage = () => {
                             </div>
                         </div>
                     )}
-
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                        <h3 className="font-bold text-lg mb-4">Quick Tags</h3>
-                        <div className="flex flex-wrap gap-2">
-                            <button className="px-3 py-1.5 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 rounded-full text-xs font-medium hover:bg-blue-200 transition-colors">
-                                Important
-                            </button>
-                            <button className="px-3 py-1.5 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full text-xs font-medium hover:bg-green-200 transition-colors">
-                                Completed
-                            </button>
-                            <button className="px-3 py-1.5 bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full text-xs font-medium hover:bg-yellow-200 transition-colors">
-                                Follow-up
-                            </button>
-                            <button className="px-3 py-1.5 bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 rounded-full text-xs font-medium hover:bg-purple-200 transition-colors">
-                                Meeting
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div >

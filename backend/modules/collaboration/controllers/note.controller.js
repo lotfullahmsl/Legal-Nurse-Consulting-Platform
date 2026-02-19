@@ -92,6 +92,12 @@ exports.createNote = async (req, res, next) => {
             return res.status(404).json({ message: 'Case not found' });
         }
 
+        // Ensure we have a valid user ID
+        const userId = req.user?.id || req.user?._id;
+        if (!userId) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
         const note = new Note({
             case: caseId,
             title,
@@ -102,20 +108,23 @@ exports.createNote = async (req, res, next) => {
             mentions,
             isPrivate: isPrivate || false,
             isPinned: isPinned || false,
-            createdBy: req.user.id
+            createdBy: userId
         });
 
         await note.save();
-        await note.populate('case', 'title caseNumber');
-        await note.populate('createdBy', 'name email');
-        await note.populate('mentions', 'name email');
+
+        // Populate after save to ensure we get the user data
+        const populatedNote = await Note.findById(note._id)
+            .populate('case', 'title caseNumber')
+            .populate('createdBy', 'name email')
+            .populate('mentions', 'name email');
 
         // Notify mentioned users
         if (mentions && mentions.length > 0) {
-            await noteService.notifyMentionedUsers(note, req.user.id);
+            await noteService.notifyMentionedUsers(populatedNote, userId);
         }
 
-        res.status(201).json(note);
+        res.status(201).json(populatedNote);
     } catch (error) {
         next(error);
     }

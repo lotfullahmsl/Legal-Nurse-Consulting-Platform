@@ -4,10 +4,11 @@
   "description": "Legal Nurse Consulting Platform - Backend",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js",
+    "start": "node --dns-result-order=ipv4first server.js",
+    "dev": "nodemon --dns-result-order=ipv4first server.js",
     "test": "jest",
-    "test:connection": "node test-connection.js"
+    "test:connection": "node --dns-result-order=ipv4first test-connection.js",
+    "diagnose": "node diagnose-dns.js"
   },
   "keywords": [
     "legal",
@@ -38,7 +39,6 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.7",
-    "tesseract.js": "^5.1.1",
     "winston": "^3.11.0",
     "xss-clean": "^0.1.4"
   },

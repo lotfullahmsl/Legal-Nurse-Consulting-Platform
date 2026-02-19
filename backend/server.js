@@ -1,4 +1,10 @@
 require('dotenv').config();
+
+// FORCE DNS TO USE GOOGLE DNS (bypass localhost DNS issue)
+const dns = require('dns');
+dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+dns.setDefaultResultOrder('ipv4first');
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -48,14 +54,17 @@ const { schedulerService } = require('./modules/task-workflow');
 // Initialize app
 const app = express();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
+// Connect to MongoDB with detailed logging
+logger.info('🔄 Attempting MongoDB connection...');
+logger.info(`📍 MongoDB URI: ${process.env.MONGODB_URI ? process.env.MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:****@') : 'NOT SET'}`);
+logger.info(`🌐 Environment: ${process.env.NODE_ENV}`);
+
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => {
         logger.info('✅ MongoDB Connected Successfully');
         logger.info(`📊 Database: ${mongoose.connection.name}`);
+        logger.info(`🔗 Host: ${mongoose.connection.host}`);
+        logger.info(`🔌 Port: ${mongoose.connection.port}`);
 
         // Initialize scheduler after DB connection
         try {
@@ -67,10 +76,33 @@ mongoose.connect(process.env.MONGODB_URI, {
     })
     .catch((err) => {
         logger.error('❌ MongoDB Connection Error:', err);
+        logger.error('🔍 Error Code:', err.code);
+        logger.error('🔍 Error Message:', err.message);
+        logger.error('🔍 Hostname:', err.hostname);
+        logger.error('💡 Troubleshooting:');
+        logger.error('   1. Check if MongoDB URI is correct in .env file');
+        logger.error('   2. Verify your IP is whitelisted in MongoDB Atlas (Network Access)');
+        logger.error('   3. Try using mobile hotspot if DNS is failing');
+        logger.error('   4. Check firewall/antivirus settings');
+        logger.error('   5. Flush DNS cache: ipconfig /flushdns');
         process.exit(1);
     });
 
+// MongoDB connection event listeners
+mongoose.connection.on('connected', () => {
+    logger.info('🟢 Mongoose connected to MongoDB');
+});
+
+mongoose.connection.on('error', (err) => {
+    logger.error('🔴 Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    logger.warn('🟡 Mongoose disconnected from MongoDB');
+});
+
 // Security middleware
+
 app.use(helmet());
 app.use(securityMiddleware.hipaaHeaders);
 app.use(securityMiddleware.sanitizeData);

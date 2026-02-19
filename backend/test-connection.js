@@ -6,10 +6,7 @@ const testConnection = async () => {
         console.log('🔄 Testing MongoDB connection...');
         console.log('📍 Connection String:', process.env.MONGODB_URI.replace(/\/\/.*:.*@/, '//***:***@'));
 
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        });
+        await mongoose.connect(process.env.MONGODB_URI);
 
         console.log('✅ MongoDB Connected Successfully!');
         console.log('📊 Database:', mongoose.connection.name);
