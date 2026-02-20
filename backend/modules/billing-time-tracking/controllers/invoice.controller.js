@@ -60,43 +60,62 @@ exports.getInvoiceById = async (req, res, next) => {
 
 exports.generateInvoice = async (req, res, next) => {
     try {
-        const { caseId, timeEntryIds, billingPeriod, dueDate, notes, terms, discount, taxRate, retainerApplied } = req.body;
+        const { caseId, timeEntryIds, billingPeriod, dueDate, notes, terms, discount, taxRate, retainerApplied, lineItems } = req.body;
 
         const caseData = await Case.findById(caseId).populate('client').populate('lawFirm');
         if (!caseData) {
             return res.status(404).json({ message: 'Case not found' });
         }
 
-        const timeEntries = await TimeEntry.find({
-            _id: { $in: timeEntryIds },
-            isInvoiced: false,
-            isBillable: true
-        }).populate('user', 'name');
+        let invoiceLineItems = [];
+        let subtotal = 0;
 
-        if (timeEntries.length === 0) {
-            return res.status(400).json({ message: 'No billable time entries found' });
+        // Handle manual invoice with provided line items
+        if (lineItems && lineItems.length > 0) {
+            invoiceLineItems = lineItems;
+            subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
         }
+        // Handle invoice from time entries
+        else if (timeEntryIds && timeEntryIds.length > 0) {
+            const timeEntries = await TimeEntry.find({
+                _id: { $in: timeEntryIds },
+                isInvoiced: false,
+                isBillable: true
+            }).populate('user', 'name');
 
-        const lineItems = timeEntries.map(entry => ({
-            description: `${entry.user.name} - ${entry.description} (${entry.hours}h ${entry.minutes}m)`,
-            quantity: entry.hours + (entry.minutes / 60),
-            rate: entry.billableRate,
-            amount: entry.totalAmount,
-            type: 'time'
-        }));
+            if (timeEntries.length === 0) {
+                return res.status(400).json({ message: 'No billable time entries found' });
+            }
 
-        const subtotal = lineItems.reduce((sum, item) => sum + item.amount, 0);
+            invoiceLineItems = timeEntries.map(entry => ({
+                description: `${entry.user.name} - ${entry.description} (${entry.hours}h ${entry.minutes}m)`,
+                quantity: entry.hours + (entry.minutes / 60),
+                rate: entry.billableRate,
+                amount: entry.totalAmount,
+                type: 'time'
+            }));
+
+            subtotal = invoiceLineItems.reduce((sum, item) => sum + item.amount, 0);
+
+            // Mark time entries as invoiced
+            await TimeEntry.updateMany(
+                { _id: { $in: timeEntryIds } },
+                { $set: { isInvoiced: true } }
+            );
+        } else {
+            return res.status(400).json({ message: 'Either timeEntryIds or lineItems must be provided' });
+        }
 
         const invoice = new Invoice({
             case: caseId,
             client: caseData.client._id,
             lawFirm: caseData.lawFirm?._id,
             billingPeriod: billingPeriod || {
-                startDate: timeEntries[timeEntries.length - 1].date,
-                endDate: timeEntries[0].date
+                startDate: new Date(),
+                endDate: new Date()
             },
-            timeEntries: timeEntryIds,
-            lineItems,
+            timeEntries: timeEntryIds || [],
+            lineItems: invoiceLineItems,
             subtotal,
             taxRate: taxRate || 0,
             discount: discount || 0,
@@ -108,11 +127,6 @@ exports.generateInvoice = async (req, res, next) => {
         });
 
         await invoice.save();
-
-        await TimeEntry.updateMany(
-            { _id: { $in: timeEntryIds } },
-            { $set: { isInvoiced: true, invoice: invoice._id } }
-        );
 
         await invoice.populate('case', 'title caseNumber');
         await invoice.populate('client', 'name email');

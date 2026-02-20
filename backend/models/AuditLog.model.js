@@ -21,7 +21,13 @@ const auditLogSchema = new mongoose.Schema({
             'view_notifications', 'mark_notification_read', 'delete_notification',
             'view_conversations', 'view_unread_count', 'send_message',
             'view_messages', 'create_conversation', 'delete_conversation',
-            'view_upcoming_deadlines'
+            'view_upcoming_deadlines', 'view_case_invoices', 'generate_invoice',
+            'view_invoice', 'update_invoice', 'send_invoice', 'record_payment', 'void_invoice',
+            'view_tasks', 'view_my_tasks', 'view_case_tasks', 'view_task', 'create_task',
+            'update_task', 'update_task_status', 'delete_task', 'assign_task', 'add_task_comment',
+            'view_notes', 'view_case_notes', 'view_note', 'create_note', 'update_note',
+            'delete_note', 'add_note_attachment', 'remove_note_attachment', 'view_note_history',
+            'add_note_tags', 'remove_note_tags', 'pin_note', 'search_notes'
         ]
     },
     resource: {

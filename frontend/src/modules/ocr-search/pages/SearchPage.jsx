@@ -26,6 +26,7 @@ const SearchPage = () => {
                 query: searchQuery,
                 ...filters
             });
+            console.log('Search results:', response.data.records);
             setResults(response.data.records || []);
         } catch (error) {
             console.error('Search error:', error);
@@ -165,7 +166,7 @@ const SearchPage = () => {
                                 <div className="flex items-center gap-4 mt-3 text-xs text-slate-500">
                                     <span>Pages: {result.pageCount || 'N/A'}</span>
                                     <span>•</span>
-                                    <span>Date: {result.recordDate ? new Date(result.recordDate).toLocaleDateString() : 'N/A'}</span>
+                                    <span>Date: {result.recordDate ? new Date(result.recordDate).toLocaleDateString() : (result.createdAt ? new Date(result.createdAt).toLocaleDateString() : 'N/A')}</span>
                                 </div>
                             </div>
                         ))}

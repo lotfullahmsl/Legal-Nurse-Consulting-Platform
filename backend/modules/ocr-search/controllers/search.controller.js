@@ -30,9 +30,10 @@ exports.searchRecords = async (req, res, next) => {
         const records = await MedicalRecord.find(searchQuery)
             .populate('case', 'caseNumber caseName')
             .populate('uploadedBy', 'fullName')
-            .sort({ uploadDate: -1 })
+            .sort({ createdAt: -1 })
             .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .skip((page - 1) * limit)
+            .select('fileName fileType documentType recordDate pageCount ocrText ocrStatus case uploadedBy createdAt');
 
         const total = await MedicalRecord.countDocuments(searchQuery);
 

@@ -115,19 +115,6 @@ const ClientSidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     </div>
                 </nav>
 
-                {/* Security Badge */}
-                <div className="p-4 border-t border-slate-200 dark:border-slate-800">
-                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                        <div className="flex items-center gap-2 mb-2">
-                            <span className="material-icons text-green-600 text-sm">verified_user</span>
-                            <span className="text-xs font-bold text-green-700 dark:text-green-400 uppercase">HIPAA Secure</span>
-                        </div>
-                        <p className="text-xs text-green-600 dark:text-green-400">
-                            All data is encrypted and HIPAA compliant
-                        </p>
-                    </div>
-                </div>
-
                 {/* User Profile */}
                 <div className="p-4 border-t border-slate-200 dark:border-slate-800">
                     <div className="flex items-center gap-3">

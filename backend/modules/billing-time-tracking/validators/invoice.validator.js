@@ -2,28 +2,36 @@ const { body, param, query } = require('express-validator');
 
 const invoiceValidators = {
     generate: [
-        body('case')
+        body('caseId')
             .notEmpty().withMessage('Case ID is required')
             .isMongoId().withMessage('Invalid case ID'),
-        body('lawFirm')
-            .notEmpty().withMessage('Law firm ID is required')
-            .isMongoId().withMessage('Invalid law firm ID'),
-        body('timeEntries')
-            .isArray({ min: 1 }).withMessage('Time entries must be a non-empty array'),
-        body('timeEntries.*')
+        body('timeEntryIds')
+            .optional()
+            .isArray().withMessage('Time entries must be an array'),
+        body('timeEntryIds.*')
+            .optional()
             .isMongoId().withMessage('Invalid time entry ID'),
+        body('lineItems')
+            .optional()
+            .isArray().withMessage('Line items must be an array'),
+        body('lineItems.*.description')
+            .optional()
+            .notEmpty().withMessage('Line item description is required'),
+        body('lineItems.*.amount')
+            .optional()
+            .isFloat({ min: 0 }).withMessage('Line item amount must be positive'),
         body('dueDate')
             .optional()
             .isISO8601().withMessage('Invalid due date format'),
         body('notes')
             .optional()
             .isLength({ max: 1000 }).withMessage('Notes cannot exceed 1000 characters'),
-        body('discountAmount')
+        body('discount')
             .optional()
             .isFloat({ min: 0 }).withMessage('Discount amount must be a positive number'),
-        body('discountPercentage')
+        body('taxRate')
             .optional()
-            .isFloat({ min: 0, max: 100 }).withMessage('Discount percentage must be between 0 and 100')
+            .isFloat({ min: 0, max: 100 }).withMessage('Tax rate must be between 0 and 100')
     ],
 
     update: [
